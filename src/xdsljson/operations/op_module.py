@@ -25,10 +25,7 @@ class ModuleJsonOp(OpNode):
     """Racine JSON de type module : enregistre les structs puis génère les fonctions."""
 
     op: Literal["module"] = "module"
-    body: Sequence[ModuleStatement]
-
-    def __init__(self, body=None, **data):
-        super().__init__(body=body or [], **data)
+    body: Sequence[ModuleStatement] = ()
 
     @trace_step("ModuleJsonOp")
     def codegen(self, builder: Builder) -> Sequence[ValNode]:

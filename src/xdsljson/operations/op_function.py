@@ -23,13 +23,10 @@ availables_functions = {}
 class FunctionOp(OpNode):
     op: Literal["function"] = "function"
     name: str
-    args: Sequence[tuple[str, TyNode]]
-    body: Sequence[BaseValue]
+    args: Sequence[tuple[str, TyNode]] = ()
+    body: Sequence[BaseValue] = ()
 
-    def __init__(self, name: str = "", args=None, body=None, **data):
-        super().__init__(name=name, args=args or [], body=body or [], **data)
-
-    @trace_step("FunctionOp({self.name})")
+    @trace_step("FunctionOp: {self.name}")
     def codegen(self, builder: Builder) -> Sequence[ValNode]:
         variables_heap.clear()
         const_heap.clear()

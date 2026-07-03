@@ -24,14 +24,12 @@ class SetOp(OpNode):
     var: VarOp
     val: BinaryOp | ConstOp | VarOp
 
-    def __init__(self, var=None, val=None, **data):
-        super().__init__(var=var, val=val, **data)
-
-    @trace_step("SetOp({self.var.name})")
+    @trace_step("SetOp: {self.var.name}")
     def codegen(self, builder: Builder) -> Sequence[ValNode]:
+        var = self.var.as_var()
 
         # Instantiate
-        if self.var.name not in variables_heap.keys():
+        if var.get_name() not in variables_heap.keys():
             assert self.var.indices == []
 
             """
@@ -45,10 +43,10 @@ class SetOp(OpNode):
             assert len(vals) == 1
             val = vals[0]
 
-            type = self.var.get_ty()
-            variables_heap[self.var.name] = Factory.from_val(type, val, builder)
+            type = var.get_ty()
+            variables_heap[var.get_name()] = Factory.from_val(type, val, builder)
             return []
 
         # Store
-        self.var.store(self.val.codegen(builder)[0], builder)
+        var.store(self.val.codegen(builder)[0], builder)
         return []

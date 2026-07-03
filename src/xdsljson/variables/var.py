@@ -19,11 +19,11 @@ if TYPE_CHECKING:
 
 class Var:
     name: str
-    indices: Sequence[VarOp | int | str]
+    indices: Sequence[int | str | VarOp]
     type: TyNode | None = None
 
     def __init__(
-        self, name: str, indices: Sequence[VarOp | int | str], type: TyNode | None
+        self, name: str, indices: Sequence[int | str | VarOp], type: TyNode | None
     ):
         self.name = name
         self.indices = indices
@@ -68,10 +68,10 @@ class Var:
         for i in self.indices:
             if isinstance(i, str):
                 index_ssa.append(i)
-            if isinstance(i, int):
+            elif isinstance(i, int):
                 index_ssa.append(ssa_val.val_to_SSAValue(i, Scalar.idx, builder))
-            if isinstance(i, Var):
-                index_ssa.append(i.get_SSA(builder))
+            else:
+                index_ssa.append(i.as_var().get_SSA(builder))
 
         return index_ssa
 

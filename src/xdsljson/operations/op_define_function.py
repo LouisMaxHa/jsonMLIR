@@ -21,24 +21,10 @@ class DefineFunctionOp(OpNode):
 
     op: Literal["define_function"] = "define_function"
     name: str
-    args: Sequence[tuple[str, TyNode]]
-    return_types: Sequence[TyNode]
+    args: Sequence[tuple[str, TyNode]] = ()
+    return_types: Sequence[TyNode] = ()
 
-    def __init__(
-        self,
-        name: str = "",
-        args: Sequence[tuple[str, TyNode]] | None = None,
-        return_types: Sequence[TyNode] | None = None,
-        **data,
-    ):
-        super().__init__(
-            name=name,
-            args=args or [],
-            return_types=return_types or [],
-            **data,
-        )
-
-    @trace_step("DefineFunctionOp({self.name})")
+    @trace_step("DefineFunctionOp: {self.name}")
     def codegen(self, builder: Builder) -> Sequence[ValNode]:
         functions_registry[self.name] = FunctionSignature(
             args=list(self.args),

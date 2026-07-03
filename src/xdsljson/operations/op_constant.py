@@ -20,15 +20,7 @@ class ConstOp(OpNode):
     val: float | int
     type: Scalar = Scalar.i64
 
-    def __init__(self, *args, **data):
-        val: float | int | None = args[0] if args else data.pop("val", None)
-        t: str | Scalar = args[1] if len(args) >= 2 else data.pop("type", "i64")
-        if isinstance(t, str):
-            t = Scalar(t)
-
-        super().__init__(val=val, type=t, **data)
-
-    @trace_step("ConstOp({self.val}, {self.type})")
+    @trace_step("ConstOp: {self.val}, {self.type}")
     def codegen(self, builder: Builder) -> Sequence[ValNode]:
         return [ValSSA(
             ssa_val.val_to_SSAValue(self.val, self.type, builder)

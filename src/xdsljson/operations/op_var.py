@@ -13,27 +13,16 @@ from xdsljson.variables.val.val import ValNode
 from xdsljson.variables.var import Var
 
 
-class VarOp(OpNode, Var):
+class VarOp(OpNode):
     op: Literal["var"] = "var"
     name: str
-    indices: Sequence[VarOp | int | str] = Field(default_factory=list)
+    indices: Sequence[int | str | VarOp] = Field(default_factory=list)
     type: TyNode | None = None
 
-    def __init__(
-        self,
-        name: str = "",
-        indices: Sequence[VarOp | int | str] | None = None,
-        type: TyNode | None = None,
-        **data,
-    ):
-        super().__init__(
-            name=name,
-            indices=indices if indices is not None else [],
-            type=type,
-            **data,
-        )
+    def as_var(self) -> Var:
+        return Var(self.name, self.indices, self.type)
 
     # TODO: rename load to avoid confusion with get_SSA that dont use index
-    @trace_step("VarOp({self.name}, {self.indices})")
+    @trace_step("VarOp: {self.name}, {self.indices}")
     def codegen(self, builder: Builder) -> Sequence[ValNode]:
-        return [Var(self.name, self.indices, self.type).load(builder)]
+        return [self.as_var().load(builder)]

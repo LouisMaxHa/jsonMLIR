@@ -20,10 +20,7 @@ if TYPE_CHECKING:
 class WhileOp(OpNode):
     op: Literal["while"] = "while"
     cond: BaseValue
-    thenBlock: Sequence[BaseValue]
-
-    def __init__(self, cond=None, thenBlock=None, **data):
-        super().__init__(cond=cond, thenBlock=thenBlock or [], **data)
+    thenBlock: Sequence[BaseValue] = ()
 
     @trace_step("WhileOp")
     def codegen(self, builder: Builder) -> Sequence[ValNode]:

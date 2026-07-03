@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Literal
 
 from xdsl.builder import Builder
 from xdsl.dialects.func import CallOp as XDSLCallOp
+from xdsl.ir import Attribute, SSAValue
 
 from xdsljson.operations.codegen import OpNode
 from xdsljson.trace import trace_step
@@ -25,17 +26,9 @@ class CallOp(OpNode):
 
     op: Literal["call"] = "call"
     name: str
-    args: Sequence[BaseValue]
+    args: Sequence[BaseValue] = ()
 
-    def __init__(
-        self,
-        name: str = "",
-        args: Sequence[BaseValue] | None = None,
-        **data,
-    ):
-        super().__init__(name=name, args=args or [], **data)
-
-    @trace_step("CallOp({self.name})")
+    @trace_step("CallOp: {self.name}")
     def codegen(self, builder: Builder) -> Sequence[ValNode]:
         sig = functions_registry.get(self.name)
         if sig is None:
@@ -45,7 +38,7 @@ class CallOp(OpNode):
             )
 
         # Évaluation des arguments
-        arg_ssas = []
+        arg_ssas: list[SSAValue[Attribute]] = []
         arg_vals: list[ValNode] = []
         for arg in self.args:
             vals = arg.codegen(builder)

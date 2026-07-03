@@ -37,12 +37,7 @@ class BinaryOp(OpNode):
     rhs: BaseValue
     ope: OperatorOp
 
-    def __init__(self, lhs=None, rhs=None, ope=None, **data):
-        if isinstance(ope, str):
-            ope = OperatorOp(ope)
-        super().__init__(lhs=lhs, rhs=rhs, ope=ope, **data)
-
-    @trace_step("BinaryOp({self.ope.value})")
+    @trace_step("BinaryOp: {self.ope.value}")
     def codegen(self, builder: Builder) -> Sequence[ValNode]:
         lhs = self.lhs.codegen(builder)
         rhs = self.rhs.codegen(builder)

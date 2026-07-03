@@ -170,8 +170,13 @@ def trace_step(label: str, *, display_entry: bool = False):
 
     Decorator::
 
-        @trace_step("ConstOp(val={self.val})")
+        @trace_step("ConstOp: val={self.val}")
         def codegen(self, builder: Builder) -> ValNode: ...
+
+    Warning: avoid labels that parse as a call to the decorated method's own
+    class (e.g. ``"ConstOp({self.val})"``): with ``enableExperimentalFeatures``,
+    pyright evaluates such strings speculatively and crashes with an infinite
+    recursion (RangeError: Maximum call stack size exceeded). See PoC/.
 
     Context manager::
 
@@ -179,7 +184,7 @@ def trace_step(label: str, *, display_entry: bool = False):
             ...
 
     label : str.format() template — parameter and attribute names
-            (e.g. ``ConstOp(val={self.val})``, ``from_val type={type}``).
+            (e.g. ``ConstOp: val={self.val}``, ``from_val type={type}``).
     display_entry : add input parameters as child nodes.
     """
 
