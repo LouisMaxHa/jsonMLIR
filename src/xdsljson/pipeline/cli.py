@@ -88,6 +88,12 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="Print the xDSL IR after each pass.",
     )
     parser.add_argument(
+        "-X",
+        "--xdsl_opti",
+        action="store_true",
+        help="Print the xDSL IR after all pass.",
+    )
+    parser.add_argument(
         "-P",
         "--mlir_passes",
         action="store_true",

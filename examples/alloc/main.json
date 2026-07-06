@@ -1,0 +1,43 @@
+{
+    "op": "module",
+    "body": [
+      { "op": "function",
+        "name": "xdsl_main",
+        "args": [["size", "i64"]],
+        "body": [
+        { "op": "alloc",
+          "name": "myArray",
+          "type": {"memref": [10, "i64"]}
+        },
+        { "op": "set",
+            "var": { "op": "var", "name": "i", "type": "i64" },
+            "val": { "op": "const", "val": 0 , "type": "i64"}
+        },
+        { "op": "while",
+          "cond": { "op": "binary",
+            "ope": "<",
+            "lhs": { "op": "var", "name": "i" },
+            "rhs": { "op": "var", "name": "size" }
+          },
+          "thenBlock": [
+            { "op": "set",
+                "var": {
+                    "op": "var", "name": "myArray", 
+                    "indices" : [{"name": "i"}]},
+                "val": { "name": "i" }
+            },
+            { "op": "set",
+                "var": { "op": "var", "name": "i" },
+                "val": { "op": "binary",
+                    "ope": "+",
+                    "lhs": { "op": "var", "name": "i" },
+                    "rhs": { "op": "const", "val": 1, "type": "i64" }
+                }
+            }
+          ]
+        },
+        {"op": "var", "name": "myArray", "indices": []}
+        ]
+      }
+    ]
+}

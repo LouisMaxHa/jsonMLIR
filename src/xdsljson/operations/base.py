@@ -4,6 +4,7 @@ from typing import Annotated
 
 from pydantic import Field
 
+from xdsljson.operations.op_alloc import AllocOp
 from xdsljson.operations.op_binary import BinaryOp
 from xdsljson.operations.op_call import CallOp
 from xdsljson.operations.op_cond import CondOp
@@ -18,7 +19,7 @@ from xdsljson.variables.var import Var
 
 # Union discriminé de toutes les opérations connues.
 BaseValue = Annotated[
-    BinaryOp | CallOp | ConstOp | CondOp | VarOp | WhileOp | PrintOp | SetOp,
+    BinaryOp | CallOp | ConstOp | CondOp | VarOp | WhileOp | PrintOp | SetOp | AllocOp,
     Field(discriminator="op"),
 ]
 
@@ -33,8 +34,9 @@ _types_namespace = {
     "SetOp": SetOp,
     "VarOp": VarOp,
     "WhileOp": WhileOp,
-    "ValScalar": Scalar, # WHY ?
-    "Var": Var,
+    "ValScalar": Scalar, # TODO: why ?
+    "Var": Var, # TODO: why not only VarOp ?
+    "AllocOp": AllocOp,
 }
 
 # Rebuild pydantic model because of recursive definitions
@@ -47,3 +49,4 @@ PrintOp.model_rebuild(_types_namespace=_types_namespace)
 SetOp.model_rebuild(_types_namespace=_types_namespace)
 VarOp.model_rebuild(_types_namespace=_types_namespace)
 WhileOp.model_rebuild(_types_namespace=_types_namespace)
+AllocOp.model_rebuild(_types_namespace=_types_namespace)

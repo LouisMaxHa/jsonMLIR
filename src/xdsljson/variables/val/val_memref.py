@@ -99,8 +99,11 @@ class ValMemref(ValNode):
         # Load
         if isinstance(self.ty.base, TyStruct):
             assert len(self.ty.dimensions) == 1, "Array of struct supported for only 1D"
-            offsets = [builder.insert(
-                MuliOp(consuming[0], idx_to_ssavalues(self.ty.base.struct.SIZE, builder))).results[0]
+            offsets = [
+                builder.insert(MuliOp(
+                    consuming[0],
+                    idx_to_ssavalues(self.ty.base.struct.SIZE, builder))
+                ).results[0]
             ]
 
             op = SubviewOp.get(

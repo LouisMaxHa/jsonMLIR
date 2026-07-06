@@ -20,16 +20,16 @@ def assert_same_types(
     lhs: Sequence[ValNode],
     rhs: Sequence[ValNode],
 ) :
-    assert len(lhs) == len(rhs)
+    assert len(lhs) == len(rhs), f"Should be same size {len(lhs)} vs {len(rhs)}"
 
     for i, l, r in zip(range(len(lhs)), lhs, rhs):
         if l.get_type() != r.get_type():
-            print(f"assert_same_type: Missmatch detected at indice {i}")
-            print(f"lhs: {repr(l.get_type())}")
-            print(f"rhs: {repr(r.get_type())}")
-            print("\nVariables:")
-            pprint.pprint(vars(l))
-            print("\n\n")
-            pprint.pprint(vars(r))
-            print("\n\n")
-            raise ValueError
+            raise ValueError(
+                f"assert_same_type: Missmatch detected at indice {i}\n"
+                f"lhs: {repr(l.get_type())}\n"
+                f"rhs: {repr(r.get_type())}\n"
+                f"\nVariables:\n"
+                f"{pprint.pformat(vars(l))}\n"
+                f"\n\n"
+                f"{pprint.pformat(vars(r))}\n"
+            )

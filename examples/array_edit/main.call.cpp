@@ -29,9 +29,9 @@ int main() {
 
   // TESTS
   for (int i = 0; i < 5; i++) {
-    std::cout << "EXPECTED '" << expected[i] << "', got '" << myData[i] << "'" << std::endl;
+    std::cout << "EXPECTED '" << expected[i] << "', got '" << myData[i] << "'"
+              << std::endl;
   }
-
 
   std::cout << "Reading array : xdsl_main(myMemref) = " << result << '\n';
   return 0;

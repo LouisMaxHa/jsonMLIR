@@ -68,18 +68,11 @@ def print_if(
     if last_print_path is not None:
         last_print_path.write_text(text)
 
-XDSL_OPT_PASSES: list[
-    type[
-      ConvertMemRefToPtr
-    | ConvertPtrTypeOffsetsPass
-    | ConvertPtrToLLVMPass
-    | ReconcileUnrealizedCastsPass
-    ]
-] = [
-    ConvertMemRefToPtr,
-    ConvertPtrTypeOffsetsPass,
-    ReconcileUnrealizedCastsPass,
-    ConvertPtrToLLVMPass,
+XDSL_OPT_PASSES = [
+    ConvertMemRefToPtr(lower_func=True),
+    ConvertPtrTypeOffsetsPass(),
+    ReconcileUnrealizedCastsPass(),
+    ConvertPtrToLLVMPass(),
 ]
 
 MLIR_OPT_PASSES: list[str] = [
@@ -168,16 +161,22 @@ def compiler(module_ast: ModuleJsonOp, argv: Sequence[str] | None = None) -> int
 
     # xDSL passes
     for passe in XDSL_OPT_PASSES:
-        passe().apply(ctx, module)
+        passe.apply(ctx, module)
 
         if args.xdsl_passes:
             xdsl_to_mlir(module, path_mlir)
             print_if(
                 args.xdsl_passes,
-                f"xDSL afte {passe.__name__} passe",
+                f"xDSL afte {type(passe).__name__} passe",
                 path_mlir,
                 last_print_path=path_last_print,
             )
+    print_if(
+        args.xdsl_opti,
+        "xDSL opti",
+        path_mlir,
+        last_print_path=path_last_print,
+    )
 
     # xDSL -> mlir
     xdsl_to_mlir(module, path_mlir)

@@ -4,7 +4,7 @@
 #include <iostream>
 
 extern "C" {
-  int64_t _mlir_ciface_xdsl_main(MemRefType<int64_t, 1> *array, int index);
+int64_t _mlir_ciface_xdsl_main(MemRefType<int64_t, 1> *array, int index);
 }
 
 int main() {
@@ -13,7 +13,8 @@ int main() {
 
   for (int i = 0; i < 5; i++) {
     const int64_t result = _mlir_ciface_xdsl_main(&myMemref, i);
-    std::cout << "EXPECTED '" << myData[i] << "', got '" << result << "'" << std::endl;
+    std::cout << "EXPECTED '" << myData[i] << "', got '" << result << "'"
+              << std::endl;
   }
   return 0;
 }
