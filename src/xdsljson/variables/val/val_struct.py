@@ -65,7 +65,9 @@ class ValStruct(ValNode):
     ) -> ValNode:
         from xdsljson.variables.factory import Factory
 
-        assert len(index) > 0
+        if len(index) == 0:
+            return ValSSA(self.addr)
+
         assert isinstance(index[0], str)
 
         # Split index
