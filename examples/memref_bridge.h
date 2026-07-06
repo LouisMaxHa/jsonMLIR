@@ -39,3 +39,8 @@ MemRefType<T, 1> make_memref_1d(
     {stride_in_elements} /* stride */,
   };
 }
+
+template <typename T>
+T* make_array(MemRefType<T, 1> descriptor){
+  return descriptor.basePtr;
+}
