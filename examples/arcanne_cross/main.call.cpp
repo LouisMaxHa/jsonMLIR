@@ -13,9 +13,9 @@
 //   [16..23] padding
 
 struct Real3 {
-  float_t x;
-  float_t y;
-  float_t z;
+  double x;
+  double y;
+  double z;
 };
 
 

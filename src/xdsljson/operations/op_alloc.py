@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import Literal
 
 from pydantic import Field
 from xdsl.builder import Builder
 from xdsl.dialects import memref
-from xdsl.ir import Sequence, SSAValue
+from xdsl.ir import SSAValue
 
 from xdsljson.operations.codegen import OpNode
 from xdsljson.operations.op_var import VarOp
@@ -22,7 +23,7 @@ class AllocOp(OpNode):
     op: Literal["alloc"] = "alloc"
     name: str
     type: TyNode
-    size: Sequence[int | VarOp] = Field(default_factory=list)
+    size: list[int | VarOp] = Field(default_factory=list)
 
     @trace_step("AllocOp: {self.name}")
     def codegen(self, builder: Builder) -> Sequence[ValNode]:

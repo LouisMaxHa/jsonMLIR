@@ -4,7 +4,6 @@ from xdsljson.operations import (
     Binary,
     Call,
     Cond,
-    Const,
     DefineFunction,
     Function,
     Module,
@@ -30,7 +29,7 @@ module = Module([
         [
             Set(Var(name="result", type="i64"), Var("a")),
             Cond(
-                cond=Binary(Var("b"), Var("a"), ">"),
+                cond=Binary(">", Var("b"), Var("a")),
                 thenBlock=[Set(Var("result"), Var("b"))],
             ),
             Var("result"),

@@ -25,10 +25,10 @@ module = Module([
         [("myStruct", TyStruct("noeud"))],
         [
             Set(Var("myStruct", ["capacite"]),
-                Binary(Var("myStruct", ["capacite"]), Const(1, "i32"), "+")
+                Binary("+", Var("myStruct", ["capacite"]), Const(1, "i32"))
             ),
             Set(Var("myStruct", ["temperature"]),
-                Binary(Var("myStruct", ["temperature"]), Const(0.1, "f64"), "+f")
+                Binary("+f", Var("myStruct", ["temperature"]), Const(0.1, "f64"))
             ),
         ],
     )

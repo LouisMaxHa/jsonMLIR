@@ -14,6 +14,8 @@ from xdsl.dialects.arith import (
     MulfOp,
     MuliOp,
     OrIOp,
+    SubfOp,
+    SubiOp,
     XOrIOp,
 )
 from xdsl.ir import Attribute, OpResult
@@ -56,8 +58,10 @@ class BinaryOp(OpNode):
                     op = AddiOp(l_ssa, r_ssa)
                 case "+f":
                     op = AddfOp(l_ssa, r_ssa)
+                case "-f":
+                    op = SubfOp(l_ssa, r_ssa)
                 case "-":
-                    op = MinSIOp(l_ssa, r_ssa)
+                    op = SubiOp(l_ssa, r_ssa)
                 case "*":
                     op = MuliOp(l_ssa, r_ssa)
                 case "*f":
