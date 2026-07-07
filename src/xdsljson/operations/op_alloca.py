@@ -18,14 +18,14 @@ from xdsljson.variables.ty.ty import TyNode
 from xdsljson.variables.val.val import ValNode
 
 
-class AllocOp(OpNode):
+class AllocaOp(OpNode):
 
-    op: Literal["alloc"] = "alloc"
+    op: Literal["alloca"] = "alloca"
     name: str
     type: TyNode
     size: Sequence[int | VarOp] = Field(default_factory=list[int | VarOp])
 
-    @trace_step("AllocOp: {self.name}")
+    @trace_step("AllocaOp: {self.name}")
     def codegen(self, builder: Builder) -> Sequence[ValNode]:
 
         assert self.name not in variables_heap.keys()
@@ -38,8 +38,8 @@ class AllocOp(OpNode):
             for s in self.size
         ]
 
-        # Alloc
-        op = memref.AllocOp.get(
+        # Alloca
+        op = memref.AllocaOp.get(
             self.type.get_memref_type().element_type,
             dynamic_sizes=dyn_size,
             shape=self.type.get_memref_type().shape

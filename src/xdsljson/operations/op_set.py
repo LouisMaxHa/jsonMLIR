@@ -6,6 +6,7 @@ from xdsl.builder import Builder
 from xdsl.ir import Sequence
 
 from xdsljson.operations.codegen import OpNode
+from xdsljson.operations.op_call import CallOp
 from xdsljson.operations.op_var import VarOp
 from xdsljson.trace import trace_step
 from xdsljson.variables.factory import Factory
@@ -22,7 +23,7 @@ class SetOp(OpNode):
 
     op: Literal["set"] = "set"
     var: VarOp
-    val: BinaryOp | ConstOp | VarOp
+    val: BinaryOp | ConstOp | VarOp | CallOp
 
     @trace_step("SetOp: {self.var.name}")
     def codegen(self, builder: Builder) -> Sequence[ValNode]:

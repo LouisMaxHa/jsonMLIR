@@ -9,6 +9,8 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from xdsljson.operations.base import BaseValue
+from xdsljson.operations.op_alloc import AllocOp
+from xdsljson.operations.op_alloca import AllocaOp
 from xdsljson.operations.op_binary import BinaryOp
 from xdsljson.operations.op_call import CallOp
 from xdsljson.operations.op_cond import CondOp
@@ -22,7 +24,6 @@ from xdsljson.operations.op_print import PrintOp
 from xdsljson.operations.op_set import SetOp
 from xdsljson.operations.op_var import VarOp
 from xdsljson.operations.op_while import WhileOp
-from xdsljson.operations.op_alloc import AllocOp
 from xdsljson.utils.enum_scalars import Scalar
 from xdsljson.variables.memory import FIELD_TYPE
 from xdsljson.variables.ty.ty import TyNode, parse_ty
@@ -81,6 +82,13 @@ def Alloc(
     size: Sequence[int | VarOp] = ()
 ) -> AllocOp:
     return AllocOp(name=name, type=type, size=size)
+
+def Alloca(
+    name: str,
+    type: TyNode,
+    size: Sequence[int | VarOp] = ()
+) -> AllocaOp:
+    return AllocaOp(name=name, type=type, size=size)
 
 def Function(
     name: str,
