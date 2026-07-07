@@ -4,7 +4,7 @@
     { "op": "function",
       "name": "xdsl_main",
       "args": [
-        ["myArray", {"memref": [5, "i64"]}],
+        ["myArray", {"memref": [null, "i64"]}],
         ["index", "index"]
       ],
       "body": [
