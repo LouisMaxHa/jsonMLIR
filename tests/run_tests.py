@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+import argparse
+import os
 import re
 import subprocess
 import sys
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
@@ -14,14 +18,13 @@ from rich.console import Console
 from rich.table import Table
 from rich.text import Text
 
-from xdsljson.pipeline.compiler import main as compile_main
-
 EXPECT_PATTERN = re.compile(
     r"EXPECT(?:ED)?.*? '([^']*)'.*?'([^']*)'",
     re.IGNORECASE,
 )
 
 console = Console()
+_print_lock = threading.Lock()
 
 
 class ResultStats(Enum):
@@ -79,6 +82,35 @@ def _parse_expectations(stdout: str) -> tuple[list[tuple[str, str]], int]:
     return (mismatches, n_tests)
 
 
+def _compile_example(
+    input_path: Path,
+    project_root: Path,
+) -> subprocess.CompletedProcess[str] | None:
+    """Compile an example in a subprocess for process-level isolation."""
+    if input_path.suffix == ".py":
+        cmd = [sys.executable, str(input_path), "--project-root", str(project_root)]
+    else:
+        cmd = [
+            sys.executable,
+            "-m",
+            "xdsljson.pipeline.cli",
+            str(input_path),
+            "--project-root",
+            str(project_root),
+            "--link",
+        ]
+    try:
+        return subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=120,
+            check=False,
+        )
+    except Exception:
+        return None
+
+
 def run_example(input_path: Path, project_root: Path) -> ResultInfo:
     """Compile and run an example, then check EXPECT lines.
 
@@ -91,72 +123,24 @@ def run_example(input_path: Path, project_root: Path) -> ResultInfo:
     input_path = input_path.resolve()
     file_runnable = input_path.with_suffix(".out")
 
-    if input_path.suffix == ".py":
-        # Python DSL: run the script directly; it calls compiler() internally.
-        try:
-            proc_compile = subprocess.run(
-                [
-                    sys.executable,
-                    str(input_path),
-                    "--project-root",
-                    str(project_root),
-                ],
-                capture_output=True,
-                text=True,
-                timeout=120,
-                check=False,
-            )
-        except Exception as exc:
-            return ResultInfo(
-                name=name,
-                status=ResultStats.ERROR,
-                message=str(exc) or repr(exc),
-                elapsed_s=time.perf_counter() - start,
-            )
+    proc_compile = _compile_example(input_path, project_root)
+    if proc_compile is None:
+        return ResultInfo(
+            name=name,
+            status=ResultStats.ERROR,
+            message="compilation subprocess failed to start",
+            elapsed_s=time.perf_counter() - start,
+        )
 
-        if proc_compile.returncode != 0:
-            rc = proc_compile.returncode
-            detail = proc_compile.stderr.strip() or f"exit code {rc}"
-            return ResultInfo(
-                name=name,
-                status=ResultStats.ERROR,
-                message=detail,
-                elapsed_s=time.perf_counter() - start,
-            )
-
-    else:
-        # JSON pipeline
-        json_path = input_path
-        try:
-            exit_code = compile_main(
-                [
-                    str(json_path),
-                    "--project-root",
-                    str(project_root),
-                    "--link",
-                ]
-            )
-
-        # Exit code
-        except SystemExit as exc:
-            exit_code = exc.code if isinstance(exc.code, int) else 1
-            if exit_code != 0:
-                return ResultInfo(
-                    name=name,
-                    status=ResultStats.ERROR,
-                    message=f"exit code {exit_code}",
-                    elapsed_s=time.perf_counter() - start,
-                )
-
-        # Crash
-        except Exception as exc:
-            return ResultInfo(
-                name=name,
-                status=ResultStats.ERROR,
-                message=str(exc) or repr(exc),
-                elapsed_s=time.perf_counter() - start,
-            )
-
+    if proc_compile.returncode != 0:
+        rc = proc_compile.returncode
+        detail = proc_compile.stderr.strip() or f"exit code {rc}"
+        return ResultInfo(
+            name=name,
+            status=ResultStats.ERROR,
+            message=detail,
+            elapsed_s=time.perf_counter() - start,
+        )
 
     # Run file
     try:
@@ -259,32 +243,71 @@ def print_summary(results: list[ResultInfo]) -> None:
     )
 
 
-def run_all_examples(project_root: Path | None = None) -> list[ResultInfo]:
-    """Run all examples and print the summary."""
-    root = (project_root or Path(__file__).resolve().parents[1]).resolve()
-    paths = discover_examples(root)
-
-    console.print(
-        f"[bold]Running {len(paths)} examples[/] from [cyan]{root / 'examples'}[/]\n"
-    )
-
-    results: list[ResultInfo] = []
-    for path in paths:
-        console.print("Testing [cyan]{:.<40}".format(path.parent.name + "[/]"), end=" ")
-        infos = run_example(path, root)
-
+def _print_progress(infos: ResultInfo) -> None:
+    with _print_lock:
+        console.print(
+            "Testing [cyan]{:.<40}".format(infos.name + "[/]"),
+            end=" ",
+        )
         if infos.status == ResultStats.OK:
             console.print(infos.message)
         else:
             console.print("")
 
-        results.append(infos)
+
+def run_all_examples(
+    project_root: Path | None = None,
+    *,
+    jobs: int | None = None,
+) -> list[ResultInfo]:
+    """Run all examples and print the summary."""
+    root = (project_root or Path(__file__).resolve().parents[1]).resolve()
+    paths = discover_examples(root)
+    workers = jobs if jobs is not None else (os.cpu_count() or 4)
+
+    console.print(
+        f"[bold]Running {len(paths)} examples[/] from [cyan]{root / 'examples'}[/] "
+        f"([magenta]{workers} worker{'s' if workers != 1 else ''}[/])\n"
+    )
+
+    results: list[ResultInfo] = []
+    if workers <= 1:
+        for path in paths:
+            infos = run_example(path, root)
+            _print_progress(infos)
+            results.append(infos)
+    else:
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            future_to_path = {
+                executor.submit(run_example, path, root): path for path in paths
+            }
+            for future in as_completed(future_to_path):
+                infos = future.result()
+                _print_progress(infos)
+                results.append(infos)
+
+        results.sort(key=lambda result: result.name)
 
     print_summary(results)
     return results
 
 
+def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    default_jobs = os.cpu_count() or 4
+    parser.add_argument(
+        "-j",
+        "--jobs",
+        type=int,
+        default=default_jobs,
+        metavar="N",
+        help=f"number of parallel workers (default: {default_jobs})",
+    )
+    return parser.parse_args(argv)
+
+
 if __name__ == "__main__":
-    results = run_all_examples()
+    args = _parse_args()
+    results = run_all_examples(jobs=args.jobs)
     failed = [r for r in results if r.status != ResultStats.OK]
     sys.exit(1 if failed else 0)
