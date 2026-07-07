@@ -1,21 +1,17 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal
+from typing import Literal
 
 from xdsl.builder import Builder
 from xdsl.ir import Sequence
 
+from xdsljson.operations.base import BaseValue
 from xdsljson.operations.codegen import OpNode
-from xdsljson.operations.op_call import CallOp
 from xdsljson.operations.op_var import VarOp
 from xdsljson.trace import trace_step
 from xdsljson.variables.factory import Factory
 from xdsljson.variables.memory import variables_heap
 from xdsljson.variables.val.val import ValNode
-
-if TYPE_CHECKING:
-    from xdsljson.operations.op_binary import BinaryOp
-    from xdsljson.operations.op_constant import ConstOp
 
 
 class SetOp(OpNode):
@@ -23,7 +19,7 @@ class SetOp(OpNode):
 
     op: Literal["set"] = "set"
     var: VarOp
-    val: BinaryOp | ConstOp | VarOp | CallOp
+    val: BaseValue
 
     @trace_step("SetOp: {self.var.name}")
     def codegen(self, builder: Builder) -> Sequence[ValNode]:

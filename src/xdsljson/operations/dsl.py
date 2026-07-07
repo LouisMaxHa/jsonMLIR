@@ -29,7 +29,6 @@ from xdsljson.variables.memory import FIELD_TYPE
 from xdsljson.variables.ty.ty import TyNode, parse_ty
 
 FieldSpec = tuple[str, str | TyNode, int, int] | FIELD_TYPE
-SetValue = BinaryOp | ConstOp | VarOp
 
 
 def _parse_ty(value: str | TyNode) -> TyNode:
@@ -126,7 +125,7 @@ def Binary(
     return BinaryOp(lhs=lhs, rhs=rhs, ope=_parse_ope(ope))
 
 
-def Set(var: VarOp, val: SetValue) -> SetOp:
+def Set(var: VarOp, val: BaseValue) -> SetOp:
     return SetOp(var=var, val=val)
 
 
