@@ -125,7 +125,7 @@ def Binary(
     return BinaryOp(lhs=lhs, rhs=rhs, ope=_parse_ope(ope))
 
 
-def Set(var: VarOp, val: BaseValue) -> SetOp:
+def Set(var: VarOp, val: BinaryOp | ConstOp | VarOp | CallOp) -> SetOp:
     return SetOp(var=var, val=val)
 
 

@@ -9,6 +9,7 @@ from xdsl.dialects.arith import (
     AddiOp,
     AndIOp,
     CmpiOp,
+    DivfOp,
     DivSIOp,
     MulfOp,
     MuliOp,
@@ -16,7 +17,6 @@ from xdsl.dialects.arith import (
     SubfOp,
     SubiOp,
     XOrIOp,
-    DivfOp
 )
 from xdsl.ir import Attribute, OpResult
 
