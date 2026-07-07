@@ -6,6 +6,7 @@ class OperatorOp(Enum):
     minusOp = "-"
     timesOp = "*"
     divideOp = "/"
+    divideFOp = "/f"
     plusFOp = "+f"
     minusFOp = "-f"
     timesFOp = "*f"

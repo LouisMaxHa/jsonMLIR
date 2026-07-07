@@ -10,13 +10,13 @@ from xdsl.dialects.arith import (
     AndIOp,
     CmpiOp,
     DivSIOp,
-    MinSIOp,
     MulfOp,
     MuliOp,
     OrIOp,
     SubfOp,
     SubiOp,
     XOrIOp,
+    DivfOp
 )
 from xdsl.ir import Attribute, OpResult
 
@@ -68,6 +68,8 @@ class BinaryOp(OpNode):
                     op = MulfOp(l_ssa, r_ssa)
                 case "/":
                     op = DivSIOp(l_ssa, r_ssa)
+                case "/f":
+                    op = DivfOp(l_ssa, r_ssa)
                 case "<" | ">" | "==" | "<=" | ">=":
                     equivalent = {
                         "<": "slt",
