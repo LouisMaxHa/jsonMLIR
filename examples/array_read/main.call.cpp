@@ -4,7 +4,7 @@
 #include <iostream>
 
 extern "C" {
-int64_t _mlir_ciface_xdsl_main(MemRefType<int64_t, 1> *array, int index);
+int64_t _mlir_ciface_xdsl_main(MemRefType<int64_t, 1>* array, int index);
 }
 
 int main() {

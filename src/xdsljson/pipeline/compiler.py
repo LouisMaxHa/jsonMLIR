@@ -69,7 +69,7 @@ def print_if(
         last_print_path.write_text(text)
 
 XDSL_OPT_PASSES = [
-    ConvertMemRefToPtr(lower_func=False),
+    ConvertMemRefToPtr(lower_func=True),
     ConvertPtrTypeOffsetsPass(),
     ReconcileUnrealizedCastsPass(),
     ConvertPtrToLLVMPass(),
