@@ -3,19 +3,13 @@ from __future__ import annotations
 from collections.abc import Sequence
 from sqlite3 import NotSupportedError
 
-from xdsl.builder import Builder
-from xdsl.dialects import memref
-from xdsl.dialects.arith import MuliOp
-from xdsl.dialects.builtin import MemRefType
-from xdsl.dialects.memref import LoadOp, SubviewOp
-from xdsl.ir import Attribute, SSAValue
-from xdsl.parser import DYNAMIC_INDEX
+from mlir.dialects import arith, memref
+from mlir.ir import InsertionPoint, MemRefType, ShapedType, Value
 
 from xdsljson.trace import trace_step
-from xdsljson.utils.enum_scalars import Scalar
 from xdsljson.utils.ssa_check import all_ssavalues
 from xdsljson.utils.ssa_dim import dimensions_to_ssa
-from xdsljson.utils.ssa_val import idx_to_ssavalues, val_to_SSAValues
+from xdsljson.utils.ssa_val import idx_to_ssavalues
 from xdsljson.variables.ty.ty import TyNode
 from xdsljson.variables.ty.ty_memref import TyMemref
 from xdsljson.variables.ty.ty_SSA import TySSA
@@ -23,25 +17,20 @@ from xdsljson.variables.ty.ty_struct import TyStruct
 from xdsljson.variables.val.val import ValNode
 
 
-def get_memref_dim(ty: Attribute) -> str:
-    assert isinstance(ty, MemRefType)
-    return ty.__repr__().lstrip("memref<").split(", ")[0].split(">")[0]
-
-
 class ValMemref(ValNode):
-    addr: SSAValue
+    addr: Value
     ty: TyMemref
 
     # ──────────── Init ────────────
     # Problème avec les structs, j'ai du memref<5xmemref<8xi8>>
-    def __init__(self, ty: TyMemref, addr: SSAValue):
+    def __init__(self, ty: TyMemref, addr: Value):
         ssa_type = addr.type
         assert isinstance(ssa_type, MemRefType), f"Got {type(addr)}"
-        ty_shape = ty.get_type().shape
-        ssa_shape = ssa_type.shape
+        ty_shape = list(ty.get_type().shape)
+        ssa_shape = list(ssa_type.shape)
         assert ty_shape == ssa_shape , (
             f"Ty shape {ty_shape} donc match given SSA shape {ssa_shape}".replace(
-                str(DYNAMIC_INDEX), "DYNAMIC_INDEX"
+                str(ShapedType.get_dynamic_size()), "DYNAMIC_INDEX"
             )
         )
 
@@ -53,14 +42,14 @@ class ValMemref(ValNode):
 
     @staticmethod
     @trace_step("ValMemref.init_from", display_entry=True)
-    def init_from(type: TyNode, source: ValNode, builder: Builder) -> ValMemref:
+    def init_from(type: TyNode, source: ValNode, ip: InsertionPoint) -> ValMemref:
         assert isinstance(type, TyMemref)
 
         match source.get_ty():
             case TyMemref():
-                return ValMemref(type, source.get_SSA([], builder))
+                return ValMemref(type, source.get_SSA([], ip))
             case TySSA():
-                return ValMemref(type, source.get_SSA([], builder))
+                return ValMemref(type, source.get_SSA([], ip))
             case _:
                 raise NotSupportedError
 
@@ -74,17 +63,17 @@ class ValMemref(ValNode):
     def get_base(self) -> TyNode:
         return self.ty.base
 
-    def get_dim(self, builder: Builder) -> Sequence[SSAValue]:
-        return dimensions_to_ssa(self.ty.dimensions, self.addr, builder)
+    def get_dim(self, ip: InsertionPoint) -> Sequence[Value]:
+        return dimensions_to_ssa(self.ty.dimensions, self.addr, ip)
 
-    def _get_SSA(self, builder: Builder) -> SSAValue:
+    def _get_SSA(self, ip: InsertionPoint) -> Value:
         return self.addr
 
     # ──────────── Load ────────────
     def _load(
         self,
-        index: Sequence[str | SSAValue[Attribute]],
-        builder: Builder,
+        index: Sequence[str | Value],
+        ip: InsertionPoint,
     ) -> ValNode:
         from xdsljson.variables.factory import Factory
 
@@ -99,37 +88,38 @@ class ValMemref(ValNode):
         # Load
         if isinstance(self.ty.base, TyStruct):
             assert len(self.ty.dimensions) == 1, "Array of struct supported for only 1D"
-            offsets = [
-                builder.insert(MuliOp(
-                    consuming[0],
-                    idx_to_ssavalues(self.ty.base.struct.SIZE, builder))
-                ).results[0]
-            ]
+            struct_size = self.ty.base.struct.SIZE
+            # ViewOp (pas subview) : conserve un layout identité, requis ensuite
+            # par les memref.view de champs de struct.
+            offset = arith.MulIOp(
+                idx_to_ssavalues(consuming[0], ip),
+                idx_to_ssavalues(struct_size, ip),
+                ip=ip,
+            ).result
 
-            op = SubviewOp.get(
+            result_ssa = memref.ViewOp(
+                self.ty.base.get_type(),
                 self.addr,
-                offsets,
-                val_to_SSAValues(self.ty.base.struct.SIZE, Scalar.idx, builder),
-                val_to_SSAValues(1, Scalar.idx, builder),
-                self.ty.base.get_type()
-            )
-
+                offset,
+                [],
+                ip=ip,
+            ).result
         else:
-            op = LoadOp.get(self.addr, consuming)
-        builder.insert(op)
-        valNode = Factory.from_SSA(self.ty.base, op.results[0], builder)
+            result_ssa = memref.LoadOp(self.addr, consuming, ip=ip).result
+
+        valNode = Factory.from_SSA(self.ty.base, result_ssa, ip)
 
         # Recurse
         if remaining:
-            return valNode.load(remaining, builder)
+            return valNode.load(remaining, ip)
         return valNode
 
     # ──────────── Store ────────────
     def _store(
         self,
-        index: Sequence[str | SSAValue[Attribute]],
+        index: Sequence[str | Value],
         source: ValNode,
-        builder: Builder,
+        ip: InsertionPoint,
     ):
 
         # Split index
@@ -140,8 +130,7 @@ class ValMemref(ValNode):
 
         # Insert
         if remaining == []:
-            op = memref.StoreOp.get(source.get_SSA([], builder), self.addr, consuming)
-            builder.insert(op)
+            memref.StoreOp(source.get_SSA([], ip), self.addr, consuming, ip=ip)
             return
 
-        self.load(consuming, builder).store(remaining, source, builder)
+        self.load(consuming, ip).store(remaining, source, ip)

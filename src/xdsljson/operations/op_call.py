@@ -3,9 +3,8 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Literal
 
-from xdsl.builder import Builder
-from xdsl.dialects.func import CallOp as XDSLCallOp
-from xdsl.ir import Attribute, SSAValue
+from mlir.dialects.func import CallOp as MLIRCallOp
+from mlir.ir import InsertionPoint, Value
 
 from xdsljson.operations.codegen import OpNode
 from xdsljson.trace import trace_step
@@ -29,7 +28,7 @@ class CallOp(OpNode):
     args: Sequence[BaseValue] = ()
 
     @trace_step("CallOp: {self.name}")
-    def codegen(self, builder: Builder) -> Sequence[ValNode]:
+    def codegen(self, ip: InsertionPoint) -> Sequence[ValNode]:
         sig = functions_registry.get(self.name)
         if sig is None:
             raise ValueError(
@@ -38,13 +37,13 @@ class CallOp(OpNode):
             )
 
         # Évaluation des arguments
-        arg_ssas: list[SSAValue[Attribute]] = []
+        arg_ssas: list[Value] = []
         arg_vals: list[ValNode] = []
         for arg in self.args:
-            vals = arg.codegen(builder)
+            vals = arg.codegen(ip)
             arg_vals.extend(vals)
             for val in vals:
-                arg_ssas.append(val.get_SSA([], builder))
+                arg_ssas.append(val.get_SSA([], ip))
 
         # Vérification du nombre d'arguments
         if len(arg_ssas) != len(sig.args):
@@ -66,7 +65,6 @@ class CallOp(OpNode):
         # Types de retour depuis le registre
         mlir_return_types = [ty.get_type() for ty in sig.return_types]
 
-        call_op = XDSLCallOp(self.name, arg_ssas, mlir_return_types)
-        builder.insert(call_op)
+        call_op = MLIRCallOp(mlir_return_types, self.name, arg_ssas, ip=ip)
 
-        return [ValSSA(res) for res in call_op.res]
+        return [ValSSA(res) for res in call_op.results]

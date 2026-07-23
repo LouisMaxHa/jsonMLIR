@@ -3,8 +3,8 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Literal
 
-from xdsl.builder import Builder
-from xdsl.dialects.func import CallOp
+from mlir.dialects.func import CallOp
+from mlir.ir import InsertionPoint
 
 from xdsljson.operations.codegen import OpNode
 from xdsljson.trace import trace_step
@@ -33,17 +33,17 @@ class PrintOp(OpNode):
     value: BaseValue
 
     @trace_step("PrintOp")
-    def codegen(self, builder: Builder) -> Sequence[ValNode]:
-        value_ssa = self.value.codegen(builder)
+    def codegen(self, ip: InsertionPoint) -> Sequence[ValNode]:
+        value_ssa = self.value.codegen(ip)
         if len(value_ssa) != 1:
             raise ValueError(
                 f"print attend une seule SSAValue, en a reçu {len(value_ssa)}"
             )
 
-        call = CallOp(
+        CallOp(
+            [],
             PRINT_INT_SYMBOL,
-            [value_ssa[0].get_SSA([], builder)],
-            []
+            [value_ssa[0].get_SSA([], ip)],
+            ip=ip,
         )
-        builder.insert(call)
         return []

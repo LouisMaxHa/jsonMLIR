@@ -3,8 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any
 
-from xdsl.ir import Attribute
-from xdsl.parser import MemRefType
+from mlir.ir import MemRefType, Type
 
 """ABC commune aux types valeur (scalaires, struct, array).
 
@@ -29,7 +28,7 @@ if TYPE_CHECKING:
 class TyNode(ABC):
     # ──────────── Type ────────────
     @abstractmethod
-    def get_type(self) -> Attribute:
+    def get_type(self) -> Type:
         raise NotImplementedError
 
     @abstractmethod

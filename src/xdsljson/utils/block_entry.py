@@ -1,5 +1,4 @@
-from xdsl.dialects.func import FuncOp
-from xdsl.ir import Block
+from mlir.ir import Block, Operation
 
 
 def function_entry_block(block: Block | None) -> Block:
@@ -7,13 +6,13 @@ def function_entry_block(block: Block | None) -> Block:
     if block is None:
         raise ValueError("function_entry_block requires a non-null block")
 
-    current: Block | None = block
-    while current is not None:
-        parent_op = current.parent_op()
-        if isinstance(parent_op, FuncOp):
-            entry = parent_op.body.blocks.first
-            assert entry is not None
-            return entry
-        current = current.parent_block()
+    owner = block.owner
+    op: Operation | None = (
+        owner if isinstance(owner, Operation) else owner.operation
+    )
+    while op is not None:
+        if op.name == "func.func":
+            return op.regions[0].blocks[0]
+        op = op.parent
 
     return block

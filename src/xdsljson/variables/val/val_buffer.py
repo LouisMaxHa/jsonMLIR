@@ -2,11 +2,14 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from xdsl.builder import Builder
-from xdsl.dialects import arith
-from xdsl.dialects.builtin import DYNAMIC_INDEX, MemRefType, StridedLayoutAttr
-from xdsl.dialects.memref import DimOp, ReinterpretCastOp, ViewOp
-from xdsl.ir import Attribute, SSAValue
+from mlir.dialects import arith, memref
+from mlir.ir import (
+    InsertionPoint,
+    MemRefType,
+    ShapedType,
+    StridedLayoutAttr,
+    Value,
+)
 
 from xdsljson.trace import trace_step
 from xdsljson.utils import ssa_val
@@ -20,12 +23,12 @@ from xdsljson.variables.val.val_SSA import ValSSA
 
 
 class ValBuffer(ValNode):
-    addr: SSAValue
+    addr: Value
     ty: TyBuffer
 
     # ──────────── Init ────────────
     def __init__(
-        self, ty: TyBuffer, addr: SSAValue
+        self, ty: TyBuffer, addr: Value
     ):
         assert addr.type == ty.get_type(), f"addr SSAValue type {addr.type} \
             does not match expected {ty.get_type()}"
@@ -41,11 +44,11 @@ class ValBuffer(ValNode):
     @staticmethod
     @trace_step("ValBuffer.init_from", display_entry=True)
     def init_from(
-        type: TyNode, source: ValNode, builder: Builder
+        type: TyNode, source: ValNode, ip: InsertionPoint
     ) -> ValBuffer:
         assert isinstance(type, TyBuffer)
         assert isinstance(source, (ValMemref, ValSSA))
-        return ValBuffer(type, source.get_SSA([], builder))
+        return ValBuffer(type, source.get_SSA([], ip))
 
     # ──────────── Getter ────────────
     def get_ty(self) -> TyBuffer:
@@ -57,22 +60,22 @@ class ValBuffer(ValNode):
     def get_base(self) -> TyNode:
         return self.ty.base
 
-    def get_dim(self, builder: Builder) -> Sequence[SSAValue]:
+    def get_dim(self, ip: InsertionPoint) -> Sequence[Value]:
         return dimensions_to_ssa(
             self.ty.dimensions,
             self.addr,
-            builder
+            ip
         )
 
-    def _get_SSA(self, builder: Builder) -> SSAValue:
+    def _get_SSA(self, ip: InsertionPoint) -> Value:
         return self.addr
 
     # ──────────── Load ────────────
     @trace_step("{repr(self)}.load")
     def _load(
         self,
-        index: Sequence[str | SSAValue[Attribute]],
-        builder: Builder,
+        index: Sequence[str | Value],
+        ip: InsertionPoint,
     ) -> ValNode:
         assert index == []
         return self
@@ -81,16 +84,16 @@ class ValBuffer(ValNode):
     @trace_step("{repr(self)}.store")
     def _store(
         self,
-        index: Sequence[str | SSAValue[Attribute]],
+        index: Sequence[str | Value],
         source: ValNode,
-        builder: Builder,
+        ip: InsertionPoint,
     ) -> None:
         raise NotImplementedError
 
 
     # ──────────── n_elements ────────────
     """Nombre d'éléments struct = taille buffer / taille struct (octets)."""
-    def get_size(self, builder: Builder) -> SSAValue | int:
+    def get_size(self, ip: InsertionPoint) -> Value | int:
         assert len(self.ty.dimensions) >= 1
         struct_size = self.ty.base.struct.SIZE
 
@@ -106,42 +109,42 @@ class ValBuffer(ValNode):
         assert len(self.ty.dimensions) == 1, "TODO: Only supported for one element"
 
         # Size (bytes)
-        n_bytes_op = DimOp.from_source_and_index(
-            self.get_SSA([], builder),
-            ssa_val.val_to_SSAValue(0, Scalar.idx, builder)
-        )
-        builder.insert(n_bytes_op)
-        n_bytes = n_bytes_op.result
+        n_bytes_ssa = memref.DimOp(
+            self.get_SSA([], ip),
+            ssa_val.val_to_SSAValue(0, Scalar.idx, ip),
+            ip=ip,
+        ).result
 
         # Size (elements)
-        struct_size = ssa_val.val_to_SSAValue(struct_size, Scalar.idx, builder)
-        div_op = arith.DivUIOp(n_bytes, struct_size)
-        builder.insert(div_op)
+        struct_size_ssa = ssa_val.val_to_SSAValue(struct_size, Scalar.idx, ip)
+        div_op = arith.DivUIOp(n_bytes_ssa, struct_size_ssa, ip=ip)
         return div_op.result
 
 
     def build_view(
         self,
         field_name: str,
-        builder: Builder,
+        ip: InsertionPoint,
     ) -> ValMemref | ValBuffer:
         from xdsljson.variables.factory import Factory
+
+        dynamic = ShapedType.get_dynamic_size()
 
         # Load infos
         struct = self.ty.base.struct
         field = struct.FIELDS[field_name]
         field_info = struct.FIELDS[field_name]
         field_type = field_info.TYPE.get_type()
-        row_count = self.get_size(builder)
+        row_count = self.get_size(ip)
         assert struct.SIZE % field.SIZE == 0
 
 
         # ──────────── Get dimensions
         # Offset
-        offset_ssa = ssa_val.val_to_SSAValue(field.OFFSET, Scalar.idx, builder)
+        offset_ssa = ssa_val.val_to_SSAValue(field.OFFSET, Scalar.idx, ip)
 
         # Size after flatten
-        row_count = self.get_size(builder)
+        row_count = self.get_size(ip)
         stride_size = struct.SIZE // field.SIZE
         if isinstance(row_count, int):
             flat_size = row_count * stride_size
@@ -149,45 +152,46 @@ class ValBuffer(ValNode):
             resulting_size = row_count
 
         else:
-            flat_size = DYNAMIC_INDEX
-            resulting_size = DYNAMIC_INDEX
-            stride_ssa = ssa_val.val_to_SSAValue(stride_size, Scalar.idx, builder)
-            flat_size_op = arith.MuliOp(row_count, stride_ssa)
-            builder.insert(flat_size_op)
+            flat_size = dynamic
+            resulting_size = dynamic
+            stride_ssa = ssa_val.val_to_SSAValue(stride_size, Scalar.idx, ip)
+            flat_size_op = arith.MulIOp(row_count, stride_ssa, ip=ip)
             flat_size_ssa = [flat_size_op.result]
 
         # ──────────── Flatten
 
-        view_op = ViewOp(
-            self.get_SSA([], builder),
+        view_op = memref.ViewOp(
+            MemRefType.get([flat_size], field_type),
+            self.get_SSA([], ip),
             offset_ssa,
             flat_size_ssa,
-            MemRefType(
-                field_type,
-                #[flat_size] On ne doit donner les dimensions que si dynamique
-                [flat_size]
-            ),
+            ip=ip,
         )
-        builder.insert(view_op)
         flat_view = view_op.result
 
         # ──────────── Add strides
-        cast_op = ReinterpretCastOp.from_dynamic(
-            flat_view,
-            [0],
-            [row_count],
-            [stride_size],
-            # TODO: Pourquoi re-indiquer les strides dans le result type ?????
-            MemRefType(
-                field_type,
+        if isinstance(row_count, int):
+            cast_sizes: list[Value] = []
+            static_sizes = [row_count]
+        else:
+            cast_sizes = [row_count]
+            static_sizes = [dynamic]
+
+        cast_op = memref.ReinterpretCastOp(
+            MemRefType.get(
                 [resulting_size],
-                StridedLayoutAttr(
-                    [stride_size],
-                    0
-                )
+                field_type,
+                StridedLayoutAttr.get(0, [stride_size]),
             ),
+            flat_view,
+            [],           # offsets (dynamiques)
+            cast_sizes,   # sizes (dynamiques)
+            [],           # strides (dynamiques)
+            static_offsets=[0],
+            static_sizes=static_sizes,
+            static_strides=[stride_size],
+            ip=ip,
         )
-        builder.insert(cast_op)
 
         dimension = row_count if isinstance(row_count, int) else None
         return Factory.generic_memref(

@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from xdsl.dialects.builtin import DYNAMIC_INDEX, MemRefType
+from mlir.ir import MemRefType, ShapedType
 
 from xdsljson.utils.enum_scalars import Scalar
 from xdsljson.variables.ty.ty import TyNode
@@ -19,20 +19,16 @@ class TyMemref(TyNode):
         return self.dimensions
 
     def get_type(self) -> MemRefType:
-        dimension = [d or DYNAMIC_INDEX for d in self.dimensions]
+        dynamic = ShapedType.get_dynamic_size()
+        dimension = [d if d is not None else dynamic for d in self.dimensions]
 
         if isinstance(self.base, TyStruct):
             struct_size = self.base.struct.SIZE
-            dimension[-1] *= struct_size
-            return MemRefType(
-                Scalar.i8.get_type(),
-                dimension
-            )
+            if dimension[-1] != dynamic:
+                dimension[-1] *= struct_size
+            return MemRefType.get(dimension, Scalar.i8.get_type())
 
-        return MemRefType(
-            self.base.get_type(),
-            dimension
-        )
+        return MemRefType.get(dimension, self.base.get_type())
 
     def get_memref_type(self) -> MemRefType:
         return self.get_type()

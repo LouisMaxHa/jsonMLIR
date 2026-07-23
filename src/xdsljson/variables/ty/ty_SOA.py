@@ -3,8 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from xdsl.dialects.builtin import MemRefType
-from xdsl.ir import Attribute
+from mlir.ir import MemRefType, Type
 
 from xdsljson.variables.ty.ty import TyNode
 from xdsljson.variables.ty.ty_struct import TyStruct
@@ -27,11 +26,11 @@ class TySOA(TyNode):
             for n in self.n_elements
         ]
 
-    def get_type(self) -> Attribute:
-        raise ValueError("SOA don't have xDSL equivalent")
+    def get_type(self) -> Type:
+        raise ValueError("SOA don't have MLIR equivalent")
 
     def get_memref_type(self) -> MemRefType:
-        raise ValueError("SOA don't have equivalent in xDSL")
+        raise ValueError("SOA don't have equivalent in MLIR")
 
     def __repr__(self) -> str:
         return f"SOA(base={self.base!r}, n_elements={list(self.n_elements)!r})"

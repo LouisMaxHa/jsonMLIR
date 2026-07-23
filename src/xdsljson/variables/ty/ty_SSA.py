@@ -2,15 +2,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from xdsl.dialects.builtin import MemRefType
-from xdsl.ir import Attribute
+from mlir.ir import MemRefType, Type
 
 from xdsljson.variables.ty.ty import TyNode
 
 
 @dataclass(frozen=True)
 class TySSA(TyNode):
-    def get_type(self) -> Attribute:
+    def get_type(self) -> Type:
         raise ValueError("SSAValue can be any type")
 
     def get_memref_type(self) -> MemRefType:

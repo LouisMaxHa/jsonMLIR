@@ -5,10 +5,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from pathlib import Path
 
-from xdsl.transforms.convert_memref_to_ptr import ConvertMemRefToPtr
-from xdsl.transforms.convert_ptr_to_llvm import ConvertPtrToLLVMPass
-from xdsl.transforms.convert_ptr_type_offsets import ConvertPtrTypeOffsetsPass
-from xdsl.transforms.reconcile_unrealized_casts import ReconcileUnrealizedCastsPass
+from mlir.ir import Context, InsertionPoint, Location, Module
 
 from xdsljson.operations.op_module import ModuleJsonOp
 from xdsljson.pipeline.cli import parse_args
@@ -17,12 +14,11 @@ from xdsljson.pipeline.commands import (
     build_sample_ast_json,
     compile_llvm_to_object,
     convert_to_llvm,
-    init_xdsl,
     link_executable,
     load_input_file,
     run_mlir_opt,
     set_display_cmd,
-    xdsl_to_mlir,
+    write_mlir,
 )
 from xdsljson.trace import configure_trace, enable_trace
 
@@ -67,13 +63,6 @@ def print_if(
     print()
     if last_print_path is not None:
         last_print_path.write_text(text)
-
-XDSL_OPT_PASSES = [
-    ConvertMemRefToPtr(lower_func=True),
-    ConvertPtrTypeOffsetsPass(),
-    ReconcileUnrealizedCastsPass(),
-    ConvertPtrToLLVMPass(),
-]
 
 MLIR_OPT_PASSES: list[str] = [
     "--loop-invariant-code-motion",
@@ -140,46 +129,26 @@ def compiler(module_ast: ModuleJsonOp, argv: Sequence[str] | None = None) -> int
     if not args.show_diff:
         path_last_print = None
 
-    # Pydantic -> xDSL
+    # Pydantic -> MLIR (bindings Python)
     if args.tree:
         print()
         print("────── Python AST")
         enable_trace(True)
-    ctx, module, builder = init_xdsl()
-    module_ast.codegen(builder)
+    with Context(), Location.unknown():
+        module = Module.create()
+        module_ast.codegen(InsertionPoint(module.body))
 
-    # Print
-    xdsl_to_mlir(module, path_xdsl)
+        # Print
+        write_mlir(module, path_xdsl)
+        write_mlir(module, path_mlir)
     print_if(
         args.xdsl,
-        "xDSL",
+        "MLIR (codegen)",
         path_xdsl,
     )
     if path_last_print is not None:
         path_last_print.write_text(path_xdsl.read_text())
 
-
-    # xDSL passes
-    for passe in XDSL_OPT_PASSES:
-        passe.apply(ctx, module)
-
-        if args.xdsl_passes:
-            xdsl_to_mlir(module, path_mlir)
-            print_if(
-                args.xdsl_passes,
-                f"xDSL afte {type(passe).__name__} passe",
-                path_mlir,
-                last_print_path=path_last_print,
-            )
-    print_if(
-        args.xdsl_opti,
-        "xDSL opti",
-        path_mlir,
-        last_print_path=path_last_print,
-    )
-
-    # xDSL -> mlir
-    xdsl_to_mlir(module, path_mlir)
     print_if(
         args.mlir,
         "MLIR",
@@ -188,7 +157,7 @@ def compiler(module_ast: ModuleJsonOp, argv: Sequence[str] | None = None) -> int
     )
 
     # Verify
-    # module.verify()
+    # module.operation.verify()
 
     # MLIR passes
     run_mlir_opt(

@@ -3,10 +3,8 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Literal
 
-from xdsl.builder import Builder
-from xdsl.dialects import scf
-from xdsl.ir import Block, Region
-from xdsl.rewriter import InsertPoint
+from mlir.dialects import scf
+from mlir.ir import InsertionPoint
 
 from xdsljson.operations.block import codegenBlock
 from xdsljson.operations.codegen import OpNode
@@ -23,28 +21,25 @@ class WhileOp(OpNode):
     thenBlock: Sequence[BaseValue] = ()
 
     @trace_step("WhileOp")
-    def codegen(self, builder: Builder) -> Sequence[ValNode]:
-        # Condition block
-        before_block = Block()
-        before_builder = Builder(InsertPoint.at_end(before_block))
-        conds_ssa = self.cond.codegen(before_builder)
+    def codegen(self, ip: InsertionPoint) -> Sequence[ValNode]:
+        while_op = scf.WhileOp([], [], ip=ip)
+
+        # Condition block (before region)
+        before_block = while_op.before.blocks.append()
+        before_ip = InsertionPoint(before_block)
+        conds_ssa = self.cond.codegen(before_ip)
 
         # Gen condition
         assert len(conds_ssa) == 1
-        before_builder.insert(
-            scf.ConditionOp(conds_ssa[0].get_SSA([], builder))
+        scf.ConditionOp(
+            conds_ssa[0].get_SSA([], before_ip),
+            [],
+            ip=before_ip,
         )
 
         # After region: body + scf.yield to loop back to the before region.
-        after_block, _ = codegenBlock(self.thenBlock, Block())
-        after_builder = Builder(InsertPoint.at_end(after_block))
-        after_builder.insert(scf.YieldOp())
+        after_block = while_op.after.blocks.append()
+        codegenBlock(self.thenBlock, after_block)
+        scf.YieldOp([], ip=InsertionPoint(after_block))
 
-        while_op = scf.WhileOp(
-            [],
-            [],
-            Region(before_block),
-            Region(after_block),
-        )
-        builder.insert(while_op)
         return []

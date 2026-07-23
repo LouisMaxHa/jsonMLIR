@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from xdsl.dialects.builtin import IntegerType, MemRefType
+from mlir.ir import IntegerType, MemRefType
 
 from xdsljson.variables.ty.ty import TyNode
 
@@ -12,11 +12,12 @@ class TyPtr(TyNode):
     base: TyNode
 
     def get_type(self) -> IntegerType:
-        # Adresse en i64 à la frontière ABI ; ptr_xdsl n'apparaît qu'au déréférencement.
-        return IntegerType(64)
+        # Adresse en i64 à la frontière ABI ; le pointeur LLVM n'apparaît
+        # qu'au déréférencement.
+        return IntegerType.get_signless(64)
 
     def get_memref_type(self) -> MemRefType:
-        return MemRefType(self.get_type(), [])
+        return MemRefType.get([], self.get_type())
 
     def __repr__(self) -> str:
         return f"Ptr({self.base!r})"

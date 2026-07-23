@@ -3,8 +3,8 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Literal
 
+from mlir.ir import InsertionPoint
 from pydantic import Field
-from xdsl.builder import Builder
 
 from xdsljson.operations.codegen import OpNode
 from xdsljson.trace import trace_step
@@ -24,5 +24,5 @@ class VarOp(OpNode):
 
     # TODO: rename load to avoid confusion with get_SSA that dont use index
     @trace_step("VarOp: {self.name}, {self.indices}")
-    def codegen(self, builder: Builder) -> Sequence[ValNode]:
-        return [self.as_var().load(builder)]
+    def codegen(self, ip: InsertionPoint) -> Sequence[ValNode]:
+        return [self.as_var().load(ip)]

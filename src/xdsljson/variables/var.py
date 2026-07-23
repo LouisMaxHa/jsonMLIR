@@ -3,8 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
-from xdsl.builder import Builder
-from xdsl.ir import Attribute, SSAValue
+from mlir.ir import InsertionPoint, Type, Value
 
 from xdsljson.utils import ssa_val
 from xdsljson.utils.discard_builder import discard_builder
@@ -59,31 +58,31 @@ class Var:
 
         return variables_heap[self.name]
 
-    def get_type(self) -> Attribute:
+    def get_type(self) -> Type:
         return self.load(discard_builder()).get_type()
 
-    def get_indices(self, builder: Builder) -> Sequence[str | SSAValue[Attribute]]:
-        index_ssa: Sequence[str | SSAValue[Attribute]] = []
+    def get_indices(self, ip: InsertionPoint) -> Sequence[str | Value]:
+        index_ssa: Sequence[str | Value] = []
 
         for i in self.indices:
             if isinstance(i, str):
                 index_ssa.append(i)
             elif isinstance(i, int):
-                index_ssa.append(ssa_val.val_to_SSAValue(i, Scalar.idx, builder))
+                index_ssa.append(ssa_val.val_to_SSAValue(i, Scalar.idx, ip))
             else:
-                index_ssa.append(i.as_var().get_SSA(builder))
+                index_ssa.append(i.as_var().get_SSA(ip))
 
         return index_ssa
 
     # ──────────── Overload ────────────
-    def load(self, builder: Builder) -> ValNode:
-        return self.get_val().load(self.get_indices(builder), builder)
+    def load(self, ip: InsertionPoint) -> ValNode:
+        return self.get_val().load(self.get_indices(ip), ip)
 
-    def store(self, value: ValNode, builder: Builder) -> None:
-        return self.get_val().store(self.get_indices(builder), value, builder)
+    def store(self, value: ValNode, ip: InsertionPoint) -> None:
+        return self.get_val().store(self.get_indices(ip), value, ip)
 
-    def get_SSA(self, builder: Builder) -> SSAValue[Attribute]:
-        return self.get_val().get_SSA(self.get_indices(builder), builder)
+    def get_SSA(self, ip: InsertionPoint) -> Value:
+        return self.get_val().get_SSA(self.get_indices(ip), ip)
 
-    def init_from(self, type: TyNode, source: ValNode, builder: Builder) -> ValNode:
-        return self.get_val().init_from(type, source, builder)
+    def init_from(self, type: TyNode, source: ValNode, ip: InsertionPoint) -> ValNode:
+        return self.get_val().init_from(type, source, ip)

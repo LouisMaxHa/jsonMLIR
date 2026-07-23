@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from xdsl.builder import Builder
-from xdsl.ir import Attribute, SSAValue
+from mlir.ir import InsertionPoint, Type, Value
 
 from xdsljson.trace import trace_step
 from xdsljson.variables.ty.ty import TyNode
@@ -13,18 +12,18 @@ from xdsljson.variables.val.val import ValNode
 
 class ValSSA(ValNode):
     ty: TySSA
-    addr: SSAValue
+    addr: Value
 
 
     # ──────────── Init ────────────
-    def __init__(self, addr: SSAValue):
+    def __init__(self, addr: Value):
         self.ty = TySSA()
         self.addr = addr
 
     @staticmethod
     @trace_step("ValSSA.init_from", display_entry=True)
     def init_from(
-        type: TyNode, source: ValNode, builder: Builder
+        type: TyNode, source: ValNode, ip: InsertionPoint
     ) -> ValSSA:
         raise ValueError("ValSSA should not be used for operations")
 
@@ -32,24 +31,24 @@ class ValSSA(ValNode):
     def get_ty(self) -> TySSA:
         return self.ty
 
-    def get_type(self) -> Attribute:
+    def get_type(self) -> Type:
         return self.addr.type
 
-    def get_dim(self, builder: Builder) -> Sequence[SSAValue]:
+    def get_dim(self, ip: InsertionPoint) -> Sequence[Value]:
         raise NotImplementedError("Not implemented")
 
     def _get_SSA(
         self,
-        builder: Builder,
-    ) -> SSAValue:
+        ip: InsertionPoint,
+    ) -> Value:
         return self.addr
 
 
     # ──────────── Load ────────────
     def _load(
         self,
-        index: Sequence[str | SSAValue[Attribute]],
-        builder: Builder,
+        index: Sequence[str | Value],
+        ip: InsertionPoint,
     ) -> ValNode:
         raise ValueError("ValSSA should not be used for operations")
 
@@ -57,9 +56,8 @@ class ValSSA(ValNode):
     # ──────────── Store ────────────
     def _store(
         self,
-        index: Sequence[str | SSAValue[Attribute]],
+        index: Sequence[str | Value],
         source: ValNode,
-        builder: Builder,
+        ip: InsertionPoint,
     ):
         raise ValueError("ValSSA should not be used for operations")
-

@@ -1,14 +1,16 @@
-"""Builder isolé pour l'inspection de types sans modifier le module généré."""
+"""Point d'insertion isolé pour l'inspection de types sans modifier le module généré."""
 
 from __future__ import annotations
 
-from xdsl.builder import Builder
-from xdsl.ir import Block
-from xdsl.rewriter import InsertPoint
+from mlir.ir import InsertionPoint, Module
 
-_discard_block = Block()
+# Les modules jetables sont gardés vivants : des ValNodes peuvent encore
+# référencer des opérations qui y ont été insérées.
+_discard_modules: list[Module] = []
 
 
-def discard_builder() -> Builder:
+def discard_builder() -> InsertionPoint:
     """Bloc jetable : les opérations y sont insérées, pas dans le module utilisateur."""
-    return Builder(InsertPoint.at_end(_discard_block))
+    module = Module.create()
+    _discard_modules.append(module)
+    return InsertionPoint(module.body)

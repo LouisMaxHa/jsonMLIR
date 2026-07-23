@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from xdsl.dialects.builtin import MemRefType
+from mlir.ir import MemRefType
 
 from xdsljson.utils.enum_scalars import Scalar
 from xdsljson.variables.memory import STRUCTS_TYPE, structs_type
@@ -22,10 +22,7 @@ class TyStruct(TyNode):
         return structs_type[self._name]
 
     def get_type(self) -> MemRefType:
-        return MemRefType(
-            Scalar.i8.get_type(),
-            [self.struct.SIZE]
-        )
+        return MemRefType.get([self.struct.SIZE], Scalar.i8.get_type())
 
     def get_memref_type(self) -> MemRefType:
         return self.get_type()

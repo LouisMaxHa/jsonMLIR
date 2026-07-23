@@ -12,12 +12,8 @@ from pathlib import Path
 from typing import Any
 
 import yaml
+from mlir.ir import Module
 from pydantic import TypeAdapter
-from xdsl.builder import Builder
-from xdsl.context import Context
-from xdsl.dialects.builtin import ModuleOp as XDSLModuleOp
-from xdsl.printer import Printer
-from xdsl.rewriter import InsertPoint
 
 from xdsljson.operations.op_module import ModuleJsonOp
 
@@ -53,13 +49,6 @@ def load_input_file(path: Path) -> Any:
 def build_sample_ast_json(data: Any) -> ModuleJsonOp:
     adapter: TypeAdapter[ModuleJsonOp] = TypeAdapter(ModuleJsonOp)
     return adapter.validate_python(data)
-
-# Get xDSL module and builder
-def init_xdsl() -> tuple[Context, XDSLModuleOp, Builder]:
-    ctx = Context()
-    module = XDSLModuleOp([])
-    builder = Builder(InsertPoint.at_end(module.body.block))
-    return ctx, module, builder
 
 @dataclass(frozen=True)
 class Toolchain:
@@ -162,10 +151,9 @@ def run_command(cmd: Sequence[str]) -> str:
         exit(1)
 
 
-# xDSL -> Mlir
-def xdsl_to_mlir(module: Any, output_path: Path):
-    with output_path.open("w", encoding="utf-8") as f:
-        Printer(stream=f).print_op(module)
+# Écrit le module MLIR en texte
+def write_mlir(module: Module, output_path: Path):
+    output_path.write_text(str(module), encoding="utf-8")
 
 
 # Apply MLIR passes

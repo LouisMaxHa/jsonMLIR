@@ -10,10 +10,9 @@ from functools import wraps
 from string import Formatter
 from typing import Any, cast
 
+from mlir.ir import Block, InsertionPoint
 from rich.console import Console
 from rich.tree import Tree
-from xdsl.builder import Builder
-from xdsl.ir import Block
 
 _console = Console()
 _tree_root: contextvars.ContextVar[Tree | None] = contextvars.ContextVar(
@@ -45,8 +44,8 @@ class _TraceFormatter(Formatter):
 
 
 def _format_arg(value: Any) -> str:
-    if isinstance(value, Builder):
-        return "<Builder ... >"
+    if isinstance(value, InsertionPoint):
+        return "<InsertionPoint ... >"
     if isinstance(value, Block):
         return "<Block ... >"
     if isinstance(value, tuple):
@@ -171,7 +170,7 @@ def trace_step(label: str, *, display_entry: bool = False):
     Decorator::
 
         @trace_step("ConstOp: val={self.val}")
-        def codegen(self, builder: Builder) -> ValNode: ...
+        def codegen(self, ip: InsertionPoint) -> ValNode: ...
 
     Warning: avoid labels that parse as a call to the decorated method's own
     class (e.g. ``"ConstOp({self.val})"``): with ``enableExperimentalFeatures``,

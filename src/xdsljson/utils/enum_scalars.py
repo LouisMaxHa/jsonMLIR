@@ -1,19 +1,15 @@
 from __future__ import annotations
 
 from enum import StrEnum
-from typing import cast
 
-from xdsl.dialects.builtin import (
-    Float16Type,
-    Float32Type,
-    Float64Type,
-    Float80Type,
-    Float128Type,
+from mlir.ir import (
+    F16Type,
+    F32Type,
+    F64Type,
     IndexType,
     IntegerType,
-    Signedness,
+    Type,
 )
-from xdsl.ir import Attribute
 
 
 class ScalarFamily(StrEnum):
@@ -71,88 +67,53 @@ class Scalar(StrEnum):
                 return ScalarFamily.idx
 
 
-    def get_type(self) -> Attribute:
+    def get_type(self) -> Type:
         match self:
-            case Scalar.i64:
-                return IntegerType(64)
-            case Scalar.i32:
-                return IntegerType(32)
-            case Scalar.i16:
-                return IntegerType(16)
-            case Scalar.i8:
-                return IntegerType(8)
-            case Scalar.i1:
-                return IntegerType(1)
-            case Scalar.I64:
-                return IntegerType(64, Signedness.SIGNLESS)
-            case Scalar.I32:
-                return IntegerType(32, Signedness.SIGNLESS)
-            case Scalar.I16:
-                return IntegerType(16, Signedness.SIGNLESS)
-            case Scalar.I8:
-                return IntegerType(8, Signedness.SIGNLESS)
-            case Scalar.I1:
-                return IntegerType(1, Signedness.SIGNLESS)
+            case Scalar.i64 | Scalar.I64:
+                return IntegerType.get_signless(64)
+            case Scalar.i32 | Scalar.I32:
+                return IntegerType.get_signless(32)
+            case Scalar.i16 | Scalar.I16:
+                return IntegerType.get_signless(16)
+            case Scalar.i8 | Scalar.I8:
+                return IntegerType.get_signless(8)
+            case Scalar.i1 | Scalar.I1:
+                return IntegerType.get_signless(1)
             case Scalar.f16:
-                return Float16Type()
+                return F16Type.get()
             case Scalar.f32:
-                return Float32Type()
+                return F32Type.get()
             case Scalar.f64:
-                return Float64Type()
-            case Scalar.f80:
-                return Float80Type()
-            case Scalar.f128:
-                return Float128Type()
+                return F64Type.get()
+            case Scalar.f80 | Scalar.f128:
+                # Pas de Float80Type/Float128Type dans les bindings Python MLIR.
+                raise ValueError(f"{self} non supporté par les bindings MLIR")
             case Scalar.idx:
-                return IndexType()
+                return IndexType.get()
 
     @staticmethod
-    def from_type(attr: Attribute) -> Scalar | None:
+    def from_type(attr: Type) -> Scalar | None:
         if isinstance(attr, IntegerType):
-            int_type = cast("IntegerType[int, Signedness]", attr)
-            width = int_type.bitwidth
-            signedness = int_type.signedness.data
+            match attr.width:
+                case 64:
+                    return Scalar.i64
+                case 32:
+                    return Scalar.i32
+                case 16:
+                    return Scalar.i16
+                case 8:
+                    return Scalar.i8
+                case 1:
+                    return Scalar.i1
+                case _:
+                    raise ValueError(f"Not supported {attr}")
 
-            match signedness:
-                case Signedness.SIGNED:
-                    match width:
-                        case 64:
-                            return Scalar.i64
-                        case 32:
-                            return Scalar.i32
-                        case 16:
-                            return Scalar.i16
-                        case 8:
-                            return Scalar.i8
-                        case 1:
-                            return Scalar.i1
-                        case _:
-                            raise ValueError(f"Not supported {attr}")
-                case Signedness.UNSIGNED | Signedness.SIGNLESS:
-                    match width:
-                        case 64:
-                            return Scalar.i64
-                        case 32:
-                            return Scalar.i32
-                        case 16:
-                            return Scalar.i16
-                        case 8:
-                            return Scalar.i8
-                        case 1:
-                            return Scalar.i1
-                        case _:
-                            raise ValueError(f"Not supported {attr}")
-
-        if isinstance(attr, Float16Type):
+        if isinstance(attr, F16Type):
             return Scalar.f16
-        if isinstance(attr, Float32Type):
+        if isinstance(attr, F32Type):
             return Scalar.f32
-        if isinstance(attr, Float64Type):
+        if isinstance(attr, F64Type):
             return Scalar.f64
-        if isinstance(attr, Float80Type):
-            return Scalar.f80
-        if isinstance(attr, Float128Type):
-            return Scalar.f128
         if isinstance(attr, IndexType):
             return Scalar.idx
 

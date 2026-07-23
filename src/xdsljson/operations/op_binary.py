@@ -3,22 +3,22 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Literal
 
-from xdsl.builder import Builder
-from xdsl.dialects.arith import (
-    AddfOp,
-    AddiOp,
+from mlir.dialects.arith import (
+    AddFOp,
+    AddIOp,
     AndIOp,
-    CmpiOp,
-    DivfOp,
+    CmpIOp,
+    CmpIPredicate,
+    DivFOp,
     DivSIOp,
-    MulfOp,
-    MuliOp,
+    MulFOp,
+    MulIOp,
     OrIOp,
-    SubfOp,
-    SubiOp,
+    SubFOp,
+    SubIOp,
     XOrIOp,
 )
-from xdsl.ir import Attribute, OpResult
+from mlir.ir import InsertionPoint, Value
 
 from xdsljson.operations.codegen import OpNode
 from xdsljson.operations.op_operator import OperatorOp
@@ -40,56 +40,55 @@ class BinaryOp(OpNode):
     ope: OperatorOp
 
     @trace_step("BinaryOp: {self.ope.value}")
-    def codegen(self, builder: Builder) -> Sequence[ValNode]:
-        lhs = self.lhs.codegen(builder)
-        rhs = self.rhs.codegen(builder)
+    def codegen(self, ip: InsertionPoint) -> Sequence[ValNode]:
+        lhs = self.lhs.codegen(ip)
+        rhs = self.rhs.codegen(ip)
 
         # Check same format
         assert_same_types(lhs, rhs)
 
         # On applique terme à terme
-        results: Sequence[OpResult[Attribute]] = []
+        results: list[Value] = []
         for l_elem, r_elem in zip(lhs, rhs):
-            l_ssa = l_elem.get_SSA([], builder)
-            r_ssa = r_elem.get_SSA([], builder)
+            l_ssa = l_elem.get_SSA([], ip)
+            r_ssa = r_elem.get_SSA([], ip)
 
             match self.ope.value:
                 case "+":
-                    op = AddiOp(l_ssa, r_ssa)
+                    op = AddIOp(l_ssa, r_ssa, ip=ip)
                 case "+f":
-                    op = AddfOp(l_ssa, r_ssa)
+                    op = AddFOp(l_ssa, r_ssa, ip=ip)
                 case "-f":
-                    op = SubfOp(l_ssa, r_ssa)
+                    op = SubFOp(l_ssa, r_ssa, ip=ip)
                 case "-":
-                    op = SubiOp(l_ssa, r_ssa)
+                    op = SubIOp(l_ssa, r_ssa, ip=ip)
                 case "*":
-                    op = MuliOp(l_ssa, r_ssa)
+                    op = MulIOp(l_ssa, r_ssa, ip=ip)
                 case "*f":
-                    op = MulfOp(l_ssa, r_ssa)
+                    op = MulFOp(l_ssa, r_ssa, ip=ip)
                 case "/":
-                    op = DivSIOp(l_ssa, r_ssa)
+                    op = DivSIOp(l_ssa, r_ssa, ip=ip)
                 case "/f":
-                    op = DivfOp(l_ssa, r_ssa)
+                    op = DivFOp(l_ssa, r_ssa, ip=ip)
                 case "<" | ">" | "==" | "<=" | ">=":
                     equivalent = {
-                        "<": "slt",
-                        "<=": "sle",
-                        ">": "sgt",
-                        ">=": "sge",
-                        "==": "eq",
-                        "!=": "neq",
+                        "<": CmpIPredicate.slt,
+                        "<=": CmpIPredicate.sle,
+                        ">": CmpIPredicate.sgt,
+                        ">=": CmpIPredicate.sge,
+                        "==": CmpIPredicate.eq,
+                        "!=": CmpIPredicate.ne,
                     }
-                    op = CmpiOp(l_ssa, r_ssa, equivalent[self.ope.value])
+                    op = CmpIOp(equivalent[self.ope.value], l_ssa, r_ssa, ip=ip)
                 case "or":
-                    op = OrIOp(l_ssa, r_ssa)
+                    op = OrIOp(l_ssa, r_ssa, ip=ip)
                 case "and":
-                    op = AndIOp(l_ssa, r_ssa)
+                    op = AndIOp(l_ssa, r_ssa, ip=ip)
                 case "xor":
-                    op = XOrIOp(l_ssa, r_ssa)
+                    op = XOrIOp(l_ssa, r_ssa, ip=ip)
                 case _:
                     raise TypeError(f"Operator {self} not supported")
 
-            builder.insert(op)
             results.append(op.result)
 
 

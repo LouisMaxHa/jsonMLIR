@@ -3,10 +3,8 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Literal
 
-from xdsl.builder import Builder
-from xdsl.dialects.builtin import UnitAttr
-from xdsl.dialects.func import FuncOp, ReturnOp
-from xdsl.rewriter import InsertPoint
+from mlir.dialects import func
+from mlir.ir import FunctionType, InsertionPoint, TypeAttr, UnitAttr
 
 from xdsljson.operations.base import BaseValue
 from xdsljson.operations.block import codegenBlock
@@ -27,30 +25,25 @@ class FunctionOp(OpNode):
     body: Sequence[BaseValue] = ()
 
     @trace_step("FunctionOp: {self.name}")
-    def codegen(self, builder: Builder) -> Sequence[ValNode]:
+    def codegen(self, ip: InsertionPoint) -> Sequence[ValNode]:
         variables_heap.clear()
         const_heap.clear()
 
         # Create function
-        func = FuncOp(self.name, (
-            [arg.get_type() for _name, arg in self.args], # Input
-            [] # Output (automatic)
-        ))
-        func.attributes["llvm.emit_c_interface"] = UnitAttr()
-        builder.insert(func)
-
-        # Set args name
-        for arg_ssa, (arg_name, _arg_type) in zip(
-            func.args,
-            self.args
-        ):
-            arg_ssa.name_hint = arg_name + "Arg"
+        input_types = [arg.get_type() for _name, arg in self.args]
+        function = func.FuncOp(
+            self.name,
+            FunctionType.get(input_types, []),  # Output (automatic)
+            ip=ip,
+        )
+        function.attributes["llvm.emit_c_interface"] = UnitAttr.get()
+        entry_block = function.add_entry_block()
 
         # Init variable
-        inside_function_builder = Builder(InsertPoint.at_end(func.body.block))
+        inside_function_ip = InsertionPoint(entry_block)
         with trace_step("Init args"):
             for arg_ssa, (arg_name, arg_type) in zip(
-                func.args,
+                entry_block.arguments,
                 self.args
             ):
                 val_arg = ValSSA(arg_ssa)
@@ -58,19 +51,23 @@ class FunctionOp(OpNode):
                 variables_heap[arg_name] = Factory.from_val(
                     arg_type,
                     val_arg,
-                    inside_function_builder
+                    inside_function_ip
                 )
 
         # Block codegen
-        body_block, return_values = codegenBlock(self.body, func.body.block)
-        return_types = [
-            a.get_SSA([], inside_function_builder)
+        body_block, return_values = codegenBlock(self.body, entry_block)
+        return_ssas = [
+            a.get_SSA([], inside_function_ip)
             for a in return_values
         ]
 
         # Block return
-        body_block.add_op(ReturnOp(*return_types))
-        func.update_function_type()
+        func.ReturnOp(return_ssas, ip=InsertionPoint(body_block))
+
+        # Update function type with the inferred return types
+        function.attributes["function_type"] = TypeAttr.get(
+            FunctionType.get(input_types, [v.type for v in return_ssas])
+        )
 
         # Return
         return []

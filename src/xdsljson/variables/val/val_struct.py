@@ -2,10 +2,8 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from xdsl.builder import Builder
-from xdsl.dialects.builtin import MemRefType
-from xdsl.dialects.memref import StoreOp, ViewOp
-from xdsl.ir import Attribute, SSAValue
+from mlir.dialects import memref
+from mlir.ir import InsertionPoint, MemRefType, Type, Value
 
 from xdsljson.trace import trace_step
 from xdsljson.utils import ssa_val
@@ -17,14 +15,14 @@ from xdsljson.variables.val.val_SSA import ValSSA
 
 
 class ValStruct(ValNode):
-    addr: SSAValue
+    addr: Value
     ty: TyStruct
 
     # ──────────── Init ────────────
     def __init__(
-        self, ty: TyStruct, addr: SSAValue
+        self, ty: TyStruct, addr: Value
     ):
-        assert isinstance(addr, SSAValue), f"got {addr}"
+        assert isinstance(addr, Value), f"got {addr}"
         assert ty.get_type() == addr.type, f"{ty.get_type()} == {addr.type}"
         self.addr = addr
         self.ty = ty
@@ -35,12 +33,12 @@ class ValStruct(ValNode):
     @staticmethod
     @trace_step("ValStruct.init_from", display_entry=True)
     def init_from(
-        type: TyNode, source: ValNode, builder: Builder
+        type: TyNode, source: ValNode, ip: InsertionPoint
     ) -> ValStruct:
         assert isinstance(type, TyStruct)
         return ValStruct(
             type,
-            source.get_SSA([], builder)
+            source.get_SSA([], ip)
         )
 
 
@@ -48,20 +46,20 @@ class ValStruct(ValNode):
     def get_ty(self) -> TyStruct:
         return self.ty
 
-    def get_type(self) -> Attribute:
+    def get_type(self) -> Type:
         return self.ty.get_type()
 
-    def get_dim(self, builder: Builder) -> Sequence[SSAValue]:
+    def get_dim(self, ip: InsertionPoint) -> Sequence[Value]:
         raise NotImplementedError
 
-    def _get_SSA(self, builder: Builder) -> SSAValue:
+    def _get_SSA(self, ip: InsertionPoint) -> Value:
         return self.addr
 
     # ──────────── Load ────────────
     def _load(
         self,
-        index: Sequence[str | SSAValue[Attribute]],
-        builder: Builder,
+        index: Sequence[str | Value],
+        ip: InsertionPoint,
     ) -> ValNode:
         from xdsljson.variables.factory import Factory
 
@@ -77,22 +75,22 @@ class ValStruct(ValNode):
         # Load
         valNode = Factory.from_val(
             self.ty.struct.FIELDS[consuming].TYPE,
-            ValSSA(self._get_field(consuming, builder)),
-            builder
+            ValSSA(self._get_field(consuming, ip)),
+            ip
         )
 
         # Recurse
         if remaining:
-            return valNode.load(remaining, builder)
+            return valNode.load(remaining, ip)
         return valNode
 
 
     # ──────────── Store ────────────
     def _store(
         self,
-        index: Sequence[str | SSAValue[Attribute]],
+        index: Sequence[str | Value],
         source: ValNode,
-        builder: Builder,
+        ip: InsertionPoint,
     ) -> None:
         assert len(index) > 0
         assert isinstance(index[0], str)
@@ -102,28 +100,28 @@ class ValStruct(ValNode):
 
         # Recursif
         if remaining:
-            self.load([consuming], builder)\
-                .store(remaining, source, builder)
+            self.load([consuming], ip)\
+                .store(remaining, source, ip)
             return
 
         # Store
-        op = StoreOp.get(
-            source.get_SSA([], builder),
-            self._get_field(consuming, builder),
-            []
+        memref.StoreOp(
+            source.get_SSA([], ip),
+            self._get_field(consuming, ip),
+            [],
+            ip=ip,
         )
-        builder.insert(op)
 
     # ──────────── size ────────────
-    def get_size(self, builder: Builder) -> int:
+    def get_size(self, ip: InsertionPoint) -> int:
         return self.ty.struct.SIZE
 
 
     def _get_field(
         self,
         field_name: str,
-        builder: Builder,
-    ) -> SSAValue:
+        ip: InsertionPoint,
+    ) -> Value:
 
         # Load infos
         struct = self.ty.struct
@@ -133,21 +131,15 @@ class ValStruct(ValNode):
 
 
         # Get dimensions
-        offset_ssa = ssa_val.val_to_SSAValue(field.OFFSET, Scalar.idx, builder)
-        # size_ssa = ssa_val.val_to_SSAValue(1, Scalar.idx, builder)
+        offset_ssa = ssa_val.val_to_SSAValue(field.OFFSET, Scalar.idx, ip)
 
         # Flatten
-        view_op = ViewOp(
-            self.get_SSA([], builder),
+        view_op = memref.ViewOp(
+            MemRefType.get([], field_ty.get_type()),
+            self.get_SSA([], ip),
             offset_ssa,
-            [], # [size_ssa],
-            MemRefType(
-                field_ty.get_type(),
-                []
-            ),
+            [],
+            ip=ip,
         )
-        builder.insert(view_op)
 
         return view_op.result
-
-

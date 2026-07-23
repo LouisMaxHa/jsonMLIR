@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import NamedTuple
 
-from xdsl.dialects.llvm import LLVMStructType
+from mlir.ir import Type
 
 from xdsljson.variables.ty.ty import TyNode
 from xdsljson.variables.val.val import ValNode
@@ -17,7 +17,7 @@ class FIELD_TYPE(NamedTuple):
 
 class STRUCTS_TYPE(NamedTuple):
     NAME: str
-    LLVM_TYPE: LLVMStructType
+    LLVM_TYPE: Type
     SIZE: int
     FIELDS: dict[str, FIELD_TYPE]
 

@@ -3,8 +3,8 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Annotated, Literal
 
+from mlir.ir import InsertionPoint
 from pydantic import Field
-from xdsl.builder import Builder
 
 from xdsljson.operations.codegen import OpNode
 from xdsljson.operations.op_define_function import DefineFunctionOp
@@ -28,7 +28,7 @@ class ModuleJsonOp(OpNode):
     body: Sequence[ModuleStatement] = ()
 
     @trace_step("ModuleJsonOp")
-    def codegen(self, builder: Builder) -> Sequence[ValNode]:
+    def codegen(self, ip: InsertionPoint) -> Sequence[ValNode]:
         structs_type.clear()
         functions_registry.clear()
 
@@ -36,11 +36,11 @@ class ModuleJsonOp(OpNode):
         # avant de générer les corps (permet les appels dans n'importe quel ordre)
         for item in self.body:
             if isinstance(item, DefineFunctionOp):
-                item.codegen(builder)
+                item.codegen(ip)
 
         # Passe principale : générer le reste (structs, corps de fonctions)
         for item in self.body:
             if not isinstance(item, DefineFunctionOp):
-                item.codegen(builder)
+                item.codegen(ip)
 
         return []

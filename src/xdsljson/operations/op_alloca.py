@@ -3,10 +3,9 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Literal
 
+from mlir.dialects import memref
+from mlir.ir import InsertionPoint, Value
 from pydantic import Field
-from xdsl.builder import Builder
-from xdsl.dialects import memref
-from xdsl.ir import SSAValue
 
 from xdsljson.operations.codegen import OpNode
 from xdsljson.operations.op_var import VarOp
@@ -26,28 +25,23 @@ class AllocaOp(OpNode):
     size: Sequence[int | VarOp] = Field(default_factory=list[int | VarOp])
 
     @trace_step("AllocaOp: {self.name}")
-    def codegen(self, builder: Builder) -> Sequence[ValNode]:
+    def codegen(self, ip: InsertionPoint) -> Sequence[ValNode]:
 
         assert self.name not in variables_heap.keys()
 
         # Convert size to ssa
-        dyn_size: list[SSAValue] = [
-            idx_to_ssavalues(s, builder)
+        dyn_size: list[Value] = [
+            idx_to_ssavalues(s, ip)
             if isinstance(s, int)
-            else s.codegen()
+            else s.codegen(ip)[0].get_SSA([], ip)
             for s in self.size
         ]
 
         # Alloca
-        op = memref.AllocaOp.get(
-            self.type.get_memref_type().element_type,
-            dynamic_sizes=dyn_size,
-            shape=self.type.get_memref_type().shape
-        )
-        builder.insert(op)
+        op = memref.AllocaOp(self.type.get_memref_type(), dyn_size, [], ip=ip)
 
         # Save result
         ssa = op.results[0]
-        variables_heap[self.name] = Factory.from_SSA(self.type, ssa, builder)
+        variables_heap[self.name] = Factory.from_SSA(self.type, ssa, ip)
 
         return [variables_heap[self.name]]

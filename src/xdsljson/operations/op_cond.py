@@ -3,14 +3,12 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Literal
 
-from xdsl.builder import Builder
-from xdsl.dialects.scf import IfOp
-from xdsl.ir import Attribute, Block
+from mlir.dialects import scf
+from mlir.ir import InsertionPoint
 
 from xdsljson.operations.block import codegenBlock
 from xdsljson.operations.codegen import OpNode
 from xdsljson.trace import trace_step
-from xdsljson.utils.same_types import same_types
 from xdsljson.variables.val.val import ValNode
 
 if TYPE_CHECKING:
@@ -24,30 +22,21 @@ class CondOp(OpNode):
     elseBlock: Sequence[BaseValue] | None = None
 
     @trace_step("CondOp")
-    def codegen(self, builder: Builder) -> Sequence[ValNode]:
+    def codegen(self, ip: InsertionPoint) -> Sequence[ValNode]:
         # Check condition
-        conds_ssa = self.cond.codegen(builder)
+        conds_ssa = self.cond.codegen(ip)
         assert len(conds_ssa) == 1
-        cond_ssa = conds_ssa[0].get_SSA([], builder)
+        cond_ssa = conds_ssa[0].get_SSA([], ip)
 
-        # Région then : on construit son bloc avec un Builder dédié.
-        block_then, result_then  = codegenBlock(self.thenBlock, Block())
-        block_else, result_else  = codegenBlock(self.elseBlock, Block())
+        # Create IfOp (les blocs then/else appartiennent à ses régions)
+        if_op = scf.IfOp(cond_ssa, has_else=True, ip=ip)
 
-        # Result type
-        return_types: list[Attribute] = []
-        if same_types(result_then, result_else):
-            return_types = [
-                result.get_type()
-                for result in result_then
-            ]
+        # Région then
+        codegenBlock(self.thenBlock, if_op.then_block)
+        scf.YieldOp([], ip=InsertionPoint(if_op.then_block))
 
-        # Create IfOp
-        if_op = IfOp(
-            cond_ssa,
-            return_types,
-             [block_then],
-            [block_else],
-        )
-        builder.insert(if_op)
+        # Région else
+        codegenBlock(self.elseBlock, if_op.else_block)
+        scf.YieldOp([], ip=InsertionPoint(if_op.else_block))
+
         return []

@@ -3,9 +3,8 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Literal
 
-from xdsl.builder import Builder
-from xdsl.dialects.builtin import ArrayAttr, StringAttr
-from xdsl.dialects.llvm import LLVMStructType
+from mlir.dialects import llvm
+from mlir.ir import InsertionPoint
 
 from xdsljson.operations.codegen import OpNode
 from xdsljson.trace import trace_step
@@ -21,7 +20,7 @@ class DefineStructOp(OpNode):
 
     # TODO: Need to insert it with builder ?
     @trace_step("DefineStructOp")
-    def codegen(self, builder: Builder) -> Sequence[ValNode]:
+    def codegen(self, ip: InsertionPoint) -> Sequence[ValNode]:
 
         # Not already defined
         assert self.name not in structs_type.keys()
@@ -33,10 +32,8 @@ class DefineStructOp(OpNode):
         ]
 
         # Structure
-        LLVM_TYPE = LLVMStructType(
-            StringAttr(self.name),
-            ArrayAttr(types),
-        )
+        LLVM_TYPE = llvm.StructType.get_identified(self.name)
+        LLVM_TYPE.set_body(types, packed=False)
         structs_type[self.name] = STRUCTS_TYPE(
             self.name,
             LLVM_TYPE,

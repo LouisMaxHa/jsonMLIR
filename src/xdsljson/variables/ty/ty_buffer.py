@@ -4,7 +4,7 @@ import math
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from xdsl.dialects.builtin import DYNAMIC_INDEX, MemRefType
+from mlir.ir import MemRefType, ShapedType
 
 from xdsljson.utils.enum_scalars import Scalar
 from xdsljson.utils.ssa_check import all_int
@@ -18,9 +18,10 @@ class TyBuffer(TyNode):
     base: TyStruct
 
     def get_type(self) -> MemRefType:
-        dimension = [d or DYNAMIC_INDEX for d in self.dimensions]
+        dynamic = ShapedType.get_dynamic_size()
+        dimension = [d if d is not None else dynamic for d in self.dimensions]
 
-        return MemRefType(Scalar.i8.get_type(), dimension)
+        return MemRefType.get(dimension, Scalar.i8.get_type())
 
 
     def get_memref_type(self) -> MemRefType:

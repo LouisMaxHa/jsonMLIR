@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Literal
 
-from xdsl.builder import Builder
+from mlir.ir import InsertionPoint
 
 from xdsljson.operations.codegen import OpNode
 from xdsljson.trace import trace_step
@@ -25,7 +25,7 @@ class DefineFunctionOp(OpNode):
     return_types: Sequence[TyNode] = ()
 
     @trace_step("DefineFunctionOp: {self.name}")
-    def codegen(self, builder: Builder) -> Sequence[ValNode]:
+    def codegen(self, ip: InsertionPoint) -> Sequence[ValNode]:
         functions_registry[self.name] = FunctionSignature(
             args=list(self.args),
             return_types=list(self.return_types),

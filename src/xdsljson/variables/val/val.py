@@ -3,8 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 
-from xdsl.builder import Builder
-from xdsl.ir import Attribute, SSAValue
+from mlir.ir import InsertionPoint, Type, Value
 
 from xdsljson.trace import trace_step
 from xdsljson.utils.ssa_dim import index_to_ssa
@@ -23,7 +22,7 @@ class ValNode(ABC):
     # ──────────── Init ────────────
     @staticmethod
     @abstractmethod
-    def init_from(type: TyNode, source: ValNode, builder: Builder) -> ValNode:
+    def init_from(type: TyNode, source: ValNode, ip: InsertionPoint) -> ValNode:
         raise NotImplementedError
 
     # Plutôt content de celui-la :)
@@ -50,60 +49,60 @@ class ValNode(ABC):
         return f"Val{self.get_ty()!r}"
 
     @abstractmethod
-    def get_type(self) -> Attribute:
+    def get_type(self) -> Type:
         raise NotImplementedError
 
     @abstractmethod
-    def get_dim(self, builder: Builder) -> Sequence[SSAValue]:
+    def get_dim(self, ip: InsertionPoint) -> Sequence[Value]:
         raise NotImplementedError
 
     def get_SSA(
-        self, index: Sequence[str | SSAValue[Attribute] | int], builder: Builder
-    ) -> SSAValue:
+        self, index: Sequence[str | Value | int], ip: InsertionPoint
+    ) -> Value:
 
         if len(index) == 0:
-            return self._get_SSA(builder)
-        return self.load(index, builder)._get_SSA(builder)
+            return self._get_SSA(ip)
+        return self.load(index, ip)._get_SSA(ip)
 
     @abstractmethod
     def _get_SSA(
         self,
-        builder: Builder,
-    ) -> SSAValue:
+        ip: InsertionPoint,
+    ) -> Value:
         raise NotImplementedError
 
     # ──────────── Load ────────────
     def load(
         self,
-        index: Sequence[str | SSAValue[Attribute] | int],
-        builder: Builder,
+        index: Sequence[str | Value | int],
+        ip: InsertionPoint,
     ) -> ValNode:
-        return self._load(index_to_ssa(index, builder), builder)
+        return self._load(index_to_ssa(index, ip), ip)
 
     @auto_log("_load({index})")
     @abstractmethod
     def _load(
         self,
-        index: Sequence[str | SSAValue[Attribute]],
-        builder: Builder,
+        index: Sequence[str | Value],
+        ip: InsertionPoint,
     ) -> ValNode:
         raise NotImplementedError
 
     # ──────────── Store ────────────
     def store(
         self,
-        index: Sequence[str | SSAValue[Attribute] | int],
+        index: Sequence[str | Value | int],
         source: ValNode,
-        builder: Builder,
+        ip: InsertionPoint,
     ) -> None:
-        return self._store(index_to_ssa(index, builder), source, builder)
+        return self._store(index_to_ssa(index, ip), source, ip)
 
     @auto_log("_store({index}, {source})")
     @abstractmethod
     def _store(
         self,
-        index: Sequence[str | SSAValue[Attribute]],
+        index: Sequence[str | Value],
         source: ValNode,
-        builder: Builder,
+        ip: InsertionPoint,
     ) -> None:
         raise NotImplementedError
