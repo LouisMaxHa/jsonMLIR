@@ -61,6 +61,8 @@ reportUnnecessaryCast = true
 reportUnnecessaryIsInstance = true
 reportUnnecessaryTypeIgnoreComment = true
 typeCheckingMode = "strict"
+# Les bindings Python de MLIR (mlir_core) ne fournissent pas de py.typed.
+reportMissingTypeStubs = false
 extraPaths = ["src", "tests", "xdsl"]
 "include" = ["docs", "src", "tests"]
 
