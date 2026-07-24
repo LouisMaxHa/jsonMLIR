@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from typing import Literal
 
 from mlir.dialects import memref
-from mlir.ir import InsertionPoint, Value
+from mlir.ir import Value
 from pydantic import Field
 
 from xdsljson.operations.codegen import OpNode
@@ -25,23 +25,23 @@ class AllocaOp(OpNode):
     size: Sequence[int | VarOp] = Field(default_factory=list[int | VarOp])
 
     @trace_step("AllocaOp: {self.name}")
-    def codegen(self, ip: InsertionPoint) -> Sequence[ValNode]:
+    def codegen(self) -> Sequence[ValNode]:
 
         assert self.name not in variables_heap.keys()
 
         # Convert size to ssa
         dyn_size: list[Value] = [
-            idx_to_ssavalues(s, ip)
+            idx_to_ssavalues(s)
             if isinstance(s, int)
-            else s.codegen(ip)[0].get_SSA([], ip)
+            else s.codegen()[0].get_SSA([])
             for s in self.size
         ]
 
         # Alloca
-        op = memref.AllocaOp(self.type.get_memref_type(), dyn_size, [], ip=ip)
+        op = memref.AllocaOp(self.type.get_memref_type(), dyn_size, [])
 
         # Save result
         ssa = op.results[0]
-        variables_heap[self.name] = Factory.from_SSA(self.type, ssa, ip)
+        variables_heap[self.name] = Factory.from_SSA(self.type, ssa)
 
         return [variables_heap[self.name]]

@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from mlir.dialects import memref
-from mlir.ir import InsertionPoint, MemRefType, Type, Value
+from mlir.ir import MemRefType, Type, Value
 
 from xdsljson.trace import trace_step
 from xdsljson.variables.ty.ty import TyNode
@@ -33,13 +33,13 @@ class ValScalar(ValNode):
     @staticmethod
     @trace_step("ValScalar.init_from", display_entry=True)
     def init_from(
-        type: TyNode, source: ValNode, ip: InsertionPoint
+        type: TyNode, source: ValNode
     ) -> ValScalar:
         assert isinstance(type, TyScalar)
         assert isinstance(source, (ValSSA, ValScalar))
 
         # Alloc
-        op = memref.AllocaOp(MemRefType.get([], type.get_type()), [], [], ip=ip)
+        op = memref.AllocaOp(MemRefType.get([], type.get_type()), [], [])
 
         # Create empty val
         val = ValScalar(
@@ -48,7 +48,7 @@ class ValScalar(ValNode):
         )
 
         # Populate val
-        val.store([], source, ip)
+        val.store([], source)
         return val
 
     # ──────────── Getter ────────────
@@ -58,21 +58,20 @@ class ValScalar(ValNode):
     def get_type(self) -> Type:
         return self.ty.get_type()
 
-    def get_dim(self, ip: InsertionPoint) -> Sequence[Value]:
+    def get_dim(self) -> Sequence[Value]:
         return []
 
-    def _get_SSA(self, ip: InsertionPoint) -> Value:
-        op = memref.LoadOp(self.addr, [], ip=ip)
+    def _get_SSA(self) -> Value:
+        op = memref.LoadOp(self.addr, [])
         return op.result
 
     # ──────────── Load ────────────
     def _load(
         self,
         index: Sequence[str | Value],
-        ip: InsertionPoint,
     ) -> ValNode:
         assert index == []
-        return ValSSA(self.get_SSA(index, ip))
+        return ValSSA(self.get_SSA(index))
 
 
     # ──────────── Store ────────────
@@ -80,16 +79,15 @@ class ValScalar(ValNode):
         self,
         index: Sequence[str | Value],
         source: ValNode,
-        ip: InsertionPoint,
     ):
         assert index == []
         assert isinstance(source, (ValSSA, ValScalar))
-        ssa = source.get_SSA([], ip)
+        ssa = source.get_SSA([])
 
         # Extract ssa value from memref<ssa value>
         if isinstance(ssa.type, MemRefType):
-            op = memref.LoadOp(ssa, [], ip=ip)
+            op = memref.LoadOp(ssa, [])
             ssa = op.result
 
         # Store
-        memref.StoreOp(ssa, self.addr, [], ip=ip)
+        memref.StoreOp(ssa, self.addr, [])

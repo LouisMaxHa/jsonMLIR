@@ -170,7 +170,7 @@ def trace_step(label: str, *, display_entry: bool = False):
     Decorator::
 
         @trace_step("ConstOp: val={self.val}")
-        def codegen(self, ip: InsertionPoint) -> ValNode: ...
+        def codegen(self) -> ValNode: ...
 
     Warning: avoid labels that parse as a call to the decorated method's own
     class (e.g. ``"ConstOp({self.val})"``): with ``enableExperimentalFeatures``,

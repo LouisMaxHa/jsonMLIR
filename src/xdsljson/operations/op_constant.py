@@ -3,8 +3,6 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Literal
 
-from mlir.ir import InsertionPoint
-
 from xdsljson.operations.codegen import OpNode
 from xdsljson.trace import trace_step
 from xdsljson.utils import ssa_val
@@ -21,7 +19,7 @@ class ConstOp(OpNode):
     type: Scalar = Scalar.i64
 
     @trace_step("ConstOp: {self.val}, {self.type}")
-    def codegen(self, ip: InsertionPoint) -> Sequence[ValNode]:
+    def codegen(self) -> Sequence[ValNode]:
         return [ValSSA(
-            ssa_val.val_to_SSAValue(self.val, self.type, ip)
+            ssa_val.val_to_SSAValue(self.val, self.type)
         )]

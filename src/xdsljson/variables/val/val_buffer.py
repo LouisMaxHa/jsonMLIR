@@ -4,7 +4,6 @@ from collections.abc import Sequence
 
 from mlir.dialects import arith, memref
 from mlir.ir import (
-    InsertionPoint,
     MemRefType,
     ShapedType,
     StridedLayoutAttr,
@@ -44,11 +43,11 @@ class ValBuffer(ValNode):
     @staticmethod
     @trace_step("ValBuffer.init_from", display_entry=True)
     def init_from(
-        type: TyNode, source: ValNode, ip: InsertionPoint
+        type: TyNode, source: ValNode
     ) -> ValBuffer:
         assert isinstance(type, TyBuffer)
         assert isinstance(source, (ValMemref, ValSSA))
-        return ValBuffer(type, source.get_SSA([], ip))
+        return ValBuffer(type, source.get_SSA([]))
 
     # ──────────── Getter ────────────
     def get_ty(self) -> TyBuffer:
@@ -60,14 +59,13 @@ class ValBuffer(ValNode):
     def get_base(self) -> TyNode:
         return self.ty.base
 
-    def get_dim(self, ip: InsertionPoint) -> Sequence[Value]:
+    def get_dim(self) -> Sequence[Value]:
         return dimensions_to_ssa(
             self.ty.dimensions,
             self.addr,
-            ip
         )
 
-    def _get_SSA(self, ip: InsertionPoint) -> Value:
+    def _get_SSA(self) -> Value:
         return self.addr
 
     # ──────────── Load ────────────
@@ -75,7 +73,6 @@ class ValBuffer(ValNode):
     def _load(
         self,
         index: Sequence[str | Value],
-        ip: InsertionPoint,
     ) -> ValNode:
         assert index == []
         return self
@@ -86,14 +83,13 @@ class ValBuffer(ValNode):
         self,
         index: Sequence[str | Value],
         source: ValNode,
-        ip: InsertionPoint,
     ) -> None:
         raise NotImplementedError
 
 
     # ──────────── n_elements ────────────
     """Nombre d'éléments struct = taille buffer / taille struct (octets)."""
-    def get_size(self, ip: InsertionPoint) -> Value | int:
+    def get_size(self) -> Value | int:
         assert len(self.ty.dimensions) >= 1
         struct_size = self.ty.base.struct.SIZE
 
@@ -110,21 +106,19 @@ class ValBuffer(ValNode):
 
         # Size (bytes)
         n_bytes_ssa = memref.DimOp(
-            self.get_SSA([], ip),
-            ssa_val.val_to_SSAValue(0, Scalar.idx, ip),
-            ip=ip,
+            self.get_SSA([]),
+            ssa_val.val_to_SSAValue(0, Scalar.idx),
         ).result
 
         # Size (elements)
-        struct_size_ssa = ssa_val.val_to_SSAValue(struct_size, Scalar.idx, ip)
-        div_op = arith.DivUIOp(n_bytes_ssa, struct_size_ssa, ip=ip)
+        struct_size_ssa = ssa_val.val_to_SSAValue(struct_size, Scalar.idx)
+        div_op = arith.DivUIOp(n_bytes_ssa, struct_size_ssa)
         return div_op.result
 
 
     def build_view(
         self,
         field_name: str,
-        ip: InsertionPoint,
     ) -> ValMemref | ValBuffer:
         from xdsljson.variables.factory import Factory
 
@@ -135,16 +129,16 @@ class ValBuffer(ValNode):
         field = struct.FIELDS[field_name]
         field_info = struct.FIELDS[field_name]
         field_type = field_info.TYPE.get_type()
-        row_count = self.get_size(ip)
+        row_count = self.get_size()
         assert struct.SIZE % field.SIZE == 0
 
 
         # ──────────── Get dimensions
         # Offset
-        offset_ssa = ssa_val.val_to_SSAValue(field.OFFSET, Scalar.idx, ip)
+        offset_ssa = ssa_val.val_to_SSAValue(field.OFFSET, Scalar.idx)
 
         # Size after flatten
-        row_count = self.get_size(ip)
+        row_count = self.get_size()
         stride_size = struct.SIZE // field.SIZE
         if isinstance(row_count, int):
             flat_size = row_count * stride_size
@@ -154,18 +148,17 @@ class ValBuffer(ValNode):
         else:
             flat_size = dynamic
             resulting_size = dynamic
-            stride_ssa = ssa_val.val_to_SSAValue(stride_size, Scalar.idx, ip)
-            flat_size_op = arith.MulIOp(row_count, stride_ssa, ip=ip)
+            stride_ssa = ssa_val.val_to_SSAValue(stride_size, Scalar.idx)
+            flat_size_op = arith.MulIOp(row_count, stride_ssa)
             flat_size_ssa = [flat_size_op.result]
 
         # ──────────── Flatten
 
         view_op = memref.ViewOp(
             MemRefType.get([flat_size], field_type),
-            self.get_SSA([], ip),
+            self.get_SSA([]),
             offset_ssa,
             flat_size_ssa,
-            ip=ip,
         )
         flat_view = view_op.result
 
@@ -190,7 +183,6 @@ class ValBuffer(ValNode):
             static_offsets=[0],
             static_sizes=static_sizes,
             static_strides=[stride_size],
-            ip=ip,
         )
 
         dimension = row_count if isinstance(row_count, int) else None

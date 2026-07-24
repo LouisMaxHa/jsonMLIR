@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from mlir.ir import InsertionPoint, Type, Value
+from mlir.ir import Type, Value
 
 from xdsljson.trace import trace_step
 from xdsljson.variables.ty.ty import TyNode
@@ -23,7 +23,7 @@ class ValSSA(ValNode):
     @staticmethod
     @trace_step("ValSSA.init_from", display_entry=True)
     def init_from(
-        type: TyNode, source: ValNode, ip: InsertionPoint
+        type: TyNode, source: ValNode
     ) -> ValSSA:
         raise ValueError("ValSSA should not be used for operations")
 
@@ -34,12 +34,11 @@ class ValSSA(ValNode):
     def get_type(self) -> Type:
         return self.addr.type
 
-    def get_dim(self, ip: InsertionPoint) -> Sequence[Value]:
+    def get_dim(self) -> Sequence[Value]:
         raise NotImplementedError("Not implemented")
 
     def _get_SSA(
         self,
-        ip: InsertionPoint,
     ) -> Value:
         return self.addr
 
@@ -48,7 +47,6 @@ class ValSSA(ValNode):
     def _load(
         self,
         index: Sequence[str | Value],
-        ip: InsertionPoint,
     ) -> ValNode:
         raise ValueError("ValSSA should not be used for operations")
 
@@ -58,6 +56,5 @@ class ValSSA(ValNode):
         self,
         index: Sequence[str | Value],
         source: ValNode,
-        ip: InsertionPoint,
     ):
         raise ValueError("ValSSA should not be used for operations")

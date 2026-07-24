@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from mlir.dialects import llvm, memref
-from mlir.ir import InsertionPoint, MemRefType, Type, Value
+from mlir.ir import MemRefType, Type, Value
 
 from xdsljson.trace import trace_step
 from xdsljson.utils.bare_ptr import bare_ptr_to_memref
@@ -35,13 +35,13 @@ class ValPtr(ValNode):
     @staticmethod
     @trace_step("ValPtr.init_from", display_entry=True)
     def init_from(
-        type: TyNode, source: ValNode, ip: InsertionPoint
+        type: TyNode, source: ValNode
     ) -> ValPtr:
         assert isinstance(type, TyPtr)
         assert isinstance(source, (ValSSA, ValScalar, ValPtr))
 
         # Alloc
-        op = memref.AllocaOp(MemRefType.get([], type.get_type()), [], [], ip=ip)
+        op = memref.AllocaOp(MemRefType.get([], type.get_type()), [], [])
 
         # Create empty addr
         val = ValPtr(
@@ -50,7 +50,7 @@ class ValPtr(ValNode):
         )
 
         # Populate addr
-        val.store([], source, ip)
+        val.store([], source)
         return val
 
     # ──────────── Getter ────────────
@@ -60,23 +60,22 @@ class ValPtr(ValNode):
     def get_type(self) -> Type:
         return self.ty.get_type()
 
-    def get_dim(self, ip: InsertionPoint) -> Sequence[Value]:
+    def get_dim(self) -> Sequence[Value]:
         return []
 
-    def _get_SSA(self, ip: InsertionPoint) -> Value:
-        op = memref.LoadOp(self.addr, [], ip=ip)
+    def _get_SSA(self) -> Value:
+        op = memref.LoadOp(self.addr, [])
         return op.result
 
     # ──────────── Load ────────────
     def _load(
         self,
         index: Sequence[str | Value],
-        ip: InsertionPoint,
     ) -> ValNode:
         from xdsljson.variables.factory import Factory
         # Return ptr
         if index == []:
-            return ValSSA(self.get_SSA(index, ip))
+            return ValSSA(self.get_SSA(index))
 
         # Consume index
         consuming = index[0]
@@ -84,9 +83,9 @@ class ValPtr(ValNode):
         assert consuming == "*"
 
         # i64 -> llvm.ptr
-        ssa_i64 = self._get_SSA(ip)
+        ssa_i64 = self._get_SSA()
         ssa_ptr_llvm = llvm.IntToPtrOp(
-            llvm.PointerType.get(), ssa_i64, ip=ip
+            llvm.PointerType.get(), ssa_i64
         ).result
 
         # llvm.ptr -> memref (descripteur LLVM explicite)
@@ -94,7 +93,6 @@ class ValPtr(ValNode):
             bare_ptr_to_memref(
                 ssa_ptr_llvm,
                 self.ty.base.get_memref_type(),
-                ip,
             )
         )
 
@@ -102,26 +100,24 @@ class ValPtr(ValNode):
         val = Factory.from_val(
             self.ty.base,
             ssa_derefed,
-            ip,
         )
 
-        return val.load(remaining, ip)
+        return val.load(remaining)
 
     # ──────────── Store ────────────
     def _store(
         self,
         index: Sequence[str | Value],
         source: ValNode,
-        ip: InsertionPoint,
     ):
         assert index == []
         assert isinstance(source, (ValSSA, ValPtr, ValScalar))
-        ssa = source.get_SSA([], ip)
+        ssa = source.get_SSA([])
 
         # Extract ssa value from memref<ssa value>
         if isinstance(ssa.type, MemRefType):
-            op = memref.LoadOp(ssa, [], ip=ip)
+            op = memref.LoadOp(ssa, [])
             ssa = op.result
 
         # Store
-        memref.StoreOp(ssa, self.addr, [], ip=ip)
+        memref.StoreOp(ssa, self.addr, [])

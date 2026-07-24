@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from mlir.dialects import memref
-from mlir.ir import InsertionPoint, MemRefType, Type, Value
+from mlir.ir import MemRefType, Type, Value
 
 from xdsljson.trace import trace_step
 from xdsljson.utils import ssa_val
@@ -33,12 +33,12 @@ class ValStruct(ValNode):
     @staticmethod
     @trace_step("ValStruct.init_from", display_entry=True)
     def init_from(
-        type: TyNode, source: ValNode, ip: InsertionPoint
+        type: TyNode, source: ValNode
     ) -> ValStruct:
         assert isinstance(type, TyStruct)
         return ValStruct(
             type,
-            source.get_SSA([], ip)
+            source.get_SSA([])
         )
 
 
@@ -49,17 +49,16 @@ class ValStruct(ValNode):
     def get_type(self) -> Type:
         return self.ty.get_type()
 
-    def get_dim(self, ip: InsertionPoint) -> Sequence[Value]:
+    def get_dim(self) -> Sequence[Value]:
         raise NotImplementedError
 
-    def _get_SSA(self, ip: InsertionPoint) -> Value:
+    def _get_SSA(self) -> Value:
         return self.addr
 
     # ──────────── Load ────────────
     def _load(
         self,
         index: Sequence[str | Value],
-        ip: InsertionPoint,
     ) -> ValNode:
         from xdsljson.variables.factory import Factory
 
@@ -75,13 +74,12 @@ class ValStruct(ValNode):
         # Load
         valNode = Factory.from_val(
             self.ty.struct.FIELDS[consuming].TYPE,
-            ValSSA(self._get_field(consuming, ip)),
-            ip
+            ValSSA(self._get_field(consuming)),
         )
 
         # Recurse
         if remaining:
-            return valNode.load(remaining, ip)
+            return valNode.load(remaining)
         return valNode
 
 
@@ -90,7 +88,6 @@ class ValStruct(ValNode):
         self,
         index: Sequence[str | Value],
         source: ValNode,
-        ip: InsertionPoint,
     ) -> None:
         assert len(index) > 0
         assert isinstance(index[0], str)
@@ -100,27 +97,25 @@ class ValStruct(ValNode):
 
         # Recursif
         if remaining:
-            self.load([consuming], ip)\
-                .store(remaining, source, ip)
+            self.load([consuming])\
+                .store(remaining, source)
             return
 
         # Store
         memref.StoreOp(
-            source.get_SSA([], ip),
-            self._get_field(consuming, ip),
+            source.get_SSA([]),
+            self._get_field(consuming),
             [],
-            ip=ip,
         )
 
     # ──────────── size ────────────
-    def get_size(self, ip: InsertionPoint) -> int:
+    def get_size(self) -> int:
         return self.ty.struct.SIZE
 
 
     def _get_field(
         self,
         field_name: str,
-        ip: InsertionPoint,
     ) -> Value:
 
         # Load infos
@@ -131,15 +126,14 @@ class ValStruct(ValNode):
 
 
         # Get dimensions
-        offset_ssa = ssa_val.val_to_SSAValue(field.OFFSET, Scalar.idx, ip)
+        offset_ssa = ssa_val.val_to_SSAValue(field.OFFSET, Scalar.idx)
 
         # Flatten
         view_op = memref.ViewOp(
             MemRefType.get([], field_ty.get_type()),
-            self.get_SSA([], ip),
+            self.get_SSA([]),
             offset_ssa,
             [],
-            ip=ip,
         )
 
         return view_op.result

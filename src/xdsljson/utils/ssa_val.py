@@ -18,23 +18,23 @@ const_heap: dict[tuple[int | float, str], list[Value]] = {}
 # TODO: Clear variable end of function
 
 
-def ensure_index(value: Value, ip: InsertionPoint) -> Value:
+def ensure_index(value: Value) -> Value:
     """Cast un entier vers ``index`` si besoin (requis par memref.load/store)."""
     if isinstance(value.type, IndexType):
         return value
     if isinstance(value.type, IntegerType):
-        return IndexCastOp(IndexType.get(), value, ip=ip).result
+        return IndexCastOp(IndexType.get(), value).result
     raise TypeError(f"Impossible de caster {value.type} vers index")
 
 
-def idx_to_ssavalues(value: int | Value, ip: InsertionPoint) -> Value:
+def idx_to_ssavalues(value: int | Value) -> Value:
     if isinstance(value, Value):
-        return ensure_index(value, ip)
-    return val_to_SSAValue(value, Scalar.idx, ip)
+        return ensure_index(value)
+    return val_to_SSAValue(value, Scalar.idx)
 
 
 def val_to_SSAValues(
-    value: int | float, type: Scalar, ip: InsertionPoint
+    value: int | float, type: Scalar
 ) -> list[Value]:
     key = (value, str(type.get_type()))
 
@@ -49,7 +49,7 @@ def val_to_SSAValues(
                 attr = IntegerAttr.get(mlir_type, int(value))
 
         # Insert it at the start of the enclosing function's entry block
-        entry_block = function_entry_block(ip.block)
+        entry_block = function_entry_block(InsertionPoint.current.block)
         op = ConstantOp(
             mlir_type, attr, ip=InsertionPoint.at_block_begin(entry_block)
         )
@@ -58,5 +58,5 @@ def val_to_SSAValues(
     return const_heap[key]
 
 
-def val_to_SSAValue(value: int | float, type: Scalar, ip: InsertionPoint) -> Value:
-    return val_to_SSAValues(value, type, ip)[0]
+def val_to_SSAValue(value: int | float, type: Scalar) -> Value:
+    return val_to_SSAValues(value, type)[0]

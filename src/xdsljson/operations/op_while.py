@@ -21,21 +21,15 @@ class WhileOp(OpNode):
     thenBlock: Sequence[BaseValue] = ()
 
     @trace_step("WhileOp")
-    def codegen(self, ip: InsertionPoint) -> Sequence[ValNode]:
-        while_op = scf.WhileOp([], [], ip=ip)
+    def codegen(self) -> Sequence[ValNode]:
+        while_op = scf.WhileOp([], [])
 
         # Condition block (before region)
         before_block = while_op.before.blocks.append()
-        before_ip = InsertionPoint(before_block)
-        conds_ssa = self.cond.codegen(before_ip)
-
-        # Gen condition
-        assert len(conds_ssa) == 1
-        scf.ConditionOp(
-            conds_ssa[0].get_SSA([], before_ip),
-            [],
-            ip=before_ip,
-        )
+        with InsertionPoint(before_block):
+            conds_ssa = self.cond.codegen()
+            assert len(conds_ssa) == 1
+            scf.ConditionOp(conds_ssa[0].get_SSA([]), [])
 
         # After region: body + scf.yield to loop back to the before region.
         after_block = while_op.after.blocks.append()

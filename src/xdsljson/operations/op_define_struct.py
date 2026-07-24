@@ -4,7 +4,6 @@ from collections.abc import Sequence
 from typing import Literal
 
 from mlir.dialects import llvm
-from mlir.ir import InsertionPoint
 
 from xdsljson.operations.codegen import OpNode
 from xdsljson.trace import trace_step
@@ -20,7 +19,7 @@ class DefineStructOp(OpNode):
 
     # TODO: Need to insert it with builder ?
     @trace_step("DefineStructOp")
-    def codegen(self, ip: InsertionPoint) -> Sequence[ValNode]:
+    def codegen(self) -> Sequence[ValNode]:
 
         # Not already defined
         assert self.name not in structs_type.keys()

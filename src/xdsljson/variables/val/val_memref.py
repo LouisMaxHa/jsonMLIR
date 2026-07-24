@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from sqlite3 import NotSupportedError
 
 from mlir.dialects import arith, memref
-from mlir.ir import InsertionPoint, MemRefType, ShapedType, Value
+from mlir.ir import MemRefType, ShapedType, Value
 
 from xdsljson.trace import trace_step
 from xdsljson.utils.ssa_check import all_ssavalues
@@ -42,14 +42,14 @@ class ValMemref(ValNode):
 
     @staticmethod
     @trace_step("ValMemref.init_from", display_entry=True)
-    def init_from(type: TyNode, source: ValNode, ip: InsertionPoint) -> ValMemref:
+    def init_from(type: TyNode, source: ValNode) -> ValMemref:
         assert isinstance(type, TyMemref)
 
         match source.get_ty():
             case TyMemref():
-                return ValMemref(type, source.get_SSA([], ip))
+                return ValMemref(type, source.get_SSA([]))
             case TySSA():
-                return ValMemref(type, source.get_SSA([], ip))
+                return ValMemref(type, source.get_SSA([]))
             case _:
                 raise NotSupportedError
 
@@ -63,17 +63,16 @@ class ValMemref(ValNode):
     def get_base(self) -> TyNode:
         return self.ty.base
 
-    def get_dim(self, ip: InsertionPoint) -> Sequence[Value]:
-        return dimensions_to_ssa(self.ty.dimensions, self.addr, ip)
+    def get_dim(self) -> Sequence[Value]:
+        return dimensions_to_ssa(self.ty.dimensions, self.addr)
 
-    def _get_SSA(self, ip: InsertionPoint) -> Value:
+    def _get_SSA(self) -> Value:
         return self.addr
 
     # ──────────── Load ────────────
     def _load(
         self,
         index: Sequence[str | Value],
-        ip: InsertionPoint,
     ) -> ValNode:
         from xdsljson.variables.factory import Factory
 
@@ -92,9 +91,8 @@ class ValMemref(ValNode):
             # ViewOp (pas subview) : conserve un layout identité, requis ensuite
             # par les memref.view de champs de struct.
             offset = arith.MulIOp(
-                idx_to_ssavalues(consuming[0], ip),
-                idx_to_ssavalues(struct_size, ip),
-                ip=ip,
+                idx_to_ssavalues(consuming[0]),
+                idx_to_ssavalues(struct_size),
             ).result
 
             result_ssa = memref.ViewOp(
@@ -102,16 +100,15 @@ class ValMemref(ValNode):
                 self.addr,
                 offset,
                 [],
-                ip=ip,
             ).result
         else:
-            result_ssa = memref.LoadOp(self.addr, consuming, ip=ip).result
+            result_ssa = memref.LoadOp(self.addr, consuming).result
 
-        valNode = Factory.from_SSA(self.ty.base, result_ssa, ip)
+        valNode = Factory.from_SSA(self.ty.base, result_ssa)
 
         # Recurse
         if remaining:
-            return valNode.load(remaining, ip)
+            return valNode.load(remaining)
         return valNode
 
     # ──────────── Store ────────────
@@ -119,7 +116,6 @@ class ValMemref(ValNode):
         self,
         index: Sequence[str | Value],
         source: ValNode,
-        ip: InsertionPoint,
     ):
 
         # Split index
@@ -130,7 +126,7 @@ class ValMemref(ValNode):
 
         # Insert
         if remaining == []:
-            memref.StoreOp(source.get_SSA([], ip), self.addr, consuming, ip=ip)
+            memref.StoreOp(source.get_SSA([]), self.addr, consuming)
             return
 
-        self.load(consuming, ip).store(remaining, source, ip)
+        self.load(consuming).store(remaining, source)

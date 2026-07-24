@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 
-from mlir.ir import InsertionPoint, Type, Value
+from mlir.ir import Type, Value
 
 from xdsljson.trace import trace_step
 from xdsljson.utils.ssa_dim import index_to_ssa
@@ -22,7 +22,7 @@ class ValNode(ABC):
     # ──────────── Init ────────────
     @staticmethod
     @abstractmethod
-    def init_from(type: TyNode, source: ValNode, ip: InsertionPoint) -> ValNode:
+    def init_from(type: TyNode, source: ValNode) -> ValNode:
         raise NotImplementedError
 
     # Plutôt content de celui-la :)
@@ -53,21 +53,20 @@ class ValNode(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_dim(self, ip: InsertionPoint) -> Sequence[Value]:
+    def get_dim(self) -> Sequence[Value]:
         raise NotImplementedError
 
     def get_SSA(
-        self, index: Sequence[str | Value | int], ip: InsertionPoint
+        self, index: Sequence[str | Value | int]
     ) -> Value:
 
         if len(index) == 0:
-            return self._get_SSA(ip)
-        return self.load(index, ip)._get_SSA(ip)
+            return self._get_SSA()
+        return self.load(index)._get_SSA()
 
     @abstractmethod
     def _get_SSA(
         self,
-        ip: InsertionPoint,
     ) -> Value:
         raise NotImplementedError
 
@@ -75,16 +74,14 @@ class ValNode(ABC):
     def load(
         self,
         index: Sequence[str | Value | int],
-        ip: InsertionPoint,
     ) -> ValNode:
-        return self._load(index_to_ssa(index, ip), ip)
+        return self._load(index_to_ssa(index))
 
     @auto_log("_load({index})")
     @abstractmethod
     def _load(
         self,
         index: Sequence[str | Value],
-        ip: InsertionPoint,
     ) -> ValNode:
         raise NotImplementedError
 
@@ -93,9 +90,8 @@ class ValNode(ABC):
         self,
         index: Sequence[str | Value | int],
         source: ValNode,
-        ip: InsertionPoint,
     ) -> None:
-        return self._store(index_to_ssa(index, ip), source, ip)
+        return self._store(index_to_ssa(index), source)
 
     @auto_log("_store({index}, {source})")
     @abstractmethod
@@ -103,6 +99,5 @@ class ValNode(ABC):
         self,
         index: Sequence[str | Value],
         source: ValNode,
-        ip: InsertionPoint,
     ) -> None:
         raise NotImplementedError

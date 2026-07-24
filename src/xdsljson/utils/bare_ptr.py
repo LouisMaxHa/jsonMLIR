@@ -11,7 +11,6 @@ from __future__ import annotations
 from mlir.dialects import llvm
 from mlir.dialects.builtin import UnrealizedConversionCastOp
 from mlir.ir import (
-    InsertionPoint,
     IntegerAttr,
     IntegerType,
     MemRefType,
@@ -24,7 +23,6 @@ from mlir.ir import (
 def bare_ptr_to_memref(
     ptr: Value,
     memref_type: MemRefType,
-    ip: InsertionPoint,
 ) -> Value:
     """``!llvm.ptr`` -> ``memref<...>`` via un descripteur LLVM explicite."""
     shape = list(memref_type.shape)
@@ -40,7 +38,7 @@ def bare_ptr_to_memref(
         )
 
     def c64(value: int) -> Value:
-        return llvm.ConstantOp(i64, IntegerAttr.get(i64, value), ip=ip).result
+        return llvm.ConstantOp(i64, IntegerAttr.get(i64, value)).result
 
     # Strides row-major contigus. Une dimension dynamique n'est admise qu'en
     # position externe : au-delà, les strides seraient incalculables.
@@ -56,16 +54,16 @@ def bare_ptr_to_memref(
         else:
             acc *= shape[axis]
 
-    desc = llvm.UndefOp(desc_ty, ip=ip).result
-    desc = llvm.InsertValueOp(desc, ptr, [0], ip=ip).result
-    desc = llvm.InsertValueOp(desc, ptr, [1], ip=ip).result
-    desc = llvm.InsertValueOp(desc, c64(0), [2], ip=ip).result
+    desc = llvm.UndefOp(desc_ty).result
+    desc = llvm.InsertValueOp(desc, ptr, [0]).result
+    desc = llvm.InsertValueOp(desc, ptr, [1]).result
+    desc = llvm.InsertValueOp(desc, c64(0), [2]).result
     for axis in range(rank):
         # La taille d'une dimension dynamique n'est pas connue ici ; elle n'est
         # pas utilisée par l'abaissement de load/store (seuls les strides le sont).
         size = shape[axis] if shape[axis] != dyn else 0
-        desc = llvm.InsertValueOp(desc, c64(size), [3, axis], ip=ip).result
-        desc = llvm.InsertValueOp(desc, c64(strides[axis]), [4, axis], ip=ip).result
+        desc = llvm.InsertValueOp(desc, c64(size), [3, axis]).result
+        desc = llvm.InsertValueOp(desc, c64(strides[axis]), [4, axis]).result
 
-    cast = UnrealizedConversionCastOp([memref_type], [desc], ip=ip)
+    cast = UnrealizedConversionCastOp([memref_type], [desc])
     return cast.results[0]

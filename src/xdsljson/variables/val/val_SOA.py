@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from decimal import InvalidOperation
 
-from mlir.ir import InsertionPoint, Type, Value
+from mlir.ir import Type, Value
 
 from xdsljson.trace import trace_step
 from xdsljson.variables.memory import STRUCTS_TYPE
@@ -44,11 +44,11 @@ class ValSOA(ValNode):
         raise ValueError("SOA don't have equivalent in MLIR")
 
     # WARN: Should return number of elements ? Or can return DYNAMIC ?
-    def get_dim(self, ip: InsertionPoint) -> Sequence[Value]:
+    def get_dim(self) -> Sequence[Value]:
         raise NotImplementedError
 
     def get_SSA(
-        self, index: Sequence[str | Value | int], ip: InsertionPoint
+        self, index: Sequence[str | Value | int]
     ) -> Value:
         assert len(index) >= 1
         assert isinstance(index[0], str)
@@ -56,11 +56,10 @@ class ValSOA(ValNode):
 
         consumming = index[0]
         remaining = index[1::]
-        return self.load(consumming, ip).get_SSA(remaining, ip)
+        return self.load([consumming]).get_SSA(remaining)
 
     def _get_SSA(
         self,
-        ip: InsertionPoint,
     ) -> Value:
         raise InvalidOperation(
             "ValScalar don't have SSA equivalent.Use get_SSA with attribut str"
@@ -70,7 +69,6 @@ class ValSOA(ValNode):
     def _load(
         self,
         index: Sequence[str | Value],
-        ip: InsertionPoint,
     ) -> ValNode:
 
         assert len(index) >= 1
@@ -80,14 +78,13 @@ class ValSOA(ValNode):
         # Load
         consumming = index[0]
         remaining = index[1::]
-        return self.addrs[consumming].load(remaining, ip)
+        return self.addrs[consumming].load(remaining)
 
     # ──────────── Store ────────────
     def _store(
         self,
         index: Sequence[str | Value],
         source: ValNode,
-        ip: InsertionPoint,
     ):
         assert len(index) >= 1
         assert isinstance(index[0], str)
@@ -96,13 +93,13 @@ class ValSOA(ValNode):
         # Store
         consumming = index[0]
         remaining = index[1::]
-        return self.addrs[consumming].store(remaining, source, ip)
+        return self.addrs[consumming].store(remaining, source)
 
     # ──────────── Init From ────────────
 
     @staticmethod
     @trace_step("ValSOA.init_from", display_entry=True)
-    def init_from(type: TyNode, source: ValNode, ip: InsertionPoint) -> ValSOA:
+    def init_from(type: TyNode, source: ValNode) -> ValSOA:
         from xdsljson.variables.ty.ty_SOA import TySOA
 
         assert isinstance(type, TySOA)
@@ -113,7 +110,6 @@ class ValSOA(ValNode):
             source = ValBuffer.init_from(
                 TyBuffer(type.get_sizes(), type.base),
                 source,
-                ip
             )
 
         struct: STRUCTS_TYPE = source.ty.base.struct
@@ -121,6 +117,6 @@ class ValSOA(ValNode):
         # Init for all attributs
         addrs: dict[str, ValBuffer | ValMemref] = {}
         for attribut in struct.FIELDS.values():
-            addrs[attribut.NAME] = source.build_view(attribut.NAME, ip)
+            addrs[attribut.NAME] = source.build_view(attribut.NAME)
 
         return ValSOA(type, addrs)

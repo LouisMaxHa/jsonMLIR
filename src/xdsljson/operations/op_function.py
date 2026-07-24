@@ -25,7 +25,7 @@ class FunctionOp(OpNode):
     body: Sequence[BaseValue] = ()
 
     @trace_step("FunctionOp: {self.name}")
-    def codegen(self, ip: InsertionPoint) -> Sequence[ValNode]:
+    def codegen(self) -> Sequence[ValNode]:
         variables_heap.clear()
         const_heap.clear()
 
@@ -34,35 +34,31 @@ class FunctionOp(OpNode):
         function = func.FuncOp(
             self.name,
             FunctionType.get(input_types, []),  # Output (automatic)
-            ip=ip,
         )
         function.attributes["llvm.emit_c_interface"] = UnitAttr.get()
         entry_block = function.add_entry_block()
 
         # Init variable
-        inside_function_ip = InsertionPoint(entry_block)
-        with trace_step("Init args"):
-            for arg_ssa, (arg_name, arg_type) in zip(
-                entry_block.arguments,
-                self.args
-            ):
-                val_arg = ValSSA(arg_ssa)
+        with InsertionPoint(entry_block):
+            with trace_step("Init args"):
+                for arg_ssa, (arg_name, arg_type) in zip(
+                    entry_block.arguments,
+                    self.args
+                ):
+                    val_arg = ValSSA(arg_ssa)
 
-                variables_heap[arg_name] = Factory.from_val(
-                    arg_type,
-                    val_arg,
-                    inside_function_ip
-                )
+                    variables_heap[arg_name] = Factory.from_val(
+                        arg_type,
+                        val_arg,
+                    )
 
         # Block codegen
         body_block, return_values = codegenBlock(self.body, entry_block)
-        return_ssas = [
-            a.get_SSA([], inside_function_ip)
-            for a in return_values
-        ]
 
         # Block return
-        func.ReturnOp(return_ssas, ip=InsertionPoint(body_block))
+        with InsertionPoint(body_block):
+            return_ssas = [a.get_SSA([]) for a in return_values]
+            func.ReturnOp(return_ssas)
 
         # Update function type with the inferred return types
         function.attributes["function_type"] = TypeAttr.get(

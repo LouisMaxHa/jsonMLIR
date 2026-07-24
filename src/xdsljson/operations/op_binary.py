@@ -18,7 +18,7 @@ from mlir.dialects.arith import (
     SubIOp,
     XOrIOp,
 )
-from mlir.ir import InsertionPoint, Value
+from mlir.ir import Value
 
 from xdsljson.operations.codegen import OpNode
 from xdsljson.operations.op_operator import OperatorOp
@@ -40,9 +40,9 @@ class BinaryOp(OpNode):
     ope: OperatorOp
 
     @trace_step("BinaryOp: {self.ope.value}")
-    def codegen(self, ip: InsertionPoint) -> Sequence[ValNode]:
-        lhs = self.lhs.codegen(ip)
-        rhs = self.rhs.codegen(ip)
+    def codegen(self) -> Sequence[ValNode]:
+        lhs = self.lhs.codegen()
+        rhs = self.rhs.codegen()
 
         # Check same format
         assert_same_types(lhs, rhs)
@@ -50,26 +50,26 @@ class BinaryOp(OpNode):
         # On applique terme à terme
         results: list[Value] = []
         for l_elem, r_elem in zip(lhs, rhs):
-            l_ssa = l_elem.get_SSA([], ip)
-            r_ssa = r_elem.get_SSA([], ip)
+            l_ssa = l_elem.get_SSA([])
+            r_ssa = r_elem.get_SSA([])
 
             match self.ope.value:
                 case "+":
-                    op = AddIOp(l_ssa, r_ssa, ip=ip)
+                    op = AddIOp(l_ssa, r_ssa)
                 case "+f":
-                    op = AddFOp(l_ssa, r_ssa, ip=ip)
+                    op = AddFOp(l_ssa, r_ssa)
                 case "-f":
-                    op = SubFOp(l_ssa, r_ssa, ip=ip)
+                    op = SubFOp(l_ssa, r_ssa)
                 case "-":
-                    op = SubIOp(l_ssa, r_ssa, ip=ip)
+                    op = SubIOp(l_ssa, r_ssa)
                 case "*":
-                    op = MulIOp(l_ssa, r_ssa, ip=ip)
+                    op = MulIOp(l_ssa, r_ssa)
                 case "*f":
-                    op = MulFOp(l_ssa, r_ssa, ip=ip)
+                    op = MulFOp(l_ssa, r_ssa)
                 case "/":
-                    op = DivSIOp(l_ssa, r_ssa, ip=ip)
+                    op = DivSIOp(l_ssa, r_ssa)
                 case "/f":
-                    op = DivFOp(l_ssa, r_ssa, ip=ip)
+                    op = DivFOp(l_ssa, r_ssa)
                 case "<" | ">" | "==" | "<=" | ">=":
                     equivalent = {
                         "<": CmpIPredicate.slt,
@@ -79,13 +79,13 @@ class BinaryOp(OpNode):
                         "==": CmpIPredicate.eq,
                         "!=": CmpIPredicate.ne,
                     }
-                    op = CmpIOp(equivalent[self.ope.value], l_ssa, r_ssa, ip=ip)
+                    op = CmpIOp(equivalent[self.ope.value], l_ssa, r_ssa)
                 case "or":
-                    op = OrIOp(l_ssa, r_ssa, ip=ip)
+                    op = OrIOp(l_ssa, r_ssa)
                 case "and":
-                    op = AndIOp(l_ssa, r_ssa, ip=ip)
+                    op = AndIOp(l_ssa, r_ssa)
                 case "xor":
-                    op = XOrIOp(l_ssa, r_ssa, ip=ip)
+                    op = XOrIOp(l_ssa, r_ssa)
                 case _:
                     raise TypeError(f"Operator {self} not supported")
 

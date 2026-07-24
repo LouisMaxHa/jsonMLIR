@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
-from mlir.ir import InsertionPoint, Type, Value
+from mlir.ir import Type, Value
 
 from xdsljson.utils import ssa_val
 from xdsljson.utils.discard_builder import discard_builder
@@ -59,30 +59,31 @@ class Var:
         return variables_heap[self.name]
 
     def get_type(self) -> Type:
-        return self.load(discard_builder()).get_type()
+        with discard_builder():
+            return self.load().get_type()
 
-    def get_indices(self, ip: InsertionPoint) -> Sequence[str | Value]:
+    def get_indices(self) -> Sequence[str | Value]:
         index_ssa: Sequence[str | Value] = []
 
         for i in self.indices:
             if isinstance(i, str):
                 index_ssa.append(i)
             elif isinstance(i, int):
-                index_ssa.append(ssa_val.val_to_SSAValue(i, Scalar.idx, ip))
+                index_ssa.append(ssa_val.val_to_SSAValue(i, Scalar.idx))
             else:
-                index_ssa.append(i.as_var().get_SSA(ip))
+                index_ssa.append(i.as_var().get_SSA())
 
         return index_ssa
 
     # ──────────── Overload ────────────
-    def load(self, ip: InsertionPoint) -> ValNode:
-        return self.get_val().load(self.get_indices(ip), ip)
+    def load(self) -> ValNode:
+        return self.get_val().load(self.get_indices())
 
-    def store(self, value: ValNode, ip: InsertionPoint) -> None:
-        return self.get_val().store(self.get_indices(ip), value, ip)
+    def store(self, value: ValNode) -> None:
+        return self.get_val().store(self.get_indices(), value)
 
-    def get_SSA(self, ip: InsertionPoint) -> Value:
-        return self.get_val().get_SSA(self.get_indices(ip), ip)
+    def get_SSA(self) -> Value:
+        return self.get_val().get_SSA(self.get_indices())
 
-    def init_from(self, type: TyNode, source: ValNode, ip: InsertionPoint) -> ValNode:
-        return self.get_val().init_from(type, source, ip)
+    def init_from(self, type: TyNode, source: ValNode) -> ValNode:
+        return self.get_val().init_from(type, source)

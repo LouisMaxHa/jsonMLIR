@@ -22,11 +22,11 @@ def codegenBlock(
     # Gen block
     if content is None:
         return block, []
-    block_ip = InsertionPoint(block)
 
     # Populate block
     last_value: Sequence[ValNode] = []
-    for element in content:
-        last_value = element.codegen(block_ip)
+    with InsertionPoint(block):
+        for element in content:
+            last_value = element.codegen()
 
     return block, last_value

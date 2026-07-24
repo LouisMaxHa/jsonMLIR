@@ -4,7 +4,6 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING, Literal
 
 from mlir.dialects.func import CallOp
-from mlir.ir import InsertionPoint
 
 from xdsljson.operations.codegen import OpNode
 from xdsljson.trace import trace_step
@@ -33,8 +32,8 @@ class PrintOp(OpNode):
     value: BaseValue
 
     @trace_step("PrintOp")
-    def codegen(self, ip: InsertionPoint) -> Sequence[ValNode]:
-        value_ssa = self.value.codegen(ip)
+    def codegen(self) -> Sequence[ValNode]:
+        value_ssa = self.value.codegen()
         if len(value_ssa) != 1:
             raise ValueError(
                 f"print attend une seule SSAValue, en a reçu {len(value_ssa)}"
@@ -43,7 +42,6 @@ class PrintOp(OpNode):
         CallOp(
             [],
             PRINT_INT_SYMBOL,
-            [value_ssa[0].get_SSA([], ip)],
-            ip=ip,
+            [value_ssa[0].get_SSA([])],
         )
         return []

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from mlir.ir import InsertionPoint, Value
+from mlir.ir import Value
 
 from xdsljson.trace import trace_step
 from xdsljson.variables.ty.ty import TyNode
@@ -28,29 +28,29 @@ from xdsljson.variables.val.val_struct import ValStruct
 class Factory:
     @staticmethod
     @trace_step("Factory.from_val", display_entry=True)
-    def from_val(type: TyNode, value: ValNode, ip: InsertionPoint) -> ValNode:
+    def from_val(type: TyNode, value: ValNode) -> ValNode:
         match type:
             case TyPtr():
-                return ValPtr.init_from(type, value, ip)
+                return ValPtr.init_from(type, value)
             case TySSA():
-                return ValSSA.init_from(type, value, ip)
+                return ValSSA.init_from(type, value)
             case TyScalar():
-                return ValScalar.init_from(type, value, ip)
+                return ValScalar.init_from(type, value)
             case TyMemref():
-                return ValMemref.init_from(type, value, ip)
+                return ValMemref.init_from(type, value)
             case TyBuffer():
-                return ValBuffer.init_from(type, value, ip)
+                return ValBuffer.init_from(type, value)
             case TySOA():
-                return ValSOA.init_from(type, value, ip)
+                return ValSOA.init_from(type, value)
             case TyStruct():
-                return ValStruct.init_from(type, value, ip)
+                return ValStruct.init_from(type, value)
             case _:
                 raise ValueError("From val: Type not handled")
 
     @staticmethod
     @trace_step("Factory.from_SSA", display_entry=True)
-    def from_SSA(type: TyNode, addr: Value, ip: InsertionPoint) -> ValNode:
-        return Factory.from_val(type, ValSSA(addr), ip)
+    def from_SSA(type: TyNode, addr: Value) -> ValNode:
+        return Factory.from_val(type, ValSSA(addr))
 
     @staticmethod
     @trace_step("Factory.generic_memref", display_entry=True)

@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING, Literal
 
 from mlir.dialects.func import CallOp as MLIRCallOp
-from mlir.ir import InsertionPoint, Value
+from mlir.ir import Value
 
 from xdsljson.operations.codegen import OpNode
 from xdsljson.trace import trace_step
@@ -28,7 +28,7 @@ class CallOp(OpNode):
     args: Sequence[BaseValue] = ()
 
     @trace_step("CallOp: {self.name}")
-    def codegen(self, ip: InsertionPoint) -> Sequence[ValNode]:
+    def codegen(self) -> Sequence[ValNode]:
         sig = functions_registry.get(self.name)
         if sig is None:
             raise ValueError(
@@ -40,10 +40,10 @@ class CallOp(OpNode):
         arg_ssas: list[Value] = []
         arg_vals: list[ValNode] = []
         for arg in self.args:
-            vals = arg.codegen(ip)
+            vals = arg.codegen()
             arg_vals.extend(vals)
             for val in vals:
-                arg_ssas.append(val.get_SSA([], ip))
+                arg_ssas.append(val.get_SSA([]))
 
         # Vérification du nombre d'arguments
         if len(arg_ssas) != len(sig.args):
@@ -65,6 +65,6 @@ class CallOp(OpNode):
         # Types de retour depuis le registre
         mlir_return_types = [ty.get_type() for ty in sig.return_types]
 
-        call_op = MLIRCallOp(mlir_return_types, self.name, arg_ssas, ip=ip)
+        call_op = MLIRCallOp(mlir_return_types, self.name, arg_ssas)
 
         return [ValSSA(res) for res in call_op.results]

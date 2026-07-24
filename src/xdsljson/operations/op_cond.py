@@ -22,14 +22,14 @@ class CondOp(OpNode):
     elseBlock: Sequence[BaseValue] | None = None
 
     @trace_step("CondOp")
-    def codegen(self, ip: InsertionPoint) -> Sequence[ValNode]:
+    def codegen(self) -> Sequence[ValNode]:
         # Check condition
-        conds_ssa = self.cond.codegen(ip)
+        conds_ssa = self.cond.codegen()
         assert len(conds_ssa) == 1
-        cond_ssa = conds_ssa[0].get_SSA([], ip)
+        cond_ssa = conds_ssa[0].get_SSA([])
 
         # Create IfOp (les blocs then/else appartiennent à ses régions)
-        if_op = scf.IfOp(cond_ssa, has_else=True, ip=ip)
+        if_op = scf.IfOp(cond_ssa, has_else=True)
 
         # Région then
         codegenBlock(self.thenBlock, if_op.then_block)

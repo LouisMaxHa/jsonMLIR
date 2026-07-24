@@ -136,7 +136,8 @@ def compiler(module_ast: ModuleJsonOp, argv: Sequence[str] | None = None) -> int
         enable_trace(True)
     with Context(), Location.unknown():
         module = Module.create()
-        module_ast.codegen(InsertionPoint(module.body))
+        with InsertionPoint(module.body):
+            module_ast.codegen()
 
         # Print
         write_mlir(module, path_xdsl)
