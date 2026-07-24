@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
+from xdsljson.operations.op_math import MathOp, MathOperator
+
 from xdsljson.operations.base import BaseValue
 from xdsljson.operations.op_alloc import AllocOp
 from xdsljson.operations.op_alloca import AllocaOp
@@ -50,6 +52,9 @@ def _parse_field(field: FieldSpec) -> FIELD_TYPE:
 
 def _parse_ope(ope: str | OperatorOp) -> OperatorOp:
     return ope if isinstance(ope, OperatorOp) else OperatorOp(ope)
+
+def _parse_ope_math(ope: str | MathOperator) -> MathOperator:
+    return ope if isinstance(ope, MathOperator) else MathOperator(ope)
 
 
 def Module(body: Sequence[ModuleStatement] = ()) -> ModuleJsonOp:
@@ -149,6 +154,12 @@ def Call(
     args: Sequence[BaseValue] = (),
 ) -> CallOp:
     return CallOp(name=name, args=args)
+
+def Math(
+    ope: str | MathOperator,
+    value: BaseValue,
+) -> MathOp:
+    return MathOp(ope=_parse_ope_math(ope), value=value)
 
 
 def Print(value: BaseValue) -> PrintOp:

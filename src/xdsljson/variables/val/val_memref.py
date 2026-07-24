@@ -18,12 +18,12 @@ from xdsljson.variables.val.val import ValNode
 
 
 class ValMemref(ValNode):
-    addr: Value
+    addr: Value[MemRefType]
     ty: TyMemref
 
     # ──────────── Init ────────────
     # Problème avec les structs, j'ai du memref<5xmemref<8xi8>>
-    def __init__(self, ty: TyMemref, addr: Value):
+    def __init__(self, ty: TyMemref, addr: Value[MemRefType]):
         ssa_type = addr.type
         assert isinstance(ssa_type, MemRefType), f"Got {type(addr)}"
         ty_shape = list(ty.get_type().shape)
@@ -124,9 +124,9 @@ class ValMemref(ValNode):
         remaining = index[len(self.ty.dimensions) :]
         assert all_ssavalues(consuming)
 
-        # Insert
-        if remaining == []:
-            memref.StoreOp(source.get_SSA([]), self.addr, consuming)
-            return
+        # Recursive
+        if remaining:
+            return self.load(consuming).store(remaining, source)
 
-        self.load(consuming).store(remaining, source)
+        memref.StoreOp(source.get_SSA([]), self.addr, consuming)
+

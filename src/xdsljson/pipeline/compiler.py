@@ -88,6 +88,7 @@ MLIR_OPT_LOWER_TO_LLVM: Sequence[str] = [
     "convert-cf-to-llvm",
     "convert-func-to-llvm",
     "convert-arith-to-llvm",
+    "convert-math-to-llvm",
     "reconcile-unrealized-casts",
 ]
 

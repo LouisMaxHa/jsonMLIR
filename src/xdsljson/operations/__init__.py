@@ -9,6 +9,7 @@ from xdsljson.operations.dsl import (
     DefineStruct,
     Function,
     Module,
+    Math,
     Print,
     Set,
     Var,
@@ -26,6 +27,7 @@ from xdsljson.operations.op_module import ModuleJsonOp
 from xdsljson.operations.op_print import PrintOp
 from xdsljson.operations.op_set import SetOp
 from xdsljson.operations.op_var import VarOp
+from xdsljson.operations.op_math import MathOp
 from xdsljson.operations.op_while import WhileOp
 from xdsljson.utils.enum_scalars import Scalar
 from xdsljson.variables.ty.ty_memref import TyMemref
@@ -47,6 +49,7 @@ __all__ = [
     "DefineStructOp",
     "Function",
     "FunctionOp",
+    "MathOp",
     "Module",
     "ModuleJsonOp",
     "Print",

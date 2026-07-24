@@ -26,18 +26,23 @@ class ValNode(ABC):
         raise NotImplementedError
 
     # Plutôt content de celui-la :)
+    # L'idée est d'insérer automatiquement des trace-step sur nos opérateurs
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
         for name, method in cls.__dict__.items():
             parent_method = getattr(super(cls, cls), name, None)
+
+            # On annote trace step que si c'est une méthode
             if not callable(method):
                 continue
 
+            # On récupère le log format définis par le parent
             log_format = getattr(parent_method, "_log_format", None)
             if not isinstance(log_format, str) :
                 continue
 
-            wrapped = trace_step(f"{cls.__name__}." + log_format)(method)
+            # On wrappe la méthode de la classe enfant en rajoutant non de classe + log_format
+            wrapped = trace_step(f"{cls.__name__}." + log_format, display_entry=True)(method)
             setattr(cls, name, wrapped)
 
     # ──────────── Getter ────────────
