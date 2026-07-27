@@ -1,5 +1,24 @@
 import sys
 
+# Set(Var("median1", ["x"]), Binary("-f", Var("face_coord", [0, "x"]), Var("face_coord", [3, "x"]))),
+# Set(Var("median1", ["y"]), Binary("-f", Var("face_coord", [0, "y"]), Var("face_coord", [3, "y"]))),
+# Set(Var("median1", ["z"]), Binary("-f", Var("face_coord", [0, "z"]), Var("face_coord", [3, "z"]))),
+def SetReal3(result, v1, ope: str, v2, skip_att_v2=False):
+    return [
+        Set(Var(result[0], result[1::] + [attribut]), Binary(ope, Var(v1[0], v1[1::] + [attribut]), Var(v2[0], v2[1::] + ([attribut] if not skip_att_v2 else []))))
+        for attribut in ["x", "y", "z"]
+    ]
+
+def flatten(lst):
+    flat_list = []
+    for element in lst:
+        if isinstance(element, list):
+            flat_list.extend(flatten(element))
+        else:
+            flat_list.append(element)
+    return flat_list
+
+
 from xdsljson.operations import (
     Binary,
     Call,
@@ -58,22 +77,34 @@ module = Module([
     ),
     Function(
         "xdsl_main",[
-            ("face_coord", TyMemref([6], TyStruct("Real3"))),
+            ("coord", TyMemref([8], TyStruct("Real3"))),
             ("cid", TyScalar(Scalar.i64)),
             ("out_caracteristic_length", TyMemref([100], TyScalar(Scalar.f64))),
-        ], [
+        ], [  # pyright: ignore[reportUnknownArgumentType]
+            Alloca("face_coord", TyMemref([6], TyStruct("Real3"))),
+            Set(Var("c025", type=TyScalar(Scalar.f64)), Const(0.25, type="f64")),
+            *flatten([
+                SetReal3(["face_coord", i], ["coord", a], "+f", ["coord", b])
+                + SetReal3(["face_coord", i], ["face_coord", i], "+f", ["coord", c])
+                + SetReal3(["face_coord", i], ["face_coord", i], "+f", ["coord", d])
+                + SetReal3(["face_coord", i], ["face_coord", i], "*f", ["c025"], skip_att_v2=True)
+
+                for i, (a, b, c, d) in enumerate([
+                    (0, 3, 2, 1),
+                    (0, 4, 7, 3),
+                    (0, 1, 5, 4),
+                    (4, 5, 6, 7),
+                    (1, 2, 6, 5),
+                    (2, 3, 7, 6),
+                ])
+            ]),
+
             Alloca("median1", TyStruct("Real3")),
-            Set(Var("median1", ["x"]), Binary("-f", Var("face_coord", [0, "x"]), Var("face_coord", [3, "x"]))),
-            Set(Var("median1", ["y"]), Binary("-f", Var("face_coord", [0, "y"]), Var("face_coord", [3, "y"]))),
-            Set(Var("median1", ["z"]), Binary("-f", Var("face_coord", [0, "z"]), Var("face_coord", [3, "z"]))),
             Alloca("median2", TyStruct("Real3")),
-            Set(Var("median2", ["x"]), Binary("-f", Var("face_coord", [2, "x"]), Var("face_coord", [5, "x"]))),
-            Set(Var("median2", ["y"]), Binary("-f", Var("face_coord", [2, "y"]), Var("face_coord", [5, "y"]))),
-            Set(Var("median2", ["z"]), Binary("-f", Var("face_coord", [2, "z"]), Var("face_coord", [5, "z"]))),
             Alloca("median3", TyStruct("Real3")),
-            Set(Var("median3", ["x"]), Binary("-f", Var("face_coord", [1, "x"]), Var("face_coord", [4, "x"]))),
-            Set(Var("median3", ["y"]), Binary("-f", Var("face_coord", [1, "y"]), Var("face_coord", [4, "y"]))),
-            Set(Var("median3", ["z"]), Binary("-f", Var("face_coord", [1, "z"]), Var("face_coord", [4, "z"]))),
+            *SetReal3(["median1"], ["face_coord", 0], "-f", ["face_coord", 3]),
+            *SetReal3(["median2"], ["face_coord", 2], "-f", ["face_coord", 5]),
+            *SetReal3(["median3"], ["face_coord", 1], "-f", ["face_coord", 4]),
 
             Set(Var("d1", type=TyScalar(Scalar.f64)), Call("normL2", [Var("median1")])),
             Set(Var("d2", type=TyScalar(Scalar.f64)), Call("normL2", [Var("median2")])),
@@ -90,10 +121,9 @@ module = Module([
                 )
             ),
             Set(Var("out_caracteristic_length", [Var("cid"), ]), Binary("/f", Var("dx_numerator"), Var("dx_denominator"))),
-            Set(Var("out_caracteristic_length", [Var("cid")]), Const(0.1, "f64")),
             Const(0, type=Scalar.i64)
         ],
     )
 ])
 
-compiler(module, [__file__, "--link"] + sys.argv[1:])
+compiler(module, [__file__] + sys.argv[1:])

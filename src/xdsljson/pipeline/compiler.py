@@ -16,6 +16,7 @@ from xdsljson.pipeline.commands import (
     convert_to_llvm,
     link_executable,
     load_input_file,
+    run_llvm_opt,
     run_mlir_opt,
     set_display_cmd,
     write_mlir,
@@ -66,14 +67,22 @@ def print_if(
 
 MLIR_OPT_PASSES: list[str] = [
     "--loop-invariant-code-motion",
+    "--inline",
     "--cse",
     "--canonicalize",
     "--symbol-dce",
-    "--mem2reg", # incompatible avec memref.alloca et scf.while ??
+    "--mem2reg",
     "--expand-strided-metadata",
     "--normalize-memrefs",
     "--memref-expand",
+    "--remove-dead-values",
     "--fold-memref-alias-ops",
+    "--symbol-privatize",
+]
+
+LLVM_OPT_PASSES: list[str] = [
+    "globaldce",
+    "default<O1>" #O1
 ]
 
 MLIR_OPT_LOWER_TO_LLVM: Sequence[str] = [
@@ -119,11 +128,11 @@ def compiler(module_ast: ModuleJsonOp, argv: Sequence[str] | None = None) -> int
     build_dir = project_root / "build"
     build_dir.mkdir(parents=True, exist_ok=True)
     path_call       = input_path.with_suffix(".call.cpp")
-    path_xdsl       = build_dir / f"{stem}.xdsl.mlir"
     path_mlir       = build_dir / f"{stem}.mlir"
     path_optimized  = build_dir / f"{stem}.mlir.opt"
     path_llvm_mlir  = build_dir / f"{stem}.llvm.mlir"
     path_llvm       = build_dir / f"{stem}.ll"
+    path_llvm_opti  = build_dir / f"{stem}.ll.opt"
     path_object     = input_path.with_suffix(".o")
     path_runnable   = input_path.with_suffix(".out")
     path_last_print = build_dir / f"{stem}.last.ir"
@@ -141,15 +150,14 @@ def compiler(module_ast: ModuleJsonOp, argv: Sequence[str] | None = None) -> int
             module_ast.codegen()
 
         # Print
-        write_mlir(module, path_xdsl)
         write_mlir(module, path_mlir)
     print_if(
-        args.xdsl,
+        args.mlir,
         "MLIR (codegen)",
-        path_xdsl,
+        path_mlir,
     )
     if path_last_print is not None:
-        path_last_print.write_text(path_xdsl.read_text())
+        path_last_print.write_text(path_mlir.read_text())
 
     print_if(
         args.mlir,
@@ -157,9 +165,6 @@ def compiler(module_ast: ModuleJsonOp, argv: Sequence[str] | None = None) -> int
         path_mlir,
         last_print_path=path_last_print,
     )
-
-    # Verify
-    # module.operation.verify()
 
     # MLIR passes
     run_mlir_opt(
@@ -204,10 +209,25 @@ def compiler(module_ast: ModuleJsonOp, argv: Sequence[str] | None = None) -> int
         last_print_path=path_last_print,
     )
 
+    # llvm -> llvm opti
+    run_llvm_opt(
+        toolchain,
+        path_llvm,
+        path_llvm_opti,
+        LLVM_OPT_PASSES
+    )
+    print_if(
+        args.llvm_opti,
+        "LLVM opti",
+        path_llvm,
+        last_print_path=path_last_print,
+    )
+
+
     # llvm -> objet relocatable (.o)
     compile_llvm_to_object(
         toolchain,
-        path_llvm,
+        path_llvm_opti,
         path_object,
     )
 

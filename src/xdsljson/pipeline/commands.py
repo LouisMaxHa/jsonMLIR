@@ -194,12 +194,13 @@ def run_llvm_opt(
     toolchain: Toolchain,
     input_path: Path,
     output_path: Path,
-    passes: list[str],
+    passes: list[str]
 ):
     run_command([
         str(toolchain.llvm_opt),
-        *passes,
+        f"-passes={','.join(passes)}",
         str(input_path),
+        "-S", # Emit LLVm and not bytecode
         "-o", str(output_path),
     ])
 

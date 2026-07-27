@@ -35,7 +35,8 @@ class FunctionOp(OpNode):
             self.name,
             FunctionType.get(input_types, []),  # Output (automatic)
         )
-        function.attributes["llvm.emit_c_interface"] = UnitAttr.get()
+        if "ciface" in self.name:
+            function.attributes["llvm.emit_c_interface"] = UnitAttr.get()
         entry_block = function.add_entry_block()
 
         # Init variable

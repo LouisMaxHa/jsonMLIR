@@ -10,13 +10,12 @@ from pathlib import Path
 
 _FLAG_ALIASES: dict[str, str] = {
     "T": "--tree",
-    "x": "--xdsl",
-    "p": "--xdsl_passes",
     "P": "--mlir_passes",
     "m": "--mlir",
     "M": "--mlir_opti",
-    "l": "--mlir_llvm",
-    "L": "--llvm",
+    "n": "--mlir_llvm",
+    "l": "--llvm",
+    "L": "--llvm_opti",
     "C": "--cmd",
     "A": "--all",
     "d": "--show-diff",
@@ -76,24 +75,6 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="Print the Python AST as a tree (codegen trace).",
     )
     parser.add_argument(
-        "-x",
-        "--xdsl",
-        action="store_true",
-        help="Print the xDSL IR.",
-    )
-    parser.add_argument(
-        "-p",
-        "--xdsl_passes",
-        action="store_true",
-        help="Print the xDSL IR after each pass.",
-    )
-    parser.add_argument(
-        "-X",
-        "--xdsl_opti",
-        action="store_true",
-        help="Print the xDSL IR after all pass.",
-    )
-    parser.add_argument(
         "-P",
         "--mlir_passes",
         action="store_true",
@@ -112,16 +93,22 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="Print MLIR after optimization.",
     )
     parser.add_argument(
-        "-l",
+        "-n",
         "--mlir_llvm",
         action="store_true",
         help="Print the MLIR LLVM dialect.",
     )
     parser.add_argument(
-        "-L",
+        "-l",
         "--llvm",
         action="store_true",
         help="Print LLVM IR.",
+    )
+    parser.add_argument(
+        "-L",
+        "--llvm_opti",
+        action="store_true",
+        help="Print LLVM after optimization.",
     )
     parser.add_argument(
         "-C",
@@ -133,7 +120,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "-A",
         "--all",
         action="store_true",
-        help="Shortcut for tree+xdsl+mlir+mlir_opti+mlir_llvm+llvm.",
+        help="Shortcut for tree+mlir+mlir_opti+llvm+llvm_opti.",
     )
     parser.add_argument(
         "-d",
@@ -156,7 +143,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         for expend in [
             "--tree", "--xdsl",
             "--mlir", "--mlir_opti",
-            "--mlir_llvm", "--llvm"
+            "--llvm", "--llvm_opti"
         ]:
             if expend not in argv:
                 argv.append(expend)
