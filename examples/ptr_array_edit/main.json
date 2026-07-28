@@ -1,50 +1,127 @@
 {
-    "op": "module",
-    "body": [
-      { "op": "function",
-        "name": "xdsl_main",
-        "args": [
-            ["myArrayReference", {"addr":  {"memref": [5, "i64"]}}],
-            ["size", "index"]
+  "op": "module",
+  "body": [
+    {
+      "op": "function",
+      "name": "lib_main",
+      "args": [
+        [
+          "myArrayReference",
+          {
+            "addr": {
+              "memref": [
+                5,
+                "i64"
+              ]
+            }
+          }
         ],
-        "body": [
-        { "op": "set",
-            "var": { "op": "var", "name": "myArray", "type": {"memref": [5, "i64"]}},
-            "val": { "op": "var", "name": "myArrayReference" , "indices": ["*"]}
+        [
+          "size",
+          "index"
+        ]
+      ],
+      "body": [
+        {
+          "op": "set",
+          "var": {
+            "op": "var",
+            "name": "myArray",
+            "type": {
+              "memref": [
+                5,
+                "i64"
+              ]
+            }
+          },
+          "val": {
+            "op": "var",
+            "name": "myArrayReference",
+            "indices": [
+              "*"
+            ]
+          }
         },
-        { "op": "set",
-            "var": { "op": "var", "name": "i", "type": "index" },
-            "val": { "op": "const", "val": 0 , "type": "index"}
+        {
+          "op": "set",
+          "var": {
+            "op": "var",
+            "name": "i",
+            "type": "index"
+          },
+          "val": {
+            "op": "const",
+            "val": 0,
+            "type": "index"
+          }
         },
-        { "op": "while",
-          "cond": { "op": "binary",
+        {
+          "op": "while",
+          "cond": {
+            "op": "binary",
             "ope": "<",
-            "lhs": { "op": "var", "name": "i" },
-            "rhs": { "op": "var", "name": "size" }
+            "lhs": {
+              "op": "var",
+              "name": "i"
+            },
+            "rhs": {
+              "op": "var",
+              "name": "size"
+            }
           },
           "thenBlock": [
-            { "op": "set",
-                "var": {
-                    "op": "var", "name": "myArray", 
-                    "indices" : [{"name": "i"}]},
-                "val": { "op": "binary",
-                    "ope": "+",
-                    "lhs": { "op": "var", "name": "myArray",
-                             "indices" : [{"name": "i"}] },
-                    "rhs": { "op": "const", "val": 1 }                  
+            {
+              "op": "set",
+              "var": {
+                "op": "var",
+                "name": "myArray",
+                "indices": [
+                  {
+                    "name": "i"
+                  }
+                ]
+              },
+              "val": {
+                "op": "binary",
+                "ope": "+",
+                "lhs": {
+                  "op": "var",
+                  "name": "myArray",
+                  "indices": [
+                    {
+                      "name": "i"
+                    }
+                  ]
+                },
+                "rhs": {
+                  "op": "const",
+                  "val": 1
                 }
+              }
             },
-            { "op": "set",
-                "var": { "op": "var", "name": "i" },
-                "val": { "op": "binary",
-                    "ope": "+",
-                    "lhs": { "op": "var", "name": "i" },
-                    "rhs": { "op": "const", "val": 1, "type": "index" }
+            {
+              "op": "set",
+              "var": {
+                "op": "var",
+                "name": "i"
+              },
+              "val": {
+                "op": "binary",
+                "ope": "+",
+                "lhs": {
+                  "op": "var",
+                  "name": "i"
+                },
+                "rhs": {
+                  "op": "const",
+                  "val": 1,
+                  "type": "index"
                 }
+              }
             }
           ]
         }
-        ]
-      }
-    ]
+      ]
+    }
+  ]
 }

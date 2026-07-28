@@ -16,7 +16,7 @@ struct Noeud {
   int capacite;
   double temperature;
 };
-double _mlir_ciface_xdsl_main(Noeud* bytes);
+double _mlir_ciface_lib_main(Noeud *bytes);
 }
 
 int main() {
@@ -32,7 +32,7 @@ int main() {
   assert(offsetof(Noeud, capacite) == 0);
   assert(offsetof(Noeud, temperature) == 8);
 
-  const double result = _mlir_ciface_xdsl_main(&noeud);
+  const double result = _mlir_ciface_lib_main(&noeud);
   std::cout << "EXPECTED read temperature '0.3', got '" << result << "'"
             << std::endl;
   return 0;

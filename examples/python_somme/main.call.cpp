@@ -5,7 +5,7 @@
 #include <iostream>
 
 extern "C" {
-int64_t _mlir_ciface_xdsl_main(int64_t max);
+int64_t _mlir_ciface_lib_main(int64_t max);
 
 void print_int(int64_t value) {
   std::printf("%ld\n", static_cast<long>(value));
@@ -13,8 +13,8 @@ void print_int(int64_t value) {
 }
 
 int main() {
-  const int64_t result = _mlir_ciface_xdsl_main(10);
-  std::cout << "xdsl_main(10) = " << result << std::endl;
+  const int64_t result = _mlir_ciface_lib_main(10);
+  std::cout << "lib_main(10) = " << result << std::endl;
   std::cout << "EXPECT '45', got '" << result << "'" << std::endl;
   return 0;
 }

@@ -18,7 +18,7 @@ struct Noeud {
   int capacite;
   double temperature;
 };
-double _mlir_ciface_xdsl_main(MemRefType<int8_t, 1> *bytes, int i);
+double _mlir_ciface_lib_main(MemRefType<int8_t, 1> *bytes, int i);
 }
 
 int main() {
@@ -38,10 +38,10 @@ int main() {
   MemRefType<int8_t, 1> bytes =
       make_memref_1d<int8_t>(reinterpret_cast<int8_t *>(buffer), buffer_size);
 
-  const double result0 = _mlir_ciface_xdsl_main(&bytes, 0);
+  const double result0 = _mlir_ciface_lib_main(&bytes, 0);
   std::cout << "SoA read array[0].temperature, EXPECTED '2' = '" << result0
             << "'" << std::endl;
-  const double result1 = _mlir_ciface_xdsl_main(&bytes, 1);
+  const double result1 = _mlir_ciface_lib_main(&bytes, 1);
   std::cout << "SoA read array[1].temperature, EXPECTED '4' = '" << result1
             << "'" << std::endl;
   return 0;

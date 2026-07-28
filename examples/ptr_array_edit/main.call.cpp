@@ -4,7 +4,7 @@
 #include <iostream>
 
 extern "C" {
-  void _mlir_ciface_xdsl_main(uintptr_t data_ptr, uint64_t size);
+void _mlir_ciface_lib_main(uintptr_t data_ptr, uint64_t size);
 }
 
 int main() {
@@ -19,7 +19,7 @@ int main() {
   }
   std::cout << std::endl;
 
-  _mlir_ciface_xdsl_main(data_ptr, size);
+  _mlir_ciface_lib_main(data_ptr, size);
 
   std::cout << "Array after:" << std::endl;
   for (auto i : myData) {

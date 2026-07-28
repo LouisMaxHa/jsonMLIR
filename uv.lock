@@ -1124,7 +1124,7 @@ wheels = [
 ]
 
 [[package]]
-name = "xdsljson"
+name = "jsonmlir"
 source = { editable = "." }
 dependencies = [
     { name = "pydantic" },

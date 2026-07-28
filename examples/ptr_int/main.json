@@ -1,14 +1,24 @@
 {
   "op": "module",
   "body": [
-    { "op": "function",
-      "name": "xdsl_main",
+    {
+      "op": "function",
+      "name": "lib_main",
       "args": [
-        [ "myAddr", { "addr": "i64" } ]
+        [
+          "myAddr",
+          {
+            "addr": "i64"
+          }
+        ]
       ],
       "body": [
-        { "op": "var", "name": "myAddr",
-          "indices": [ "*" ]
+        {
+          "op": "var",
+          "name": "myAddr",
+          "indices": [
+            "*"
+          ]
         }
       ]
     }

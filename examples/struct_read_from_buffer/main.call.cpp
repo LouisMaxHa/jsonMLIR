@@ -16,7 +16,7 @@ struct Noeud {
   int capacite;
   double temperature;
 };
-double _mlir_ciface_xdsl_main(MemRefType<int8_t, 1> *bytes);
+double _mlir_ciface_lib_main(MemRefType<int8_t, 1> *bytes);
 }
 
 int main() {
@@ -35,7 +35,7 @@ int main() {
   MemRefType<int8_t, 1> bytes =
       make_memref_1d<int8_t>(reinterpret_cast<int8_t *>(&noeud), struct_size);
 
-  const double result = _mlir_ciface_xdsl_main(&bytes);
+  const double result = _mlir_ciface_lib_main(&bytes);
   std::cout << "Edit struct" << std::endl;
   std::cout << "EXPECTED read temperature '0.3', got '" << result << "'"
             << std::endl;

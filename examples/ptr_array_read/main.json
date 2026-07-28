@@ -1,14 +1,37 @@
 {
   "op": "module",
   "body": [
-    { "op": "function",
-      "name": "xdsl_main",
+    {
+      "op": "function",
+      "name": "lib_main",
       "args": [
-          ["myArrayReference", {"addr":  {"memref": [5, "i64"]}}],
-          ["i", "i64"]
+        [
+          "myArrayReference",
+          {
+            "addr": {
+              "memref": [
+                5,
+                "i64"
+              ]
+            }
+          }
+        ],
+        [
+          "i",
+          "i64"
+        ]
       ],
       "body": [
-      { "op": "var", "name": "myArrayReference" , "indices": ["*", {"name": "i"}]}
+        {
+          "op": "var",
+          "name": "myArrayReference",
+          "indices": [
+            "*",
+            {
+              "name": "i"
+            }
+          ]
+        }
       ]
     }
   ]

@@ -1,28 +1,22 @@
 [project]
-name = "xdsljson"
+name = "jsonmlir"
 description = "A template project using MLIR interface."
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = [
-    "pydantic~=2.13.0",
-    "pyyaml~=6.0",
-]
+dependencies = ["pydantic~=2.13.0", "pyyaml~=6.0"]
 
-classifiers = [
-    "Programming Language :: Python :: 3 :: Only",
-    "Typing :: Typed",
-]
+classifiers = ["Programming Language :: Python :: 3 :: Only", "Typing :: Typed"]
 license = { text = "Apache License v2.0 with LLVM Exceptions" }
 authors = []
 dynamic = ["version"]
 
 [project.scripts]
-xdsljson = "xdsljson.pipeline.compiler:main"
+jsonmlir = "jsonmlir.pipeline.compiler:main"
 
 [project.urls]
-Homepage = "https://github.com/Louis-max-H/xdsl-json"
-"Source Code" = "https://github.com/Louis-max-H/xdsl-json"
-"Issue Tracker" = "https://github.com/Louis-max-H/xdsl-json/issues"
+Homepage = "https://github.com/Louis-max-H/jsonMLIR"
+"Source Code" = "https://github.com/Louis-max-H/jsonMLIR"
+"Issue Tracker" = "https://github.com/Louis-max-H/jsonMLIR/issues"
 
 
 [build-system]
@@ -33,7 +27,7 @@ build-backend = "hatchling.build"
 source = "vcs"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/xdsljson"]
+packages = ["src/jsonmlir"]
 
 [dependency-groups]
 dev = [

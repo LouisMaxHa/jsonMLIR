@@ -18,7 +18,6 @@ struct Real3 {
   double z;
 };
 
-
 Real3 cross(Real3 v1, Real3 v2) {
   Real3 v;
   v.x = v1.y * v2.z - v1.z * v2.y;
@@ -28,21 +27,23 @@ Real3 cross(Real3 v1, Real3 v2) {
 }
 
 extern "C" {
-  MemRefType<u_int8_t, 1> _mlir_ciface_xdsl_main(Real3* v1, Real3* v2);
+MemRefType<u_int8_t, 1> _mlir_ciface_lib_main(Real3 *v1, Real3 *v2);
 }
-
 
 int main() {
 
   Real3 v1 = {0.1, 0.2, 0.3};
   Real3 v2 = {0.4, 0.5, 0.6};
   Real3 expected = cross(v1, v2);
-  
-  MemRefType<u_int8_t, 1> descriptor = _mlir_ciface_xdsl_main(&v1, &v2);
-  Real3* v3 = (Real3*)make_array(descriptor);
 
-  std::cout << "EXPECTED '" << expected.x << "' got '" << v3->x << "'" << std::endl;
-  std::cout << "EXPECTED '" << expected.y << "' got '" << v3->y << "'" << std::endl;
-  std::cout << "EXPECTED '" << expected.z << "' got '" << v3->z << "'" << std::endl;
+  MemRefType<u_int8_t, 1> descriptor = _mlir_ciface_lib_main(&v1, &v2);
+  Real3 *v3 = (Real3 *)make_array(descriptor);
+
+  std::cout << "EXPECTED '" << expected.x << "' got '" << v3->x << "'"
+            << std::endl;
+  std::cout << "EXPECTED '" << expected.y << "' got '" << v3->y << "'"
+            << std::endl;
+  std::cout << "EXPECTED '" << expected.z << "' got '" << v3->z << "'"
+            << std::endl;
   return 0;
 }

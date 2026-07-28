@@ -1,23 +1,46 @@
 {
   "op": "module",
   "body": [
-    { "op": "define struct",
+    {
+      "op": "define struct",
       "name": "noeud",
       "size": 16,
       "fields": [
-        [ "capacite", "i32", 0, 4 ],
-        [ "temperature", "f64", 8, 8]
+        [
+          "capacite",
+          "i32",
+          0,
+          4
+        ],
+        [
+          "temperature",
+          "f64",
+          8,
+          8
+        ]
       ]
     },
-
-    { "op": "function",
-      "name": "xdsl_main",
+    {
+      "op": "function",
+      "name": "lib_main",
       "args": [
-        [ "myStruct", { "addr": {"struct": "noeud" }} ]
+        [
+          "myStruct",
+          {
+            "addr": {
+              "struct": "noeud"
+            }
+          }
+        ]
       ],
       "body": [
-        { "op": "var", "name": "myStruct",
-          "indices": ["*", "temperature" ]
+        {
+          "op": "var",
+          "name": "myStruct",
+          "indices": [
+            "*",
+            "temperature"
+          ]
         }
       ]
     }

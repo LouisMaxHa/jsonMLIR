@@ -4,7 +4,7 @@
 #include <iostream>
 
 extern "C" {
-int64_t _mlir_ciface_xdsl_main(MemRefType<int64_t, 2> *matrix);
+int64_t _mlir_ciface_lib_main(MemRefType<int64_t, 2> *matrix);
 }
 
 int main() {
@@ -26,7 +26,7 @@ int main() {
   MemRefType<int64_t, 2> myMemref = {
       &matrix[0][0], &matrix[0][0], 0, {5, 5}, {5, 1}};
 
-  const int64_t result = _mlir_ciface_xdsl_main(&myMemref);
+  const int64_t result = _mlir_ciface_lib_main(&myMemref);
   std::cout << "EXPECTED '10', got '" << result << "'" << std::endl;
   return 0;
 }

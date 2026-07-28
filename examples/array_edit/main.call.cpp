@@ -4,7 +4,7 @@
 #include <iostream>
 
 extern "C" {
-int64_t _mlir_ciface_xdsl_main(MemRefType<int64_t, 1> *array, int size);
+int64_t _mlir_ciface_lib_main(MemRefType<int64_t, 1> *array, int size);
 }
 
 int main() {
@@ -19,7 +19,7 @@ int main() {
   }
   std::cout << std::endl;
 
-  const int64_t result = _mlir_ciface_xdsl_main(&myMemref, size);
+  const int64_t result = _mlir_ciface_lib_main(&myMemref, size);
 
   std::cout << "Array after:" << std::endl;
   for (auto i : myData) {
@@ -33,6 +33,6 @@ int main() {
               << std::endl;
   }
 
-  std::cout << "Reading array : xdsl_main(myMemref) = " << result << '\n';
+  std::cout << "Reading array : lib_main(myMemref) = " << result << '\n';
   return 0;
 }

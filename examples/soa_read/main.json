@@ -1,28 +1,68 @@
 {
   "op": "module",
   "body": [
-    { "op": "define struct",
+    {
+      "op": "define struct",
       "name": "noeud",
       "size": 16,
       "fields": [
-        [ "capacite", "i32", 0, 4 ],
-        [ "temperature", "f64", 8, 8]
+        [
+          "capacite",
+          "i32",
+          0,
+          4
+        ],
+        [
+          "temperature",
+          "f64",
+          8,
+          8
+        ]
       ]
     },
-
-    { "op": "function",
-      "name": "xdsl_main",
+    {
+      "op": "function",
+      "name": "lib_main",
       "args": [
-        [ "buffer", { "buffer": [ 32, "noeud" ] } ],
-        [ "indice", "index" ]
+        [
+          "buffer",
+          {
+            "buffer": [
+              32,
+              "noeud"
+            ]
+          }
+        ],
+        [
+          "indice",
+          "index"
+        ]
       ],
       "body": [
-        { "op": "set",
-          "var": { "name": "soa", "type": { "soa": [ 2, "noeud" ]} },
-          "val": { "name": "buffer" }
-        },{
-          "op": "var", "name": "soa",
-          "indices": [ "temperature", {"name": "indice"} ]
+        {
+          "op": "set",
+          "var": {
+            "name": "soa",
+            "type": {
+              "soa": [
+                2,
+                "noeud"
+              ]
+            }
+          },
+          "val": {
+            "name": "buffer"
+          }
+        },
+        {
+          "op": "var",
+          "name": "soa",
+          "indices": [
+            "temperature",
+            {
+              "name": "indice"
+            }
+          ]
         }
       ]
     }

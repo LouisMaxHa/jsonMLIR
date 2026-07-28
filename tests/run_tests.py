@@ -101,7 +101,7 @@ def _compile_example(
         cmd = [
             sys.executable,
             "-m",
-            "xdsljson.pipeline.cli",
+            "jsonmlir.pipeline.cli",
             str(input_path),
             "--project-root",
             str(project_root),

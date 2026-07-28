@@ -1,18 +1,18 @@
 # https://www.mkdocs.org/user-guide/configuration/
 
 # Project information
-site_name: xdsl-json
+site_name: jsonMLIR
 site_author: louismax
 copyright: 
 
 # Repository
-repo_name: Louis-max-H/xdsl-json
-repo_url: https://github.com/Louis-max-H/xdsl-json
+repo_name: Louis-max-H/jsonMLIR
+repo_url: https://github.com/Louis-max-H/jsonMLIR
 
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/Louis-max-H/xdsl-json
+      link: https://github.com/Louis-max-H/jsonMLIR
       name: Louis-max-h on Github
 
 

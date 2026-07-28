@@ -1,6 +1,6 @@
 import sys
 
-from xdsljson.operations import (
+from jsonmlir.operations import (
     Binary,
     Call,
     Cond,
@@ -12,7 +12,7 @@ from xdsljson.operations import (
     TyScalar,
     Var,
 )
-from xdsljson.pipeline.compiler import compiler
+from jsonmlir.pipeline.compiler import compiler
 
 module = Module([
     # Déclaration de la signature de max_i64 (entrées + sortie)
@@ -36,16 +36,16 @@ module = Module([
         ],
     ),
 
-    # Déclaration de la signature de xdsl_main
+    # Déclaration de la signature de lib_main
     DefineFunction(
-        "xdsl_main",
+        "lib_main",
         [("x", TyScalar(Scalar.i64)), ("y", TyScalar(Scalar.i64))],
         [TyScalar(Scalar.i64)],
     ),
 
-    # Corps de xdsl_main : appelle max_i64 et renvoie son résultat
+    # Corps de lib_main : appelle max_i64 et renvoie son résultat
     Function(
-        "xdsl_main",
+        "lib_main",
         [("x", TyScalar(Scalar.i64)), ("y", TyScalar(Scalar.i64))],
         [
             Call("max_i64", [Var("x"), Var("y")]),

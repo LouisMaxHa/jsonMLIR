@@ -46,7 +46,7 @@ You will need to build llvm-project from source and generate Python interface fo
 │       ├── main.json      # MLIR function to generate
 │       └── main.call.cpp  # C++ function calling the generated function
 │
-├── src/xdsljson/     # Project source code
+├── src/jsonmlir/     # Project source code
 │   ├── operations/        # Operation definitions
 │   ├── pipeline/          # Compilation pipeline management
 │   ├── utils/             # Utilities
@@ -65,7 +65,7 @@ You will need to build llvm-project from source and generate Python interface fo
 
 We want to generate a function that look like this:
 ```python
-def xdsl_main(max: int) -> int:
+def lib_main(max: int) -> int:
     toto = 0
     i = 0
     while i < max:
@@ -80,7 +80,7 @@ We start by writting by hand the Json version (this step can be automated for yo
 { "op": "module",
   "body": [
     { "op": "function",
-      "name": "xdsl_main",
+      "name": "lib_main",
       "args": [["max", "i64"]],
       "body": [
         { "op": "set",
@@ -125,13 +125,13 @@ We start by writting by hand the Json version (this step can be automated for yo
 
 We can then call our compiler tool :
 ```bash
-uv run python src/xdsljson/pipeline/cli.py examples/somme/main.json  -All
+uv run python src/jsonmlir/pipeline/cli.py examples/somme/main.json  -All
 ```
 
 ```
 ────── Python AST
 ModuleJsonOp  ← []
-└── FunctionOp('xdsl_main')  ← []
+└── FunctionOp('lib_main')  ← []
     ├── Init args
     │   └── Factory.from_val  ← ValScalar(addr, Scalar(i64))
     │       └── ValScalar.init_from  ← ValScalar(addr, Scalar(i64))
@@ -183,9 +183,9 @@ ModuleJsonOp  ← []
         └── VarOp('toto', [])  ← [ValSSA()]
             └── ValScalar._load([])  ← ValSSA()
 
-────── xDSL
+────── jsonMLIR
 builtin.module {
-  func.func @xdsl_main(%maxArg: i64) -> i64 attributes {llvm.emit_c_interface} {
+  func.func @lib_main(%maxArg: i64) -> i64 attributes {llvm.emit_c_interface} {
     %const0.i64 = arith.constant 0 : i64
     %0 = memref.alloca() : memref<i64>
     memref.store %maxArg, %0[] : memref<i64>
@@ -217,7 +217,7 @@ builtin.module {
 
 ────── MLIR
 builtin.module {
-  func.func @xdsl_main(%maxArg: i64) -> i64 attributes {llvm.emit_c_interface} {
+  func.func @lib_main(%maxArg: i64) -> i64 attributes {llvm.emit_c_interface} {
     %const0.i64 = arith.constant 0 : i64
     %0 = memref.alloca() : memref<i64>
     memref.store %maxArg, %0[] : memref<i64>
@@ -249,7 +249,7 @@ builtin.module {
 
 ────── Optimized MLIR
 module {
-  func.func @xdsl_main(%arg0: i64) -> i64 attributes {llvm.emit_c_interface} {
+  func.func @lib_main(%arg0: i64) -> i64 attributes {llvm.emit_c_interface} {
     %c1_i64 = arith.constant 1 : i64
     %c0_i64 = arith.constant 0 : i64
     %alloca = memref.alloca() : memref<i64>
@@ -285,7 +285,7 @@ module {
 ; ModuleID = 'LLVMDialectModule'
 source_filename = "LLVMDialectModule"
 
-define i64 @xdsl_main(i64 %0) {
+define i64 @lib_main(i64 %0) {
   %2 = alloca i64, i64 1, align 8
   %3 = insertvalue { ptr, ptr, i64 } poison, ptr %2, 0
   %4 = insertvalue { ptr, ptr, i64 } %3, ptr %2, 1
@@ -335,8 +335,8 @@ define i64 @xdsl_main(i64 %0) {
   ret i64 %36
 }
 
-define i64 @_mlir_ciface_xdsl_main(i64 %0) {
-  %2 = call i64 @xdsl_main(i64 %0)
+define i64 @_mlir_ciface_lib_main(i64 %0) {
+  %2 = call i64 @lib_main(i64 %0)
   ret i64 %2
 }
 

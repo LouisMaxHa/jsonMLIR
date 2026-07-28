@@ -1,6 +1,6 @@
 import sys
 
-from xdsljson.operations import (
+from jsonmlir.operations import (
     Binary,
     Const,
     DefineStruct,
@@ -9,8 +9,8 @@ from xdsljson.operations import (
     Set,
     Var,
 )
-from xdsljson.pipeline.compiler import compiler
-from xdsljson.variables.ty.ty_struct import TyStruct
+from jsonmlir.pipeline.compiler import compiler
+from jsonmlir.variables.ty.ty_struct import TyStruct
 
 module = Module([
     DefineStruct(
@@ -21,7 +21,7 @@ module = Module([
     ),
 
     Function(
-        "xdsl_main",
+        "lib_main",
         [("myStruct", TyStruct("noeud"))],
         [
             Set(Var("myStruct", ["capacite"]),

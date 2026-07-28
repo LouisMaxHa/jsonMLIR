@@ -1,15 +1,14 @@
 ```shell
-# Clone LLVM project with release tag
-LLVM_PROJECT_PATH=~/llvm-project
-git clone --depth=1 https://github.com/llvm/llvm-project --branch llvmorg-22.1.8 $LLVM_PROJECT_PATH
-
-
 # Setup python env
 uv python install 3.13
 uv venv ~/.venv/mlirdev --python 3.13
 source ~/.venv/mlirdev/bin/activate
 uv pip install --upgrade pip
 uv pip install -r "$LLVM_PROJECT_PATH/mlir/python/requirements.txt"
+
+# Clone LLVM project with release tag
+LLVM_PROJECT_PATH=~/llvm-project
+git clone --depth=1 https://github.com/llvm/llvm-project --branch llvmorg-22.1.8 $LLVM_PROJECT_PATH
 
 # Build python bindings
 sudo dnf install ccache ninja-build lld
@@ -36,11 +35,14 @@ ninja -C "$LLVM_PROJECT_PATH/build" check-mlir-python || true
 MLIR_CORE="$LLVM_PROJECT_PATH/build/tools/mlir/python_packages/mlir_core"
 echo "$MLIR_CORE" > "$VIRTUAL_ENV/lib/python3.13/site-packages/mlir_core.pth"
 
-
 # Test installation
-python -c "import mlir.ir; print('OK')"
-# ou, sans activer le venv :
-# uv run python -c "import mlir.ir; print('OK')"
+uv run python -c "import mlir.ir; print('OK')"
+
+# Install jsonMLIR
+git clone git@github.com:LouisMaxHa/jsonMLIR.git
+cd jsonMLIR
+uv sync
+uv run python tests/run_tests.py -j 8
 ```
 
 Doc : `mlir/docs/Bindings/Python.md`.

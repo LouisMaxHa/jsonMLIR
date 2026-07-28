@@ -1,43 +1,119 @@
 {
   "op": "module",
   "body": [
-    { "op": "define struct",
+    {
+      "op": "define struct",
       "name": "xyz",
       "size": 24,
       "fields": [
-        [ "x", "i64",  0, 8 ],
-        [ "y", "i64",  8, 8 ],
-        [ "z", "i64", 16, 8 ]
+        [
+          "x",
+          "i64",
+          0,
+          8
+        ],
+        [
+          "y",
+          "i64",
+          8,
+          8
+        ],
+        [
+          "z",
+          "i64",
+          16,
+          8
+        ]
       ]
     },
-    { "op": "define struct",
+    {
+      "op": "define struct",
       "name": "noeuds",
       "size": 16,
       "fields": [
-        [ "coords", {"addr": {"memref": [null, {"struct": "xyz"}]}},  0,  8 ],
-        [ "index", "i64",  8, 8 ]
+        [
+          "coords",
+          {
+            "addr": {
+              "memref": [
+                null,
+                {
+                  "struct": "xyz"
+                }
+              ]
+            }
+          },
+          0,
+          8
+        ],
+        [
+          "index",
+          "i64",
+          8,
+          8
+        ]
       ]
     },
-    { "op": "define struct",
+    {
+      "op": "define struct",
       "name": "simu",
       "size": 32,
       "fields": [
-        [ "positions", {"addr": {"struct": "noeuds"}},  0,  8 ],
-        [ "temperatures", {"addr": {"struct": "noeuds"}},  8,  8]
+        [
+          "positions",
+          {
+            "addr": {
+              "struct": "noeuds"
+            }
+          },
+          0,
+          8
+        ],
+        [
+          "temperatures",
+          {
+            "addr": {
+              "struct": "noeuds"
+            }
+          },
+          8,
+          8
+        ]
       ]
     },
-
-    { "op": "function",
-      "name": "xdsl_main",
+    {
+      "op": "function",
+      "name": "lib_main",
       "args": [
-          ["simuReference", {"addr":  {"struct": "simu"}}],
-          ["i", "index"]
+        [
+          "simuReference",
+          {
+            "addr": {
+              "struct": "simu"
+            }
+          }
+        ],
+        [
+          "i",
+          "index"
+        ]
       ],
       "body": [
-      { "op": "var",
-        "name": "simuReference" ,
-        "indices": ["*", "temperatures", "*", "coords", "*", {"name": "i"}, "y"]
-      }
+        {
+          "op": "var",
+          "name": "simuReference",
+          "indices": [
+            "*",
+            "temperatures",
+            "*",
+            "coords",
+            "*",
+            {
+              "name": "i"
+            },
+            "y"
+          ]
+        }
       ]
     }
   ]

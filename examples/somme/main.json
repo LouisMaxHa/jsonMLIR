@@ -1,46 +1,99 @@
-{ "op": "module",
+{
+  "op": "module",
   "body": [
-    { "op": "function",
-      "name": "xdsl_main",
+    {
+      "op": "function",
+      "name": "lib_main",
       "args": [
-        ["max", "i64"]
+        [
+          "max",
+          "i64"
+        ]
       ],
-
       "body": [
-        { "op": "set",
-          "var": { "op": "var", "name": "toto", "type": "i64" },
-          "val": { "op": "const", "val": 0 }
+        {
+          "op": "set",
+          "var": {
+            "op": "var",
+            "name": "toto",
+            "type": "i64"
+          },
+          "val": {
+            "op": "const",
+            "val": 0
+          }
         },
-        { "op": "set",
-          "var": { "op": "var", "name": "i", "type": "i64" },
-          "val": { "op": "const", "val": 0 }
+        {
+          "op": "set",
+          "var": {
+            "op": "var",
+            "name": "i",
+            "type": "i64"
+          },
+          "val": {
+            "op": "const",
+            "val": 0
+          }
         },
-        { "op": "while",
-          "cond": { "op": "binary",
+        {
+          "op": "while",
+          "cond": {
+            "op": "binary",
             "ope": "<",
-            "lhs": { "op": "var", "name": "i" },
-            "rhs": { "op": "var", "name": "max" }
+            "lhs": {
+              "op": "var",
+              "name": "i"
+            },
+            "rhs": {
+              "op": "var",
+              "name": "max"
+            }
           },
           "thenBlock": [
-            { "op": "set",
-              "var": { "op": "var", "name": "toto" },
-              "val": { "op": "binary",
+            {
+              "op": "set",
+              "var": {
+                "op": "var",
+                "name": "toto"
+              },
+              "val": {
+                "op": "binary",
                 "ope": "+",
-                "lhs": { "op": "var", "name": "toto" },
-                "rhs": { "op": "var", "name": "i" }
+                "lhs": {
+                  "op": "var",
+                  "name": "toto"
+                },
+                "rhs": {
+                  "op": "var",
+                  "name": "i"
+                }
               }
             },
-            { "op": "set",
-              "var": { "op": "var", "name": "i" },
-              "val": { "op": "binary",
+            {
+              "op": "set",
+              "var": {
+                "op": "var",
+                "name": "i"
+              },
+              "val": {
+                "op": "binary",
                 "ope": "+",
-                "lhs": { "op": "var", "name": "i" },
-                "rhs": { "op": "const", "val": 1 }
+                "lhs": {
+                  "op": "var",
+                  "name": "i"
+                },
+                "rhs": {
+                  "op": "const",
+                  "val": 1
+                }
               }
             }
           ]
         },
-        { "op": "var", "name": "toto" }
+        {
+          "op": "var",
+          "name": "toto"
+        }
       ]
     }
   ]

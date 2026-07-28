@@ -1,6 +1,6 @@
 import sys
 
-from xdsljson.operations import (
+from jsonmlir.operations import (
     Binary,
     Const,
     Function,
@@ -11,11 +11,11 @@ from xdsljson.operations import (
     Var,
     While,
 )
-from xdsljson.pipeline.compiler import compiler
+from jsonmlir.pipeline.compiler import compiler
 
 module = Module([
     Function(
-        "xdsl_main",
+        "lib_main",
         [("max", TyScalar(Scalar.i64))],
         [
             Set(Var(name="toto", type="i64"), Const(0)),

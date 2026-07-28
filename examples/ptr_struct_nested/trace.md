@@ -22,7 +22,7 @@ struct Simulation {
 ```
 
 ```cpp
-define i64 @_mlir_ciface_xdsl_main(i64 %0, i64 %1) local_unnamed_addr #0 {
+define i64 @_mlir_ciface_lib_main(i64 %0, i64 %1) local_unnamed_addr #0 {
   %3 = inttoptr i64 %0 to ptr     // ptr simu 
   %4 = load i64, ptr %3, align 4  // i64 noeuds
   %5 = inttoptr i64 %4 to ptr     // ptr noeuds

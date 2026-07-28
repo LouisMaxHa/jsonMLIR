@@ -1,36 +1,94 @@
 {
   "op": "module",
   "body": [
-    { "op": "define struct",
-    "name": "Real3", "size": 24,
-    "fields": [
-      [ "x", "f64",  0, 8 ],
-      [ "y", "f64",  8, 8 ],
-      [ "z", "f64", 16, 8 ]
-    ]
-  },
-  { "op": "function",
-    "name": "xdsl_main",
-    "args": [],
-    "body": [
-    { "op": "alloc",
-      "name": "myStruct",
-      "type": {"struct": "Real3"}
+    {
+      "op": "define struct",
+      "name": "Real3",
+      "size": 24,
+      "fields": [
+        [
+          "x",
+          "f64",
+          0,
+          8
+        ],
+        [
+          "y",
+          "f64",
+          8,
+          8
+        ],
+        [
+          "z",
+          "f64",
+          16,
+          8
+        ]
+      ]
     },
-    { "op": "set",
-        "var": { "op": "var", "name": "myStruct", "indices": ["x"] },
-        "val": { "op": "const", "val": 0.1, "type": "f64"}
-    },
-    { "op": "set",
-        "var": { "op": "var", "name": "myStruct", "indices": ["y"] },
-        "val": { "op": "const", "val": 0.2, "type": "f64"}
-    },
-    { "op": "set",
-        "var": { "op": "var", "name": "myStruct", "indices": ["z"] },
-        "val": { "op": "const", "val": 0.3, "type": "f64"}
-    },
-    {"op": "var", "name": "myStruct", "indices": []}
-    ]
-  }
-    ]
+    {
+      "op": "function",
+      "name": "lib_main",
+      "args": [],
+      "body": [
+        {
+          "op": "alloc",
+          "name": "myStruct",
+          "type": {
+            "struct": "Real3"
+          }
+        },
+        {
+          "op": "set",
+          "var": {
+            "op": "var",
+            "name": "myStruct",
+            "indices": [
+              "x"
+            ]
+          },
+          "val": {
+            "op": "const",
+            "val": 0.1,
+            "type": "f64"
+          }
+        },
+        {
+          "op": "set",
+          "var": {
+            "op": "var",
+            "name": "myStruct",
+            "indices": [
+              "y"
+            ]
+          },
+          "val": {
+            "op": "const",
+            "val": 0.2,
+            "type": "f64"
+          }
+        },
+        {
+          "op": "set",
+          "var": {
+            "op": "var",
+            "name": "myStruct",
+            "indices": [
+              "z"
+            ]
+          },
+          "val": {
+            "op": "const",
+            "val": 0.3,
+            "type": "f64"
+          }
+        },
+        {
+          "op": "var",
+          "name": "myStruct",
+          "indices": []
+        }
+      ]
+    }
+  ]
 }

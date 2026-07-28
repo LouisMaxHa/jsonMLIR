@@ -1,4 +1,4 @@
-# xdsl-json compiler pipeline (JSON/YAML → MLIR → LLVM → native binary)
+# compiler pipeline (JSON/YAML → MLIR → LLVM → native binary)
 build/
 *.ll
 *.mlir

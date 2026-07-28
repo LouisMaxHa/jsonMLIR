@@ -1,6 +1,6 @@
 import sys
 
-from xdsljson.operations import (
+from jsonmlir.operations import (
     Alloc,
     Binary,
     DefineStruct,
@@ -10,8 +10,8 @@ from xdsljson.operations import (
     TyPtr,
     Var,
 )
-from xdsljson.pipeline.compiler import compiler
-from xdsljson.variables.ty.ty_struct import TyStruct
+from jsonmlir.pipeline.compiler import compiler
+from jsonmlir.variables.ty.ty_struct import TyStruct
 
 module = Module([
     DefineStruct(
@@ -23,7 +23,7 @@ module = Module([
     ),
 
     Function(
-        "xdsl_main",
+        "lib_main",
         [
             ("v1", TyPtr(TyStruct("Real3"))),
             ("v2", TyPtr(TyStruct("Real3"))),

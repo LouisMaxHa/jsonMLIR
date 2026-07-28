@@ -41,7 +41,7 @@ docs: .venv/
 
 .PHONY: json-format
 json-format: .venv/
-	uv run python -m xdsljson.schema_gen --output .
+	uv run python -m jsonmlir.schema_gen --output .
 
 .PHONY: examples-test
 examples-test: .venv/
@@ -51,11 +51,11 @@ examples-test: .venv/
 examples: examples-array examples-somme
 
 examples-array: .venv/
-	MLIR_BIN_DIR=$(MLIR_BIN_DIR) uv run python src/xdsljson/cli.py compile examples/array_read.json
+	MLIR_BIN_DIR=$(MLIR_BIN_DIR) uv run python src/jsonmlir/cli.py compile examples/array_read.json
 	./examples/array.out
 
 examples-somme: .venv/
-	MLIR_BIN_DIR=$(MLIR_BIN_DIR) uv run python src/xdsljson/cli.py compile examples/somme.json
+	MLIR_BIN_DIR=$(MLIR_BIN_DIR) uv run python src/jsonmlir/cli.py compile examples/somme.json
 	./examples/somme.out
 
 # Répertoire des binaires MLIR/LLVM (override : make MLIR_BIN_DIR=…)

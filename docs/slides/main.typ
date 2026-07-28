@@ -265,7 +265,7 @@ Suite
           match self.ope.value:
               case "+":
                   op = AddiOp(ssa_l, ssa_r)
-                  builder.insert(op)      # Opération xDSL
+                  builder.insert(op)      # Opération jsonMLIR
                   ssa_result = op.result  # Valeur SSA
 
           # On renvoie le résultat
