@@ -1,53 +1,30 @@
-# xdsl-json
+# jsonMLIR
 
 This project lets you generate specialized shared libraries using MLIR, based on JSON function descriptions.
 The generated libraries can then be called from your codebase without having to write a complex front-end for your solution.
 
-Unlike working directly with MLIR, the JSON description provides an extra level of abstraction.
+Unlike working directly with MLIR, the JSON description provides an extra level of abstraction allowing you to manipulate array, ptr, struct and array of pointer to struct !
 This solution is designed to be generic, modular, and accessible — make sure you have a good understanding of each operation before using it.
-
-Additionally, the [xDSL](https://xdsl.dev/) Python library lets you easily define your own dialects and passes.
-Feel free to check out their interactive tutorials!
 
 
 ## Installation
 
-This project depends on a local checkout of [xDSL](https://xdsl.dev/) via a git submodule.
-Install [uv](https://docs.astral.sh/uv/), then:
-
-```bash
-git clone git@github.com:LouisMaxHa/xdsl-json.git
-cd xdsl-json
-git submodule update --init --recursive
-
-make install
-source .venv/bin/activate
-uv pip show xdsl
-# You should have a dev version, something like
-# Name: xdsl
-# Version: 0.1.dev3+g5f103bc63
-
-# Run example
-uv run python src/xdsljson/pipeline/cli.py examples/soa_read/main.json
-uv run python src/xdsljson/pipeline/cli.py examples/ptr_array_read/main.json
-
-# Run tests
-uv run python tests/run_tests.py
-```
+Installation guide is available in [INSTALL.md](https://github.com/LouisMaxHa/jsonMLIR/blob/main/INSTALL.md).
+You will need to build llvm-project from source and generate Python interface for MLIR, this can take one or two hour depending on your hardware.
 
 ## Options
 - `--tree`, `-T`        : Print the Python AST as a **T**ree
-- `--xdsl`, `-x`        : Print the generated **x**DSL code
-- `--xdsl_passes`, `-p` : Print the generated xDSL code after each xDSL **p**ass
-- `--xdsl_opti`, `-X`   : Print the generated xDSL code after all xDSL passes
-- `--mlir`, `-m`        : Print the generated **M**LIR code
-- `--mlir_opti`, `-M`   : Print the generated MLIR code after MLIR passes
-- `--mlir_llvm`, `-l`   : Print the MLIR code using the LLVM MLIR dialect
-- `--llvm`, `-L`        : Print the generated **L**LVM code
-- `--cmd`, `-C`         : Print the **c**ommands used during code generation
+- `--mlir`, `-m`        : Print the **m**LIR IR
+- `--mlir_opti`, `-M`   : Print the **M**LIR IR after optimisations passes
+- `--mlir_llvm`, `-n`   : Print the MLIR code after lowering to LLVM dialect of MLIR
+- `--llvm`, `-l`        : Print the **l**LVM code
+- `--llvm_opti`, `-L`   : Print the **L**LVM code after LLVM optimisations passes
+- `--cmd`, `-C`         : Print **C**ommands used during code generation
+- `--All`, `-A`         : Print all steps and informations
 
 - `--mlir-bin-dir` : Directory containing the `mlir-opt` executable
 - `--project-root` : Change the current directory (used for `./build`)
+- `--output-name`  : Name of the generated librairie
 
 ## Execution trace example
 
@@ -148,9 +125,7 @@ We start by writting by hand the Json version (this step can be automated for yo
 
 We can then call our compiler tool :
 ```bash
-uv run python src/xdsljson/pipeline/cli.py examples/somme/main.json  -TxmML
-# Equivalent to
-We start by 
+uv run python src/xdsljson/pipeline/cli.py examples/somme/main.json  -All
 ```
 
 ```

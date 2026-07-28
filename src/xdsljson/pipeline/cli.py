@@ -145,7 +145,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "-A",
         "--all",
         action="store_true",
-        help="Shortcut for tree+mlir+mlir_opti+llvm+llvm_opti.",
+        help="Shortcut for tree+cmd+mlir+mlir_opti+llvm+llvm_opti.",
     )
     parser.add_argument(
         "-d",
@@ -166,7 +166,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
     if "--all" in argv:
         for expend in [
-            "--tree", "--xdsl",
+            "--tree", "--cmd",
             "--mlir", "--mlir_opti",
             "--llvm", "--llvm_opti"
         ]:

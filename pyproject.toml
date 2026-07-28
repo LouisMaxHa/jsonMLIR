@@ -1,10 +1,9 @@
 [project]
 name = "xdsljson"
-description = "A template project using xDSL."
+description = "A template project using MLIR interface."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "xdsl~=0.63.0",
     "pydantic~=2.13.0",
     "pyyaml~=6.0",
 ]
@@ -17,14 +16,11 @@ license = { text = "Apache License v2.0 with LLVM Exceptions" }
 authors = []
 dynamic = ["version"]
 
-[project.entry-points.'xdsl.universe']
-xdsl_template = 'xdsljson.universe:UNIVERSE'
-
 [project.scripts]
 xdsljson = "xdsljson.pipeline.compiler:main"
 
 [project.urls]
-Homepage = "https://xdsl.dev/xdsl-template"
+Homepage = "https://github.com/Louis-max-H/xdsl-json"
 "Source Code" = "https://github.com/Louis-max-H/xdsl-json"
 "Issue Tracker" = "https://github.com/Louis-max-H/xdsl-json/issues"
 
@@ -63,7 +59,7 @@ reportUnnecessaryTypeIgnoreComment = true
 typeCheckingMode = "strict"
 # Les bindings Python de MLIR (mlir_core) ne fournissent pas de py.typed.
 reportMissingTypeStubs = false
-extraPaths = ["src", "tests", "xdsl"]
+extraPaths = ["src", "tests"]
 "include" = ["docs", "src", "tests"]
 
 [tool.ruff]
@@ -117,9 +113,4 @@ exclude_lines = [
 format = "markdown"
 
 [tool.uv.workspace]
-members = [
-    "xdsl",
-]
-
-[tool.uv.sources]
-xdsl = { workspace = true }
+members = []
