@@ -8,7 +8,7 @@ from pathlib import Path
 from mlir.ir import Context, InsertionPoint, Location, Module
 
 from xdsljson.operations.op_module import ModuleJsonOp
-from xdsljson.pipeline.cli import parse_args
+from xdsljson.pipeline.cli import parse_args, resolve_output_name
 from xdsljson.pipeline.commands import (
     Toolchain,
     build_sample_ast_json,
@@ -103,10 +103,9 @@ MLIR_OPT_LOWER_TO_LLVM: Sequence[str] = [
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
-    input_path = args.input
 
     # Json -> Pydantic AST
-    data = load_input_file(input_path)
+    data = load_input_file(args.input)
     module_ast = build_sample_ast_json(data)
     return compiler(module_ast, argv)
 
@@ -114,6 +113,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 def compiler(module_ast: ModuleJsonOp, argv: Sequence[str] | None = None) -> int:
     # Read params and configuration
     args = parse_args(argv)
+    output_name = resolve_output_name(args.input, args.output_name)
     configure_trace()
     set_display_cmd(args.cmd)
     project_root = args.project_root.resolve()
@@ -124,18 +124,17 @@ def compiler(module_ast: ModuleJsonOp, argv: Sequence[str] | None = None) -> int
 
     # Set build path
     input_path = args.input
-    stem = input_path.parent.stem
     build_dir = project_root / "build"
     build_dir.mkdir(parents=True, exist_ok=True)
     path_call       = input_path.with_suffix(".call.cpp")
-    path_mlir       = build_dir / f"{stem}.mlir"
-    path_optimized  = build_dir / f"{stem}.mlir.opt"
-    path_llvm_mlir  = build_dir / f"{stem}.llvm.mlir"
-    path_llvm       = build_dir / f"{stem}.ll"
-    path_llvm_opti  = build_dir / f"{stem}.ll.opt"
+    path_mlir       = build_dir / f"{output_name}.mlir"
+    path_optimized  = build_dir / f"{output_name}.mlir.opt"
+    path_llvm_mlir  = build_dir / f"{output_name}.llvm.mlir"
+    path_llvm       = build_dir / f"{output_name}.ll"
+    path_llvm_opti  = build_dir / f"{output_name}.ll.opt"
     path_object     = input_path.with_suffix(".o")
     path_runnable   = input_path.with_suffix(".out")
-    path_last_print = build_dir / f"{stem}.last.ir"
+    path_last_print = build_dir / f"{output_name}.last.ir"
     if not args.show_diff:
         path_last_print = None
 

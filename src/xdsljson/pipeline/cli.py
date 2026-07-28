@@ -40,6 +40,20 @@ def _expand_grouped_trace_flags(argv: Sequence[str]) -> list[str]:
     return expanded
 
 
+def resolve_output_name(input_path: Path, explicit: str | None = None) -> str:
+    """Nom de base des artefacts intermédiaires dans ``build/``.
+
+    Pour ``main.json`` / ``main.py`` (exemples parallèles), utilise le nom du
+    dossier parent afin d'éviter les conflits entre compilations concurrentes.
+    """
+    if explicit is not None:
+        return explicit
+    resolved = input_path.resolve()
+    if resolved.stem == "main":
+        return resolved.parent.name
+    return resolved.stem
+
+
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="xdsljson",
@@ -51,7 +65,18 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "input",
         type=Path,
-        help="Path to the input file (.json, .yaml, or .yml).",
+        help="Path to the input file (.json, .yaml, .yml, or .py).",
+    )
+    parser.add_argument(
+        "-o",
+        "--output-name",
+        dest="output_name",
+        default=None,
+        metavar="NAME",
+        help=(
+            "Base name for intermediate build artifacts in build/ "
+            "(default: parent folder for main.json/main.py, else input stem)."
+        ),
     )
     parser.add_argument(
         "--mlir-bin-dir",

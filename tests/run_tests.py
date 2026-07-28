@@ -87,8 +87,16 @@ def _compile_example(
     project_root: Path,
 ) -> subprocess.CompletedProcess[str] | None:
     """Compile an example in a subprocess for process-level isolation."""
+    output_name = input_path.parent.name
     if input_path.suffix == ".py":
-        cmd = [sys.executable, str(input_path), "--project-root", str(project_root)]
+        cmd = [
+            sys.executable,
+            str(input_path),
+            "--project-root",
+            str(project_root),
+            "--output-name",
+            output_name,
+        ]
     else:
         cmd = [
             sys.executable,
@@ -97,6 +105,8 @@ def _compile_example(
             str(input_path),
             "--project-root",
             str(project_root),
+            "--output-name",
+            output_name,
             "--link",
         ]
     try:

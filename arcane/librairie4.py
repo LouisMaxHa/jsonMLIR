@@ -380,4 +380,4 @@ module = Module([
     ),
 ])
 
-compiler(module, [__file__] + sys.argv[1:])
+compiler(module, [__file__, "--output-name", "librairie4"] + sys.argv[1:])

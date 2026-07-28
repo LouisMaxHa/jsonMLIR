@@ -23,8 +23,8 @@ cmake -G Ninja ../llvm \
    -DLLVM_ENABLE_ASSERTIONS=ON \
    -DCMAKE_C_COMPILER=clang -DMLIR_ENABLE_BINDINGS_PYTHON=ON -DCMAKE_CXX_COMPILER=clang++ -DLLVM_ENABLE_LLD=ON
 
-uv run cmake --build build
-ninja -C build check-mlir-python
+make
+ninja check-mlir-python
 
 # Export path
 export PATH=~/llvm-project/build/bin:$PATH  
