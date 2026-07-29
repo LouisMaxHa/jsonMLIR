@@ -82,7 +82,7 @@ MLIR_OPT_PASSES: list[str] = [
 
 LLVM_OPT_PASSES: list[str] = [
     "globaldce",
-    "default<O3>" #O1
+    "default<O1>" #O1
 ]
 
 MLIR_OPT_LOWER_TO_LLVM: Sequence[str] = [

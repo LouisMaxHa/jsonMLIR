@@ -3,7 +3,7 @@ name = "jsonmlir"
 description = "A template project using MLIR interface."
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = ["pydantic~=2.13.0", "pyyaml~=6.0"]
+dependencies = ["pydantic~=2.13.0", "pyyaml~=6.0", "rich>=13.9.0"]
 
 classifiers = ["Programming Language :: Python :: 3 :: Only", "Typing :: Typed"]
 license = { text = "Apache License v2.0 with LLVM Exceptions" }
@@ -32,7 +32,6 @@ packages = ["src/jsonmlir"]
 [dependency-groups]
 dev = [
     "filecheck==1.0.3",
-    "rich>=13.9.0",
     "lit<19.0.0",
     "pytest>=8.3.4",
     "pytest-cov",
