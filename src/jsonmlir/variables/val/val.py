@@ -2,12 +2,15 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
+from typing import Generic, TypeVar
 
 from mlir.ir import Type, Value
 
 from jsonmlir.trace import trace_step
 from jsonmlir.utils.ssa_dim import index_to_ssa
 from jsonmlir.variables.ty.ty import TyNode
+
+T = TypeVar("T", bound=TyNode)
 
 
 def auto_log(log_format):
@@ -16,8 +19,8 @@ def auto_log(log_format):
         return func
     return wrapper
 
-class ValNode(ABC):
-
+class ValNode(ABC, Generic[T]):
+    ty: T
 
     # ──────────── Init ────────────
     @staticmethod
@@ -46,16 +49,14 @@ class ValNode(ABC):
             setattr(cls, name, wrapped)
 
     # ──────────── Getter ────────────
-    @abstractmethod
-    def get_ty(self) -> TyNode:
-        raise NotImplementedError
+    def get_ty(self) -> T:
+        return self.ty
 
     def __repr__(self) -> str:
         return f"Val{self.get_ty()!r}"
 
-    @abstractmethod
     def get_type(self) -> Type:
-        raise NotImplementedError
+        return self.ty.get_type()
 
     @abstractmethod
     def get_dim(self) -> Sequence[Value]:

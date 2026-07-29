@@ -15,11 +15,10 @@ from jsonmlir.variables.val.val_buffer import ValBuffer
 from jsonmlir.variables.val.val_memref import ValMemref
 
 
-class ValSOA(ValNode):
+class ValSOA(ValNode[TySOA]):
     """Vue Structure-of-Arrays : une colonne memref strided par attribut."""
 
     addrs: dict[str, ValMemref | ValBuffer]
-    ty: TySOA
 
     # ──────────── Init ────────────
     def __init__(self, ty: TySOA, addrs: dict[str, ValMemref | ValBuffer]):
@@ -37,9 +36,6 @@ class ValSOA(ValNode):
         return f"ValSOA(addrs={list(self.addrs.keys())}, ty={self.ty!r})"
 
     # ──────────── Getter ────────────
-    def get_ty(self) -> TySOA:
-        return self.ty
-
     def get_type(self) -> Type:
         raise ValueError("SOA don't have equivalent in MLIR")
 

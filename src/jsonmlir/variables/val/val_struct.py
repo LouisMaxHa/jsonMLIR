@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from mlir.dialects import memref
-from mlir.ir import MemRefType, Type, Value
+from mlir.ir import MemRefType, Value
 
 from jsonmlir.trace import trace_step
 from jsonmlir.utils import ssa_val
@@ -14,9 +14,8 @@ from jsonmlir.variables.val.val import ValNode
 from jsonmlir.variables.val.val_SSA import ValSSA
 
 
-class ValStruct(ValNode):
+class ValStruct(ValNode[TyStruct]):
     addr: Value
-    ty: TyStruct
 
     # ──────────── Init ────────────
     def __init__(
@@ -43,12 +42,6 @@ class ValStruct(ValNode):
 
 
     # ──────────── Getter ────────────
-    def get_ty(self) -> TyStruct:
-        return self.ty
-
-    def get_type(self) -> Type:
-        return self.ty.get_type()
-
     def get_dim(self) -> Sequence[Value]:
         raise NotImplementedError
 

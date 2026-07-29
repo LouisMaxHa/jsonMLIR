@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from mlir.dialects import llvm, memref
-from mlir.ir import MemRefType, Type, Value
+from mlir.ir import MemRefType, Value
 
 from jsonmlir.trace import trace_step
 from jsonmlir.utils.bare_ptr import bare_ptr_to_memref
@@ -14,9 +14,8 @@ from jsonmlir.variables.val.val_scalar import ValScalar
 from jsonmlir.variables.val.val_SSA import ValSSA
 
 
-class ValPtr(ValNode):
+class ValPtr(ValNode[TyPtr]):
     addr: Value
-    ty: TyPtr
 
     # ──────────── Init ────────────
 
@@ -54,12 +53,6 @@ class ValPtr(ValNode):
         return val
 
     # ──────────── Getter ────────────
-    def get_ty(self) -> TyPtr:
-        return self.ty
-
-    def get_type(self) -> Type:
-        return self.ty.get_type()
-
     def get_dim(self) -> Sequence[Value]:
         return []
 

@@ -17,9 +17,8 @@ from jsonmlir.variables.ty.ty_struct import TyStruct
 from jsonmlir.variables.val.val import ValNode
 
 
-class ValMemref(ValNode):
+class ValMemref(ValNode[TyMemref]):
     addr: Value[MemRefType]
-    ty: TyMemref
 
     # ──────────── Init ────────────
     # Problème avec les structs, j'ai du memref<5xmemref<8xi8>>
@@ -54,12 +53,6 @@ class ValMemref(ValNode):
                 raise NotSupportedError
 
     # ──────────── Getter ────────────
-    def get_ty(self) -> TyMemref:
-        return self.ty
-
-    def get_type(self) -> MemRefType:
-        return self.ty.get_type()
-
     def get_base(self) -> TyNode:
         return self.ty.base
 

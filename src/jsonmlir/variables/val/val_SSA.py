@@ -10,10 +10,8 @@ from jsonmlir.variables.ty.ty_SSA import TySSA
 from jsonmlir.variables.val.val import ValNode
 
 
-class ValSSA(ValNode):
-    ty: TySSA
+class ValSSA(ValNode[TySSA]):
     addr: Value
-
 
     # ──────────── Init ────────────
     def __init__(self, addr: Value):
@@ -28,9 +26,6 @@ class ValSSA(ValNode):
         raise ValueError("ValSSA should not be used for operations")
 
     # ──────────── Getter ────────────
-    def get_ty(self) -> TySSA:
-        return self.ty
-
     def get_type(self) -> Type:
         return self.addr.type
 

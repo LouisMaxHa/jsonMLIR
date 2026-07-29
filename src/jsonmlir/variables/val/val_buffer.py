@@ -21,9 +21,8 @@ from jsonmlir.variables.val.val_memref import ValMemref
 from jsonmlir.variables.val.val_SSA import ValSSA
 
 
-class ValBuffer(ValNode):
+class ValBuffer(ValNode[TyBuffer]):
     addr: Value
-    ty: TyBuffer
 
     # ──────────── Init ────────────
     def __init__(
@@ -50,12 +49,6 @@ class ValBuffer(ValNode):
         return ValBuffer(type, source.get_SSA([]))
 
     # ──────────── Getter ────────────
-    def get_ty(self) -> TyBuffer:
-        return self.ty
-
-    def get_type(self) -> MemRefType:
-        return self.ty.get_type()
-
     def get_base(self) -> TyNode:
         return self.ty.base
 

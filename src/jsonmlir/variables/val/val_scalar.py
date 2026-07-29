@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from mlir.dialects import memref
-from mlir.ir import MemRefType, Type, Value
+from mlir.ir import MemRefType, Value
 
 from jsonmlir.trace import trace_step
 from jsonmlir.variables.ty.ty import TyNode
@@ -12,9 +12,8 @@ from jsonmlir.variables.val.val import ValNode
 from jsonmlir.variables.val.val_SSA import ValSSA
 
 
-class ValScalar(ValNode):
+class ValScalar(ValNode[TyScalar]):
     addr: Value
-    ty: TyScalar
 
     # ──────────── Init ────────────
 
@@ -52,12 +51,6 @@ class ValScalar(ValNode):
         return val
 
     # ──────────── Getter ────────────
-    def get_ty(self) -> TyScalar:
-        return self.ty
-
-    def get_type(self) -> Type:
-        return self.ty.get_type()
-
     def get_dim(self) -> Sequence[Value]:
         return []
 
