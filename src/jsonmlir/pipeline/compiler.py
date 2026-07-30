@@ -104,6 +104,7 @@ MLIR_OPT_LOWER_TO_LLVM: Sequence[str] = [
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
 
+    print('hey')
     # Json -> Pydantic AST
     data = load_input_file(args.input)
     module_ast = build_sample_ast_json(data)
@@ -114,7 +115,6 @@ def compiler(module_ast: ModuleJsonOp, argv: Sequence[str] | None = None) -> int
     # Read params and configuration
     args = parse_args(argv)
     output_name = resolve_output_name(args.input, args.output_name)
-    enable_trace()
     set_display_cmd(args.cmd)
     project_root = args.project_root.resolve()
     toolchain = Toolchain.discover(
@@ -139,10 +139,12 @@ def compiler(module_ast: ModuleJsonOp, argv: Sequence[str] | None = None) -> int
         path_last_print = None
 
     # Pydantic -> MLIR (bindings Python)
-    if args.tree:
+    enable_trace(args.ast)
+    if args.ast:
         print()
         print("────── Python AST")
         enable_trace(True)
+
     with Context(), Location.unknown():
         module = Module.create()
         with InsertionPoint(module.body):

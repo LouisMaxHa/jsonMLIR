@@ -126,10 +126,12 @@ ENV MLIR_BIN_DIR="${LLVM_PREFIX}/bin"
 ENV SETUPTOOLS_SCM_PRETEND_VERSION=0.0.0
 
 WORKDIR /opt/jsonMLIR
-COPY . /opt/jsonMLIR
+# Pas d'examples/ dans l'image : le wrapper monte le dépôt hôte pour éviter toute confusion.
+COPY pyproject.toml README.md ./
+RUN pip install --upgrade pip
 
 # Installation de jsonMLIR
-RUN pip install --upgrade pip \
-    && pip install -e . --group dev
+COPY src/ ./src/
+RUN pip install -e . --group dev
 
-CMD ["python", "tests/run_tests.py", "-j", "8"]
+CMD ["python", "-c", "import jsonmlir; import mlir.ir; print('OK')"]

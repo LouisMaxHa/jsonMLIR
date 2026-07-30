@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# Host wrapper: mount the current directory and the jsonMLIR repo into the container.
+#
+# Usage:
+#   jsonmlir myCode/myLib.py -TC                    # from your project
+#   jsonmlir examples/somme/main.json -A            # jsonMLIR CLI (JSON/YAML)
+#   jsonmlir tests/run_tests.py -j 8                # from the clone
+#   jsonmlir bash                                   # shell in the container
+#   jsonmlir build-image                            # rebuild the image
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+JSONMLIR_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+IMAGE="${JSONMLIR_IMAGE:-jsonmlir}"
+STAMP_FILE="${JSONMLIR_ROOT}/.jsonmlir-docker-stamp"
+
+# Rebuild the image if requested, missing, or hash changed
+stamp=$(sha256sum "${JSONMLIR_ROOT}/Dockerfile" "${JSONMLIR_ROOT}/pyproject.toml" | sha256sum | awk '{print $1}')
+
+force_build=false
+if [[ "${1:-}" == build-image || "${1:-}" == build ]]; then
+    force_build=true
+    shift
+fi
+
+if $force_build \
+    || ! docker image inspect "$IMAGE" &>/dev/null \
+    || [ ! -f "$STAMP_FILE" ] \
+    || [ "$(cat "$STAMP_FILE")" != "$stamp" ]; then
+
+    echo "jsonmlir: building Docker image..." >&2
+    docker build -t "$IMAGE" "${JSONMLIR_ROOT}"
+    echo "$stamp" > "$STAMP_FILE"
+    $force_build && exit 0
+fi
+
+# Mount workspace
+echo "[jsonMLIR] Mount $(pwd) at /workspace" >&2
+run_args=(
+    --rm
+    -v "$(pwd):/workspace"
+    -v "${JSONMLIR_ROOT}:/opt/jsonMLIR"
+    -w /workspace
+)
+
+# Add -i/-t to docker run only when stdin/stdout are terminals
+# (avoids breaking pipelines and redirections).
+[[ -t 0 ]] && run_args+=(-i)
+[[ -t 1 ]] && run_args+=(-t)
+
+# Run
+if [[ $# -eq 0 ]]; then
+    cmd=(python tests/run_tests.py -j 8)
+elif [[ "$1" == bash || "$1" == sh || "$1" == python ]]; then
+    cmd=("$@")
+elif [[ "$1" == *.json || "$1" == *.yaml || "$1" == *.yml ]]; then
+    cmd=(jsonmlir "$@")
+else
+    cmd=(python "$@")
+fi
+docker run "${run_args[@]}" "$IMAGE" "${cmd[@]}"

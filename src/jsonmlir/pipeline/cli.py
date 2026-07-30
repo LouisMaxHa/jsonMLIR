@@ -9,7 +9,8 @@ from collections.abc import Sequence
 from pathlib import Path
 
 _FLAG_ALIASES: dict[str, str] = {
-    "T": "--tree",
+    "a": "--ast",
+    "A": "--All",
     "P": "--mlir_passes",
     "m": "--mlir",
     "M": "--mlir_opti",
@@ -17,7 +18,6 @@ _FLAG_ALIASES: dict[str, str] = {
     "l": "--llvm",
     "L": "--llvm_opti",
     "C": "--cmd",
-    "A": "--all",
     "d": "--show-diff",
 }
 
@@ -94,10 +94,10 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="Project root (for examples/ and build/).",
     )
     parser.add_argument(
-        "-T",
-        "--tree",
+        "-a",
+        "--ast",
         action="store_true",
-        help="Print the Python AST as a tree (codegen trace).",
+        help="Print the Python AST (codegen trace).",
     )
     parser.add_argument(
         "-P",
@@ -143,9 +143,9 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "-A",
-        "--all",
+        "--All",
         action="store_true",
-        help="Shortcut for tree+cmd+mlir+mlir_opti+llvm+llvm_opti.",
+        help="Shortcut for ast+cmd+mlir+mlir_opti+llvm+llvm_opti.",
     )
     parser.add_argument(
         "-d",
@@ -164,9 +164,9 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         argv = sys.argv[1:]
     argv = _expand_grouped_trace_flags(argv)
 
-    if "--all" in argv:
+    if "--All" in argv:
         for expend in [
-            "--tree", "--cmd",
+            "--ast", "--cmd",
             "--mlir", "--mlir_opti",
             "--llvm", "--llvm_opti"
         ]:
@@ -177,5 +177,6 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 if __name__ == "__main__":
     from jsonmlir.pipeline.compiler import main
+    print("hey")
 
     raise SystemExit(main())

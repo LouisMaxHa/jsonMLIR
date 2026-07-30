@@ -9,18 +9,34 @@ This solution is designed to be generic, modular, and accessible — make sure y
 
 ## Installation
 
-Installation guide is available in [INSTALL.md](https://github.com/LouisMaxHa/jsonMLIR/blob/main/INSTALL.md).
-You will need to build llvm-project from source and generate Python interface for MLIR, this can take one or two hour depending on your hardware.
+Full installation guide is available in [INSTALL.md](https://github.com/LouisMaxHa/jsonMLIR/blob/main/INSTALL.md).
+You can get a real case example using Arcane [here](https://github.com/LouisMaxHa/arcane-benchs/blob/view-struct-example/microhydro/README_MLIR.md)
+
+```bash
+# Install
+docker build -t jsonmlir .
+export PATH="$(pwd)/bin:$PATH"
+
+# Run
+jsonmlir examples/somme/main.json -A         # JSON -> Shared librairie
+jsonmlir examples/python_max/main.py         # or from python project
+jsonmlir jsonmlir python tests/run_tests.py  # run tests
+```
+
+The `jsonmlir` wrapper will:
+- Mounts the current directory on `/workspace`
+- Mounts the source repository (latest version of the code without need to rebuild)
+- Rebuilds the image if the `Dockerfile` or `pyproject.toml` has changed
 
 ## Options
-- `--tree`, `-T`        : Print the Python AST as a **T**ree
+- `--ast`, `-a`         : Print the Python **a**ST
 - `--mlir`, `-m`        : Print the **m**LIR IR
 - `--mlir_opti`, `-M`   : Print the **M**LIR IR after optimisations passes
 - `--mlir_llvm`, `-n`   : Print the MLIR code after lowering to LLVM dialect of MLIR
 - `--llvm`, `-l`        : Print the **l**LVM code
 - `--llvm_opti`, `-L`   : Print the **L**LVM code after LLVM optimisations passes
 - `--cmd`, `-C`         : Print **C**ommands used during code generation
-- `--All`, `-A`         : Print all steps and informations
+- `--All`, `-A`         : Print **A**ll steps and informations
 
 - `--mlir-bin-dir` : Directory containing the `mlir-opt` executable
 - `--project-root` : Change the current directory (used for `./build`)
@@ -61,9 +77,9 @@ You will need to build llvm-project from source and generate Python interface fo
     └── run_tests.py       # Run tests
 ```
 
-## Trace example
+## Example
 
-We want to generate a function that look like this:
+We want to generate a librairie with a function that look like this:
 ```python
 def lib_main(max: int) -> int:
     toto = 0
@@ -74,7 +90,34 @@ def lib_main(max: int) -> int:
     return toto
 ```
 
-We start by writting by hand the Json version (this step can be automated for your custom language).
+We can do it using a python AST:
+
+```python
+module = Module([ Function( "lib_main",
+        [("max", TyScalar(Scalar.i64))],
+        [   Set(Var(name="toto", type="i64"), Const(0)),
+            Set(Var(name="i",    type="i64"), Const(0)),
+            While( 
+                Binary("<", Var("i"), Var("max")),
+                [
+                    Set(
+                        Var("toto"),
+                        Binary("+", Var("toto"), Var("i")),
+                    ),
+                    Set(
+                        Var("i"),
+                        Binary("+", Var("i"), Const(1)),
+                    ),
+                ],
+            ),
+            Var("toto"),
+        ],
+    )
+])
+compiler(module, [__file__] + sys.argv[1:])
+```
+
+Or by writting by hand the Json version (this step can be automated for your custom language).
 
 ```json
 { "op": "module",
@@ -124,11 +167,13 @@ We start by writting by hand the Json version (this step can be automated for yo
 ```
 
 We can then call our compiler tool :
+
 ```bash
-uv run python src/jsonmlir/pipeline/cli.py examples/somme/main.json  -All
+jsonmlir examples/somme/main.json -A
+jsonmlir python examples/pytohn_somme/main.py -A
 ```
 
-```
+```bash
 ────── Python AST
 ModuleJsonOp  ← []
 └── FunctionOp('lib_main')  ← []

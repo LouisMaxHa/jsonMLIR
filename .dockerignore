@@ -1,5 +1,6 @@
 .git
 .venv
+examples/
 **/__pycache__
 **/*.pyc
 build/
