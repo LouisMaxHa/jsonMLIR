@@ -7,8 +7,9 @@ from jsonmlir.operations.codegen import OpNode
 from jsonmlir.operations.op_binary import BinaryOp
 from jsonmlir.operations.op_call import CallOp
 from jsonmlir.operations.op_constant import ConstOp
+from jsonmlir.operations.op_unary import UnaryOp
 from jsonmlir.operations.op_var import VarOp
-from jsonmlir.trace import trace_note, trace_step
+from jsonmlir.utils.trace import trace_note, trace_step
 from jsonmlir.variables.factory import Factory
 from jsonmlir.variables.memory import variables_heap
 from jsonmlir.variables.val.val import ValNode
@@ -19,7 +20,7 @@ class SetOp(OpNode):
 
     op: Literal["set"] = "set"
     var: VarOp
-    val: BinaryOp | ConstOp | VarOp | CallOp
+    val: BinaryOp | ConstOp | VarOp | CallOp | UnaryOp
 
     @trace_step("SetOp: {self.var.name}")
     def codegen(self) -> Sequence[ValNode]:

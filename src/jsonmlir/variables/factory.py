@@ -6,7 +6,7 @@ from collections.abc import Sequence
 
 from mlir.ir import Value
 
-from jsonmlir.trace import trace_step
+from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_buffer import TyBuffer
 from jsonmlir.variables.ty.ty_memref import TyMemref

@@ -10,7 +10,7 @@ from mlir.ir import (
     Value,
 )
 
-from jsonmlir.trace import trace_step
+from jsonmlir.utils.trace import trace_step
 from jsonmlir.utils import ssa_val
 from jsonmlir.utils.enum_scalars import Scalar
 from jsonmlir.utils.ssa_dim import dimensions_to_ssa

@@ -12,6 +12,7 @@ from jsonmlir.operations.dsl import (
     Math,
     Print,
     Set,
+    Unary,
     Var,
     While,
     Alloc
@@ -26,6 +27,7 @@ from jsonmlir.operations.op_function import FunctionOp
 from jsonmlir.operations.op_module import ModuleJsonOp
 from jsonmlir.operations.op_print import PrintOp
 from jsonmlir.operations.op_set import SetOp
+from jsonmlir.operations.op_unary import UnaryOp, UnaryOperator
 from jsonmlir.operations.op_var import VarOp
 from jsonmlir.operations.op_math import MathOp
 from jsonmlir.operations.op_while import WhileOp
@@ -60,6 +62,9 @@ __all__ = [
     "TyScalar",
     "TyMemref",
     "TyPtr",
+    "Unary",
+    "UnaryOp",
+    "UnaryOperator",
     "Var",
     "VarOp",
     "While",

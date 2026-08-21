@@ -7,7 +7,7 @@ from mlir.dialects.func import CallOp as MLIRCallOp
 from mlir.ir import Value
 
 from jsonmlir.operations.codegen import OpNode
-from jsonmlir.trace import trace_step
+from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.memory import functions_registry
 from jsonmlir.variables.val.val import ValNode
 from jsonmlir.variables.val.val_SSA import ValSSA

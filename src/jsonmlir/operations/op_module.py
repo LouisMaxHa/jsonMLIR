@@ -9,7 +9,7 @@ from jsonmlir.operations.codegen import OpNode
 from jsonmlir.operations.op_define_function import DefineFunctionOp
 from jsonmlir.operations.op_define_struct import DefineStructOp
 from jsonmlir.operations.op_function import FunctionOp
-from jsonmlir.trace import trace_step
+from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.memory import functions_registry, structs_type
 from jsonmlir.variables.val.val import ValNode
 

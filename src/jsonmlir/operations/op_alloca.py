@@ -9,7 +9,7 @@ from pydantic import Field
 
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.operations.op_var import VarOp
-from jsonmlir.trace import trace_step
+from jsonmlir.utils.trace import trace_step
 from jsonmlir.utils.ssa_val import idx_to_ssavalues
 from jsonmlir.variables.factory import Factory
 from jsonmlir.variables.memory import variables_heap

@@ -24,6 +24,7 @@ from jsonmlir.operations.op_module import ModuleJsonOp, ModuleStatement
 from jsonmlir.operations.op_operator import OperatorOp
 from jsonmlir.operations.op_print import PrintOp
 from jsonmlir.operations.op_set import SetOp
+from jsonmlir.operations.op_unary import UnaryOp, UnaryOperator
 from jsonmlir.operations.op_var import VarOp
 from jsonmlir.operations.op_while import WhileOp
 from jsonmlir.utils.enum_scalars import Scalar
@@ -55,6 +56,9 @@ def _parse_ope(ope: str | OperatorOp) -> OperatorOp:
 
 def _parse_ope_math(ope: str | MathOperator) -> MathOperator:
     return ope if isinstance(ope, MathOperator) else MathOperator(ope)
+
+def _parse_ope_unary(ope: str | UnaryOperator) -> UnaryOperator:
+    return ope if isinstance(ope, UnaryOperator) else UnaryOperator(ope)
 
 
 def Module(body: Sequence[ModuleStatement] = ()) -> ModuleJsonOp:
@@ -130,7 +134,14 @@ def Binary(
     return BinaryOp(lhs=lhs, rhs=rhs, ope=_parse_ope(ope))
 
 
-def Set(var: VarOp, val: BinaryOp | ConstOp | VarOp | CallOp) -> SetOp:
+def Unary(
+    ope: str | UnaryOperator,
+    value: BaseValue,
+) -> UnaryOp:
+    return UnaryOp(ope=_parse_ope_unary(ope), value=value)
+
+
+def Set(var: VarOp, val: BinaryOp | ConstOp | VarOp | CallOp | UnaryOp) -> SetOp:
     return SetOp(var=var, val=val)
 
 

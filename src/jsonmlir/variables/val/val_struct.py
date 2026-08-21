@@ -5,7 +5,7 @@ from collections.abc import Sequence
 from mlir.dialects import memref
 from mlir.ir import MemRefType, Value
 
-from jsonmlir.trace import trace_step
+from jsonmlir.utils.trace import trace_step
 from jsonmlir.utils import ssa_val
 from jsonmlir.utils.enum_scalars import Scalar
 from jsonmlir.variables.ty.ty import TyNode

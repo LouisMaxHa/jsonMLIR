@@ -5,7 +5,7 @@ from decimal import InvalidOperation
 
 from mlir.ir import Type, Value
 
-from jsonmlir.trace import trace_step
+from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.memory import STRUCTS_TYPE
 from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_buffer import TyBuffer

@@ -4,7 +4,7 @@ from collections.abc import Sequence
 
 from mlir.ir import Type, Value
 
-from jsonmlir.trace import trace_step
+from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_SSA import TySSA
 from jsonmlir.variables.val.val import ValNode

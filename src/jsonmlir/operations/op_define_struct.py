@@ -6,7 +6,7 @@ from typing import Literal
 from mlir.dialects import llvm
 
 from jsonmlir.operations.codegen import OpNode
-from jsonmlir.trace import trace_step
+from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.memory import FIELD_TYPE, STRUCTS_TYPE, structs_type
 from jsonmlir.variables.val.val import ValNode
 

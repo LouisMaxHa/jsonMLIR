@@ -21,7 +21,7 @@ from jsonmlir.pipeline.commands import (
     set_display_cmd,
     write_mlir,
 )
-from jsonmlir.trace import enable_trace
+from jsonmlir.utils.trace import enable_trace
 
 
 def print_if(

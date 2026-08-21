@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Literal
 from mlir.dialects.math import SqrtOp
 
 from jsonmlir.operations.codegen import OpNode
-from jsonmlir.trace import trace_step
+from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.val.val import ValNode
 from jsonmlir.variables.val.val_SSA import ValSSA
 

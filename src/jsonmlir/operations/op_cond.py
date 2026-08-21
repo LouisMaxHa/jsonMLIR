@@ -8,7 +8,7 @@ from mlir.ir import InsertionPoint
 
 from jsonmlir.operations.block import codegenBlock
 from jsonmlir.operations.codegen import OpNode
-from jsonmlir.trace import trace_step
+from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.val.val import ValNode
 
 if TYPE_CHECKING:

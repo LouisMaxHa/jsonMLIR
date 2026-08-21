@@ -6,7 +6,7 @@ from typing import Literal
 from pydantic import Field
 
 from jsonmlir.operations.codegen import OpNode
-from jsonmlir.trace import trace_step
+from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.val.val import ValNode
 from jsonmlir.variables.var import Var

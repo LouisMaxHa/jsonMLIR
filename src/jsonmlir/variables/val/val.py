@@ -6,7 +6,7 @@ from typing import Generic, TypeVar
 
 from mlir.ir import Type, Value
 
-from jsonmlir.trace import trace_step
+from jsonmlir.utils.trace import trace_step
 from jsonmlir.utils.ssa_dim import index_to_ssa
 from jsonmlir.variables.ty.ty import TyNode
 

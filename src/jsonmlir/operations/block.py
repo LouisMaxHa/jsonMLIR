@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from mlir.ir import Block, InsertionPoint
 
-from jsonmlir.trace import trace_step
+from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.val.val import ValNode
 
 if TYPE_CHECKING:
