@@ -8,10 +8,11 @@
         [
           "myArray",
           {
-            "memref": [
-              null,
-              "i64"
-            ]
+            "type": "memref",
+            "dims": [
+              null
+            ],
+            "base": "i64"
           }
         ],
         [

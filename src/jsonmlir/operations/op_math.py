@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Literal
 
 from mlir.dialects.math import SqrtOp
 
+from jsonmlir.utils.discriminants import json_op_discriminator
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.val.val import ValNode
@@ -21,7 +22,7 @@ class MathOperator(Enum):
 class MathOp(OpNode):
     """Opération binaire composée de deux opérandes."""
 
-    op: Literal["math"] = "math"
+    op: Literal["math"] = json_op_discriminator("math")
     ope: MathOperator
     value: BaseValue
 

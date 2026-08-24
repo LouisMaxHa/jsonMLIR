@@ -2,20 +2,22 @@ from __future__ import annotations
 
 import math
 from collections.abc import Sequence
-from dataclasses import dataclass
+from typing import Literal
 
 from mlir.ir import MemRefType, ShapedType
+from pydantic import Field
 
+from jsonmlir.utils.discriminants import json_ty_discriminator
 from jsonmlir.utils.enum_scalars import Scalar
 from jsonmlir.utils.ssa_check import all_int
 from jsonmlir.variables.ty.ty import TyNode
-from jsonmlir.variables.ty.ty_struct import TyStruct
+from jsonmlir.variables.ty.ty_struct import StructRef
 
 
-@dataclass(frozen=True)
 class TyBuffer(TyNode):
-    dimensions: Sequence[int | None]
-    base: TyStruct
+    type: Literal["buffer"] = json_ty_discriminator("buffer")
+    dimensions: tuple[int | None, ...] = Field(alias="dims")
+    base: StructRef
 
     def get_type(self) -> MemRefType:
         dynamic = ShapedType.get_dynamic_size()
@@ -28,9 +30,9 @@ class TyBuffer(TyNode):
         return self.get_type()
 
     def get_n_elements(self) -> Sequence[int | None]:
-        assert self.dimensions != []
+        assert self.dimensions != ()
         if self.dimensions[-1] is None:
-            return self.dimensions
+            return list(self.dimensions)
 
         # Verify last items is multiple of struct size
         assert self.dimensions[-1] % self.base.struct.SIZE == 0

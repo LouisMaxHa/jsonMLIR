@@ -1,0 +1,45 @@
+name: ts-ast schema
+
+on:
+  push:
+    paths:
+      - 'src/jsonmlir/**'
+      - 'scripts/generate_ts_ast.py'
+      - 'ts-ast/**'
+      - 'tests/test_ts_ast_schema.py'
+  pull_request:
+    paths:
+      - 'src/jsonmlir/**'
+      - 'scripts/generate_ts_ast.py'
+      - 'ts-ast/**'
+      - 'tests/test_ts_ast_schema.py'
+
+jobs:
+  schema:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install jsonmlir (no MLIR bindings required for schema tests)
+        run: pip install pydantic pytest
+
+      - name: Regenerate ts-ast and check diff
+        run: |
+          python scripts/generate_ts_ast.py
+          git diff --exit-code ts-ast/generated
+
+      - name: Setup Node for TS example
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run schema tests
+        run: |
+          cd ts-ast && npm install
+          cd .. && PYTHONPATH=src pytest tests/test_ts_ast_schema.py -v

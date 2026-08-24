@@ -27,8 +27,10 @@
         [
           "myStruct",
           {
-            "addr": {
-              "struct": "noeud"
+            "type": "ptr",
+            "base": {
+              "type": "struct",
+              "name": "noeud"
             }
           }
         ]

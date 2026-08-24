@@ -5,6 +5,7 @@ from typing import Literal
 
 from mlir.dialects import llvm
 
+from jsonmlir.utils.discriminants import json_op_discriminator
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.memory import FIELD_TYPE, STRUCTS_TYPE, structs_type
@@ -12,7 +13,7 @@ from jsonmlir.variables.val.val import ValNode
 
 
 class DefineStructOp(OpNode):
-    op: Literal["define struct"] = "define struct"
+    op: Literal["define struct"] = json_op_discriminator("define struct")
     name: str
     size: int
     fields: Sequence[FIELD_TYPE] # name, type, offset, Size

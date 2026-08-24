@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from typing import Literal
 
 from mlir.ir import IntegerType, MemRefType
 
+from jsonmlir.utils.discriminants import json_ty_discriminator
 from jsonmlir.variables.ty.ty import TyNode
 
 
-@dataclass(frozen=True)
 class TyPtr(TyNode):
+    type: Literal["ptr"] = json_ty_discriminator("ptr")
     base: TyNode
 
     def get_type(self) -> IntegerType:

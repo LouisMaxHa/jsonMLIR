@@ -4,6 +4,7 @@ from collections.abc import Sequence
 from enum import Enum
 from typing import TYPE_CHECKING, Literal
 
+from jsonmlir.utils.discriminants import json_op_discriminator
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.operations.op_binary import binary_codegen
 from jsonmlir.operations.op_constant import ConstOp
@@ -24,7 +25,7 @@ class UnaryOperator(Enum):
 class UnaryOp(OpNode):
     """Opération unaire, réécrite en opération binaire avec une constante."""
 
-    op: Literal["unary"] = "unary"
+    op: Literal["unary"] = json_op_discriminator("unary")
     ope: UnaryOperator
     value: BaseValue
 

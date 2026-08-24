@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Literal
 
+from jsonmlir.utils.discriminants import json_op_discriminator
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.operations.op_binary import BinaryOp
 from jsonmlir.operations.op_call import CallOp
@@ -18,7 +19,7 @@ from jsonmlir.variables.val.val import ValNode
 class SetOp(OpNode):
     """Affecte une expression à une variable."""
 
-    op: Literal["set"] = "set"
+    op: Literal["set"] = json_op_discriminator("set")
     var: VarOp
     val: BinaryOp | ConstOp | VarOp | CallOp | UnaryOp
 

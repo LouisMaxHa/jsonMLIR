@@ -1,16 +1,18 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from typing import Literal
 
 from mlir.ir import MemRefType, Type
+from pydantic import Field
 
+from jsonmlir.utils.discriminants import json_ty_discriminator
 from jsonmlir.utils.enum_scalars import Scalar
 from jsonmlir.variables.ty.ty import TyNode
 
 
-@dataclass(frozen=True)
 class TyScalar(TyNode):
-    scalar: Scalar
+    type: Literal["scalar"] = json_ty_discriminator("scalar")
+    scalar: Scalar = Field(alias="name")
 
     def get_type(self) -> Type:
         return self.scalar.get_type()

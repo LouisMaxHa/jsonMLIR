@@ -1,14 +1,16 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from typing import Literal
 
 from mlir.ir import MemRefType, Type
 
+from jsonmlir.utils.discriminants import json_ty_discriminator
 from jsonmlir.variables.ty.ty import TyNode
 
 
-@dataclass(frozen=True)
 class TySSA(TyNode):
+    type: Literal["ssa"] = json_ty_discriminator("ssa")
+
     def get_type(self) -> Type:
         raise ValueError("SSAValue can be any type")
 

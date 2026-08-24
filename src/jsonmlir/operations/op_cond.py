@@ -7,6 +7,7 @@ from mlir.dialects import scf
 from mlir.ir import InsertionPoint
 
 from jsonmlir.operations.block import codegenBlock
+from jsonmlir.utils.discriminants import json_op_discriminator
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.val.val import ValNode
@@ -16,7 +17,7 @@ if TYPE_CHECKING:
 
 
 class CondOp(OpNode):
-    op: Literal["if"] = "if"
+    op: Literal["if"] = json_op_discriminator("if")
     cond: BaseValue
     thenBlock: Sequence[BaseValue]
     elseBlock: Sequence[BaseValue] | None = None

@@ -5,15 +5,24 @@ from collections.abc import Sequence
 from enum import EnumMeta
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, model_validator
 
+from jsonmlir.utils.discriminants import normalize_op_discriminant
 from jsonmlir.variables.val.val import ValNode
 
 
 # ABC : Abstract Base Class
 class OpNode(BaseModel, ABC):
     # Nécessaire pour autoriser des types non-Pydantic dans les sous-classes
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        populate_by_name=True,
+    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _normalize_discriminant(cls, data: Any) -> Any:
+        return normalize_op_discriminant(data)
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         # Pydantic n'accepte que des arguments nommés : on mappe les arguments
