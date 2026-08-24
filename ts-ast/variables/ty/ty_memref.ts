@@ -19,4 +19,17 @@ export class TyMemref extends TyNode {
             ])],
         ]);
     }
+
+    override byteSize(): number {
+        let n = 1;
+        for (const d of this.dimensions) {
+            if (d === null) {
+                throw new Error(
+                    `Cannot compute byteSize of memref with dynamic dimension: ${JSON.stringify(this.dimensions)}`,
+                );
+            }
+            n *= d;
+        }
+        return n * this.base.byteSize();
+    }
 }

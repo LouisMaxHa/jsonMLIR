@@ -8,6 +8,9 @@ import { TyStruct } from './ty_struct.js';
  * Byte buffer over a struct layout. JSON form is
  * ``{ "buffer": [dim…, "structName"] }`` where the base is the
  * **struct name string**, not a nested type object.
+ *
+ * Dimensions are already in bytes (last dim is typically
+ * ``n_elements * struct_layout_size``).
  */
 export class TyBuffer extends TyNode {
     constructor(
@@ -24,5 +27,18 @@ export class TyBuffer extends TyNode {
                 jsonString(this.base.name),
             ])],
         ]);
+    }
+
+    override byteSize(): number {
+        let n = 1;
+        for (const d of this.dimensions) {
+            if (d === null) {
+                throw new Error(
+                    `Cannot compute byteSize of buffer with dynamic dimension: ${JSON.stringify(this.dimensions)}`,
+                );
+            }
+            n *= d;
+        }
+        return n;
     }
 }

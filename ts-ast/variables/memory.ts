@@ -21,3 +21,33 @@ export class FieldType {
         ]);
     }
 }
+
+/** Registered struct layout (populated by ``DefineStruct`` / ``DefineStructOp``). */
+export type StructDef = {
+    name: string;
+    /** Declared layout size (may include padding). */
+    size: number;
+    fields: readonly FieldType[];
+};
+
+/** Global registry of struct definitions, keyed by name. */
+export const structsRegistry = new Map<string, StructDef>();
+
+export function registerStruct(
+    name: string,
+    size: number,
+    fields: readonly FieldType[],
+): void {
+    structsRegistry.set(name, { name, size, fields });
+}
+
+export function lookupStruct(name: string): StructDef {
+    const def = structsRegistry.get(name);
+    if (def === undefined) {
+        throw new Error(
+            `Struct ${JSON.stringify(name)} is not defined. `
+            + 'Call DefineStruct before querying its size.',
+        );
+    }
+    return def;
+}

@@ -1,7 +1,7 @@
 import { CompositeGeneratorNode as CGN } from 'langium/generate';
 
 import { jsonList, jsonNumber, jsonObject, jsonString } from '../utils/json.js';
-import type { FieldType } from '../variables/memory.js';
+import { registerStruct, type FieldType } from '../variables/memory.js';
 import { OpNode } from './codegen.js';
 
 /** Discriminant is ``"define struct"`` (with a space), matching the Python schema. */
@@ -14,6 +14,7 @@ export class DefineStructOp extends OpNode {
         readonly fields: readonly FieldType[],
     ) {
         super();
+        registerStruct(name, size, fields);
     }
 
     override codegen(): CGN {

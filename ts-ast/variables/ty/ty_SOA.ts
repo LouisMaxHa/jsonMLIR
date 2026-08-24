@@ -24,4 +24,17 @@ export class TySOA extends TyNode {
             ])],
         ]);
     }
+
+    override byteSize(): number {
+        let n = 1;
+        for (const d of this.nElements) {
+            if (d === null) {
+                throw new Error(
+                    `Cannot compute byteSize of SOA with dynamic count: ${JSON.stringify(this.nElements)}`,
+                );
+            }
+            n *= d;
+        }
+        return n * this.base.byteSize();
+    }
 }

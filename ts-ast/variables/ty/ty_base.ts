@@ -6,4 +6,7 @@ import { CompositeGeneratorNode as CGN } from 'langium/generate';
  */
 export abstract class TyNode {
     abstract codegen(): CGN;
+
+    /** Size of a value of this type, in bytes. */
+    abstract byteSize(): number;
 }

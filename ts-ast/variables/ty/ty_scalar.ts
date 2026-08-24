@@ -1,6 +1,6 @@
 import { CompositeGeneratorNode as CGN, expandToNode } from 'langium/generate';
 
-import { Scalar } from '../../utils/enum_scalars.js';
+import { byteSize as scalarByteSize, Scalar } from '../../utils/enum_scalars.js';
 import { jsonString } from '../../utils/json.js';
 import { TyNode } from './ty_base.js';
 
@@ -11,5 +11,9 @@ export class TyScalar extends TyNode {
 
     override codegen(): CGN {
         return expandToNode`${jsonString(this.scalar)}`;
+    }
+
+    override byteSize(): number {
+        return scalarByteSize(this.scalar);
     }
 }
