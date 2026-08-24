@@ -1,0 +1,3 @@
+[submodule "ts-ast"]
+	path = ts-ast
+	url = git@github.com:LouisMaxHa/jsonMLIR-modane.git
