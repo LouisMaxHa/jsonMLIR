@@ -17,7 +17,7 @@ def _install_mlir_stubs() -> None:
             if full not in sys.modules:
                 child = _AutoStubModule(full)
                 if self.__name__ == "mlir" or name == "dialects":
-                    child.__path__ = []  # type: ignore[attr-defined]
+                    child.__path__ = []
                 sys.modules[full] = child
                 setattr(self, name, child)
                 return child
@@ -32,7 +32,7 @@ def _install_mlir_stubs() -> None:
         ) -> types.ModuleType:
             mod = _AutoStubModule(spec.name)
             if spec.name == "mlir" or spec.name.endswith(".dialects"):
-                mod.__path__ = []  # type: ignore[attr-defined]
+                mod.__path__ = []
             return mod
 
         def exec_module(self, module: types.ModuleType) -> None:
