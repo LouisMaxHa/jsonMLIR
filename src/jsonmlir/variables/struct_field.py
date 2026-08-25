@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 from pydantic import BaseModel, ConfigDict, model_serializer, model_validator
 
@@ -22,17 +22,21 @@ class StructField(BaseModel):
 
         if isinstance(data, StructField):
             return data
-        if isinstance(data, (list, tuple)) and len(data) == 4:
-            field_name, field_type, offset, size = data
-            return {
-                "name": field_name,
-                "type": parse_ty(field_type),
-                "offset": offset,
-                "size": size,
-            }
-        if isinstance(data, dict) and "type" in data and isinstance(data["type"], str):
-            return {**data, "type": parse_ty(data["type"])}
-        return data
+        if isinstance(data, (list, tuple)):
+            parts = cast(list[Any], data)
+            if len(parts) == 4:
+                field_name, field_type, offset, size = parts
+                return {
+                    "name": field_name,
+                    "type": parse_ty(field_type),
+                    "offset": offset,
+                    "size": size,
+                }
+        if isinstance(data, dict):
+            data_dict = cast(dict[str, Any], data)
+            if "type" in data_dict and isinstance(data_dict["type"], str):
+                return {**data_dict, "type": parse_ty(data_dict["type"])}
+        return cast(Any, data)
 
     @model_serializer(mode="plain")
     def _serialize_json(self) -> list[Any]:

@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import cast
 
 from mlir.ir import Value
 
 from jsonmlir.utils.trace import trace_step
-from jsonmlir.variables.ty.ty import TyNode
+from jsonmlir.variables.ty.ty import TyNode, TyNodeBase
 from jsonmlir.variables.ty.ty_buffer import TyBuffer
 from jsonmlir.variables.ty.ty_memref import TyMemref
 from jsonmlir.variables.ty.ty_ptr import TyPtr
@@ -29,7 +30,9 @@ class Factory:
     @staticmethod
     @trace_step("Factory.from_val", display_entry=True)
     def from_val(type: TyNode, value: ValNodeAny) -> ValNodeAny:
-        match type:
+        # cast vers TyNodeBase : le match sur l'union fermée TyNode est
+        # exhaustif, mais on garde le cas défensif pour les entrées invalides.
+        match cast(TyNodeBase, type):
             case TyPtr():
                 return ValPtr.init_from(type, value)
             case TySSA():

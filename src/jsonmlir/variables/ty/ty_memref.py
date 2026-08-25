@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Literal
+from typing import Any, Literal
 
 from mlir.ir import MemRefType, ShapedType
 from pydantic import Field
@@ -15,6 +15,10 @@ class TyMemref(TyNodeBase):
     type: Literal["memref"] = "memref"
     dimensions: tuple[int | None, ...] = Field(alias="dims")
     base: TyNested
+
+    # Constructeurs positionnels gérés par ``TyNodeBase.__init__`` (voir ty_buffer.py).
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
 
     def get_n_elements(self) -> Sequence[int | None]:
         return list(self.dimensions)

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Annotated, Any
+from typing import TYPE_CHECKING, Annotated, Any, cast
 
 from mlir.ir import MemRefType, Type
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, TypeAdapter
@@ -109,25 +109,27 @@ def parse_ty(value: Any) -> TyNodeBase:
     if isinstance(value, TyNodeBase):
         return value
 
-    def convert_to_dict(value: Any):
+    def convert_to_dict(value: Any) -> dict[str, Any]:
         if isinstance(value, str):
             return {"type": "scalar", "name": value}
 
         elif isinstance(value, dict):
-            if "type" in value:
-                return value
+            value_dict = cast(dict[str, Any], value)
+            if "type" in value_dict:
+                return value_dict
 
-            if "addr" in value:
-                return {"type": "ptr", "base": value["addr"]}
+            if "addr" in value_dict:
+                return {"type": "ptr", "base": value_dict["addr"]}
 
             for kind in ("memref", "soa", "buffer"):
-                if kind in value:
-                    *dimensions, base = value[kind]
+                if kind in value_dict:
+                    raw = cast(list[Any], value_dict[kind])
+                    dimensions, base = raw[:-1], raw[-1]
                     return {"type": kind, "dims": dimensions, "base": base}
 
             for key in ("struct", "name"):
-                if key in value:
-                    return {"type": "struct", "name": value[key]}
+                if key in value_dict:
+                    return {"type": "struct", "name": value_dict[key]}
 
         return {"legacy": value}
 

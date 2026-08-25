@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Sequence
-from typing import Literal
+from typing import Any, Literal
 
 from mlir.ir import MemRefType, ShapedType
 from pydantic import Field
@@ -17,6 +17,12 @@ class TyBuffer(TyNodeBase):
     type: Literal["buffer"] = "buffer"
     dimensions: tuple[int | None, ...] = Field(alias="dims")
     base: StructRef
+
+    # Les constructeurs positionnels (ex. ``TyBuffer(dims, base)``) sont
+    # gérés par ``TyNodeBase.__init__`` ; on les déclare ici pour pyright,
+    # qui synthétiserait sinon une signature pydantic keyword-only.
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
 
     def get_type(self) -> MemRefType:
         dynamic = ShapedType.get_dynamic_size()
