@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import cast
+
 from mlir.dialects.arith import ConstantOp, IndexCastOp
 from mlir.ir import (
     FloatAttr,
@@ -49,10 +51,9 @@ def val_to_SSAValues(
                 attr = IntegerAttr.get(mlir_type, int(value))
 
         # Insert it at the start of the enclosing function's entry block
-        entry_block = function_entry_block(InsertionPoint.current.block)
-        op = ConstantOp(
-            mlir_type, attr, ip=InsertionPoint.at_block_begin(entry_block)
-        )
+        current_ip = cast(InsertionPoint, InsertionPoint.current)
+        entry_block = function_entry_block(current_ip.block)
+        op = ConstantOp(attr, ip=InsertionPoint.at_block_begin(entry_block))
         const_heap[key] = list(op.results)
 
     return const_heap[key]
