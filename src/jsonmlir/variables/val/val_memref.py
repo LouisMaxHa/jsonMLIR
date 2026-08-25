@@ -1,15 +1,14 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from sqlite3 import NotSupportedError
 
 from mlir.dialects import arith, memref
 from mlir.ir import MemRefType, ShapedType, Value
 
-from jsonmlir.utils.trace import trace_step
 from jsonmlir.utils.ssa_check import all_ssavalues
 from jsonmlir.utils.ssa_dim import dimensions_to_ssa
 from jsonmlir.utils.ssa_val import idx_to_ssavalues
+from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_memref import TyMemref
 from jsonmlir.variables.ty.ty_SSA import TySSA
@@ -48,9 +47,11 @@ class ValMemref(ValNode[TyMemref]):
             case TyMemref():
                 return ValMemref(type, source.get_SSA([]))
             case TySSA():
-                return ValMemref(type, source.get_SSA([]))
+                return ValMemref(        type, source.get_SSA([]))
             case _:
-                raise NotSupportedError
+                raise ValueError("Not supported")
+
+
 
     # ──────────── Getter ────────────
     def get_base(self) -> TyNode:

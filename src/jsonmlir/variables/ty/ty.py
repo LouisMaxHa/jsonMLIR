@@ -1,11 +1,18 @@
 from __future__ import annotations
 
-import warnings
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Annotated, Any, Union
 
 from mlir.ir import MemRefType, Type
-from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, BeforeValidator
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, TypeAdapter
+
+from jsonmlir.variables.ty.ty_buffer import TyBuffer
+from jsonmlir.variables.ty.ty_memref import TyMemref
+from jsonmlir.variables.ty.ty_ptr import TyPtr
+from jsonmlir.variables.ty.ty_scalar import TyScalar
+from jsonmlir.variables.ty.ty_SOA import TySOA
+from jsonmlir.variables.ty.ty_SSA import TySSA
+from jsonmlir.variables.ty.ty_struct import TyStruct
 
 """ABC commune aux types valeur (scalaires, struct, array).
 
@@ -14,6 +21,10 @@ Les types concrets forment une union discriminée ``TyNode`` sur le champ
 à la frontière JSON.
 """
 
+union = Annotated[
+    TyScalar | TyStruct | TyMemref | TyBuffer | TySOA | TyPtr | TySSA,
+    Field(discriminator="type"),
+]
 
 class TyNodeBase(BaseModel, ABC):
     model_config = ConfigDict(
@@ -47,40 +58,18 @@ class TyNodeBase(BaseModel, ABC):
     def get_memref_type(self) -> MemRefType:
         raise NotImplementedError
 
-
+# LMX Vraiment nécéssaire ?
 def dump_ty(value: TyNodeBase) -> Any:
     """Sérialise un type dans sa forme JSON canonique."""
     return value.model_dump(mode="json", by_alias=True)
+# LMX fin
 
-
+# LMX Est-ce vraiment nécéssaire ?
 _ty_adapter_instance: TypeAdapter[Any] | None = None
-
-
 def _get_ty_union_adapter() -> TypeAdapter[Any]:
     global _ty_adapter_instance
     if _ty_adapter_instance is None:
-        from jsonmlir.variables.ty.ty_buffer import TyBuffer
-        from jsonmlir.variables.ty.ty_memref import TyMemref
-        from jsonmlir.variables.ty.ty_ptr import TyPtr
-        from jsonmlir.variables.ty.ty_scalar import TyScalar
-        from jsonmlir.variables.ty.ty_SOA import TySOA
-        from jsonmlir.variables.ty.ty_SSA import TySSA
-        from jsonmlir.variables.ty.ty_struct import TyStruct
-
-        _ty_adapter_instance = TypeAdapter(
-            Annotated[
-                Union[  # noqa: UP007
-                    TyScalar,
-                    TyStruct,
-                    TyMemref,
-                    TyBuffer,
-                    TySOA,
-                    TyPtr,
-                    TySSA,
-                ],
-                Field(discriminator="type"),
-            ]
-        )
+        _ty_adapter_instance = TypeAdapter(union)
     return _ty_adapter_instance
 
 
@@ -95,65 +84,17 @@ def _coerce_ty_node(value: Any) -> Any:
 
 # Champs imbriqués (``TyPtr.base``, ``TyMemref.base``) : même coercition JSON que
 # ``TyNode``, sans importer l'union (elle contient déjà TyPtr / TyMemref).
+
 TyNested = Annotated[TyNodeBase, BeforeValidator(_coerce_ty_node)]
 
 
-def _build_ty_node_alias() -> Any:
-    from jsonmlir.variables.ty.ty_buffer import TyBuffer
-    from jsonmlir.variables.ty.ty_memref import TyMemref
-    from jsonmlir.variables.ty.ty_ptr import TyPtr
-    from jsonmlir.variables.ty.ty_scalar import TyScalar
-    from jsonmlir.variables.ty.ty_SOA import TySOA
-    from jsonmlir.variables.ty.ty_SSA import TySSA
-    from jsonmlir.variables.ty.ty_struct import TyStruct
-
-    union = Annotated[
-        Union[  # noqa: UP007
-            TyScalar,
-            TyStruct,
-            TyMemref,
-            TyBuffer,
-            TySOA,
-            TyPtr,
-            TySSA,
-        ],
-        Field(discriminator="type"),
-    ]
-    return Annotated[union, BeforeValidator(_coerce_ty_node)]
-
-
 if TYPE_CHECKING:
-    from jsonmlir.variables.ty.ty_buffer import TyBuffer
-    from jsonmlir.variables.ty.ty_memref import TyMemref
-    from jsonmlir.variables.ty.ty_ptr import TyPtr
-    from jsonmlir.variables.ty.ty_scalar import TyScalar
-    from jsonmlir.variables.ty.ty_SOA import TySOA
-    from jsonmlir.variables.ty.ty_SSA import TySSA
-    from jsonmlir.variables.ty.ty_struct import TyStruct
-
-    TyNode = Annotated[
-        Union[TyScalar, TyStruct, TyMemref, TyBuffer, TySOA, TyPtr, TySSA],
-        Field(discriminator="type"),
-    ]
+    TyNode = union
     TyNested = TyNode
 else:
-    TyNode = _build_ty_node_alias()
+    TyNode = Annotated[union, BeforeValidator(_coerce_ty_node)]
 
-
-def _legacy(value: dict[str, Any]) -> dict[str, Any] | None:
-    if "addr" in value:
-        return {"type": "ptr", "base": value["addr"]}
-
-    for kind in ("memref", "soa", "buffer"):
-        if kind in value:
-            *dimensions, base = value[kind]
-            return {"type": kind, "dims": dimensions, "base": base}
-
-    for key in ("struct", "name"):
-        if key in value:
-            return {"type": "struct", "name": value[key]}
-
-    return None
+# LMX FIN
 
 
 def parse_ty(value: Any) -> TyNodeBase:
@@ -161,19 +102,24 @@ def parse_ty(value: Any) -> TyNodeBase:
     if isinstance(value, TyNodeBase):
         return value
 
-    if isinstance(value, str):
-        value = {"type": "scalar", "name": value}
+    def convert_to_dict(value: Any):
+        if isinstance(value, str):
+            return {"type": "scalar", "name": value}
 
-    elif isinstance(value, dict):
-        if "type" not in value:
-            legacy = _legacy(value)
-            if legacy is None:
-                raise ValueError(f"Description de type non reconnue : {value!r}")
-            warnings.warn(
-                f"Forme de type obsolète {value!r} ; utiliser {legacy!r}.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            value = legacy
+        elif isinstance(value, dict):
+            if "addr" in value:
+                return {"type": "ptr", "base": value["addr"]}
 
-    return _get_ty_union_adapter().validate_python(value)
+            for kind in ("memref", "soa", "buffer"):
+                if kind in value:
+                    *dimensions, base = value[kind]
+                    return {"type": kind, "dims": dimensions, "base": base}
+
+            for key in ("struct", "name"):
+                if key in value:
+                    return {"type": "struct", "name": value[key]}
+
+        return {"legacy": value}
+
+    return _get_ty_union_adapter().validate_python(convert_to_dict(value))
+    return _get_ty_union_adapter().validate_python(convert_to_dict(value))

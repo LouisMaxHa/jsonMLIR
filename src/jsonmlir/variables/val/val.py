@@ -6,8 +6,8 @@ from typing import Generic, TypeVar
 
 from mlir.ir import Type, Value
 
-from jsonmlir.utils.trace import trace_step
 from jsonmlir.utils.ssa_dim import index_to_ssa
+from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.ty.ty import TyNodeBase
 
 T = TypeVar("T", bound=TyNodeBase)
@@ -35,7 +35,7 @@ class ValNode(ABC, Generic[T]):
         for name, method in cls.__dict__.items():
             parent_method = getattr(super(cls, cls), name, None)
 
-            # On annote trace step que si c'est une méthode
+            # Si c'est une méthode
             if not callable(method):
                 continue
 

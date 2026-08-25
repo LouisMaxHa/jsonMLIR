@@ -5,7 +5,7 @@ from enum import Enum
 from typing import TYPE_CHECKING, Literal
 
 from jsonmlir.operations.codegen import OpNode
-from jsonmlir.operations.op_binary import binary_codegen
+from jsonmlir.operations.op_binary import BinaryOp
 from jsonmlir.operations.op_constant import ConstOp
 from jsonmlir.operations.op_operator import OperatorOp
 from jsonmlir.utils.enum_scalars import Scalar, ScalarFamily
@@ -54,4 +54,4 @@ class UnaryOp(OpNode):
                 ope = OperatorOp.xorOp
                 const = ConstOp(val=1, type=scalar)
 
-        return binary_codegen(ope, values, const.codegen())
+        return BinaryOp(lhs = values, rhs = const, ope = ope).codegen()

@@ -8,8 +8,6 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from jsonmlir.operations.op_math import MathOp, MathOperator
-
 from jsonmlir.operations.base import BaseValue
 from jsonmlir.operations.op_alloc import AllocOp
 from jsonmlir.operations.op_alloca import AllocaOp
@@ -20,6 +18,7 @@ from jsonmlir.operations.op_constant import ConstOp
 from jsonmlir.operations.op_define_function import DefineFunctionOp
 from jsonmlir.operations.op_define_struct import DefineStructOp
 from jsonmlir.operations.op_function import FunctionOp
+from jsonmlir.operations.op_math import MathOp, MathOperator
 from jsonmlir.operations.op_module import ModuleJsonOp, ModuleStatement
 from jsonmlir.operations.op_operator import OperatorOp
 from jsonmlir.operations.op_print import PrintOp

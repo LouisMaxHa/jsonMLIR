@@ -27,5 +27,8 @@ structs_type: dict[str, STRUCTS_TYPE] = {}
 variables_heap: dict[str, ValNode] = {}
 functions_registry: dict[str, FunctionSignature] = {}
 
+# LMX Toujours nécéssaire ?
 # Rétrocompatibilité
 FIELD_TYPE = StructField
+
+# LMX fin

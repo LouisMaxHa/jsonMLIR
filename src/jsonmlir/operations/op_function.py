@@ -9,8 +9,8 @@ from mlir.ir import FunctionType, InsertionPoint, TypeAttr, UnitAttr
 from jsonmlir.operations.base import BaseValue
 from jsonmlir.operations.block import codegenBlock
 from jsonmlir.operations.codegen import OpNode
-from jsonmlir.utils.trace import trace_step
 from jsonmlir.utils.ssa_val import const_heap
+from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.factory import Factory
 from jsonmlir.variables.memory import variables_heap
 from jsonmlir.variables.ty.ty import TyNode

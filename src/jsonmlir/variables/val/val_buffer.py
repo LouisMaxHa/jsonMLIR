@@ -3,17 +3,12 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from mlir.dialects import arith, memref
-from mlir.ir import (
-    MemRefType,
-    ShapedType,
-    StridedLayoutAttr,
-    Value,
-)
+from mlir.ir import MemRefType, ShapedType, StridedLayoutAttr, Value
 
-from jsonmlir.utils.trace import trace_step
 from jsonmlir.utils import ssa_val
 from jsonmlir.utils.enum_scalars import Scalar
 from jsonmlir.utils.ssa_dim import dimensions_to_ssa
+from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_buffer import TyBuffer
 from jsonmlir.variables.val.val import ValNode

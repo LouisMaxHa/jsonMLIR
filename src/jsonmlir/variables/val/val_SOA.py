@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from decimal import InvalidOperation
 
 from mlir.ir import Type, Value
 
@@ -57,7 +56,7 @@ class ValSOA(ValNode[TySOA]):
     def _get_SSA(
         self,
     ) -> Value:
-        raise InvalidOperation(
+        raise ValueError(
             "ValScalar don't have SSA equivalent.Use get_SSA with attribut str"
         )
 

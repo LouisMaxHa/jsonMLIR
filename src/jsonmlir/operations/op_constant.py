@@ -4,9 +4,9 @@ from collections.abc import Sequence
 from typing import Literal
 
 from jsonmlir.operations.codegen import OpNode
-from jsonmlir.utils.trace import trace_step
 from jsonmlir.utils import ssa_val
 from jsonmlir.utils.enum_scalars import Scalar
+from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.val.val import ValNode
 from jsonmlir.variables.val.val_SSA import ValSSA
 

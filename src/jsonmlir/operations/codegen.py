@@ -23,16 +23,14 @@ class OpNode(BaseModel, ABC):
     # permettre l'instanciation manuelle, ex. Const(1, "i32").
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         if args:
+            # On extrait les parametre de la méthode
             fields = [f for f in type(self).model_fields if f != "op"]
-            if len(args) > len(fields):
-                raise TypeError(
-                    f"{type(self).__name__} need {len(fields)} arguments, got {len(args)}"
-                )
+
+            # On vérifie qu'un argument "name" ne soit pas déjà définis par un kwargs
             for name, value in zip(fields, args):
                 if name in kwargs:
                     raise TypeError(
-                        f"{type(self).__name__}: '{name}' fourni à la fois en "
-                        "positionnel et en mot-clé"
+                        f"{type(self).__name__}: '{name}' already defined in kwargs"
                     )
                 kwargs[name] = value
         super().__init__(**kwargs)
@@ -40,7 +38,7 @@ class OpNode(BaseModel, ABC):
     def __repr__(self) -> str:
         return type(self).__name__
 
-    # Force les sous-classes à implémenter cette méthode abstraite
+    # @abstractmethod force les sous-classes à implémenter cette méthode abstraite
     @abstractmethod
     def codegen(self) -> Sequence[ValNode]:
         """Génère l'opération MLIR au point d'insertion courant et retourne la SSA produite."""

@@ -5,8 +5,8 @@ from collections.abc import Sequence
 from mlir.dialects import llvm, memref
 from mlir.ir import MemRefType, Value
 
-from jsonmlir.utils.trace import trace_step
 from jsonmlir.utils.bare_ptr import bare_ptr_to_memref
+from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_ptr import TyPtr
 from jsonmlir.variables.val.val import ValNode
@@ -66,6 +66,7 @@ class ValPtr(ValNode[TyPtr]):
         index: Sequence[str | Value],
     ) -> ValNode:
         from jsonmlir.variables.factory import Factory
+
         # Return ptr
         if index == []:
             return ValSSA(self.get_SSA(index))

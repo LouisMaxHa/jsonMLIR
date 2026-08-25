@@ -150,6 +150,7 @@ invalid JSON produces **garbage IR or segfaults** instead of clean errors.
 
 ### 3.6 Fragile codegen tooling
 
+# LMX
 - `scripts/generate_ts_ast.py` **imports `tests.conftest`** to install MLIR
   stubs — a production script depending on the test package. It will break if
   `tests/` is excluded from a wheel.
@@ -160,6 +161,7 @@ invalid JSON produces **garbage IR or segfaults** instead of clean errors.
 
 ### 3.7 Type-safety / typing gaps
 
+# LMX
 - `reportAssertAlwaysTrue` and strict pyright are configured (`pyproject.toml:44-56`)
   but the codebase still relies on runtime asserts for narrowing
   (`var.py:45-53` `match (given_type is None, saved_type is None)` with asserts
@@ -174,7 +176,7 @@ invalid JSON produces **garbage IR or segfaults** instead of clean errors.
   nothing stops the stubs from masking real MLIR API misuse.
 
 ### 3.8 Security & hygiene
-
+# LMX
 - `mkdocs.yml:100` loads **polyfill.io** (`https://polyfill.io/v3/...`) — the
   domain was sold in 2024 and is flagged for serving malicious content. Remove it.
 - `.vscode/launch.json` leaks a **hardcoded personal path** from a *different*
@@ -188,7 +190,7 @@ invalid JSON produces **garbage IR or segfaults** instead of clean errors.
   `.gitignore` is otherwise effective.
 
 ### 3.9 Docs & CI mismatches
-
+# LMX
 - **Broken mkdocs nav** (`mkdocs.yml:22-24`): points to `index.md` and
   `reference.md` which **do not exist** in `docs/`.
 - **Repo URL inconsistency**: `mkdocs.yml` / `README.md` use
@@ -256,6 +258,7 @@ so stages are individually testable and the diff/print logic
 
 ### 4.5 Deduplicate the type-system unions (priority: medium)
 
+# LMX
 Generate the 7-type union once (single source) in `ty.py` and reuse it for
 `TyNode`, `TyNested`, and the lazy `TypeAdapter`, instead of the three copies.
 Also collapse the duplicated `match` tables in `enum_scalars.py` into data-driven
