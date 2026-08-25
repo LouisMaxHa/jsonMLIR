@@ -22,16 +22,16 @@ class BinaryOp(OpNode):
     """Opération binaire composée de deux opérandes."""
 
     op: Literal["binary"] = "binary"
-    lhs: BaseValue
-    rhs: BaseValue
+    lhs: BaseValue | Sequence[ValNode]
+    rhs: BaseValue | Sequence[ValNode]
     ope: OperatorOp
 
     @trace_step("BinaryOp: {self.ope.value}")
     def codegen(self) -> Sequence[ValNode]:
         """Applique un opérateur binaire sur des opérandes déjà générés."""
-        # Recursive codegen
-        lhs = self.lhs.codegen()
-        rhs = self.rhs.codegen()
+        # Recursive codegen (operands already materialized are used as-is)
+        lhs = self.lhs.codegen() if not isinstance(self.lhs, Sequence) else self.lhs
+        rhs = self.rhs.codegen() if not isinstance(self.rhs, Sequence) else self.rhs
 
 
         # Check same format

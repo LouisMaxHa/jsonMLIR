@@ -6,25 +6,12 @@ from typing import TYPE_CHECKING, Annotated, Any, Union
 from mlir.ir import MemRefType, Type
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, TypeAdapter
 
-from jsonmlir.variables.ty.ty_buffer import TyBuffer
-from jsonmlir.variables.ty.ty_memref import TyMemref
-from jsonmlir.variables.ty.ty_ptr import TyPtr
-from jsonmlir.variables.ty.ty_scalar import TyScalar
-from jsonmlir.variables.ty.ty_SOA import TySOA
-from jsonmlir.variables.ty.ty_SSA import TySSA
-from jsonmlir.variables.ty.ty_struct import TyStruct
-
 """ABC commune aux types valeur (scalaires, struct, array).
 
 Les types concrets forment une union discriminée ``TyNode`` sur le champ
 ``type``. Les formes historiques restent acceptées via :func:`parse_ty`
 à la frontière JSON.
 """
-
-union = Annotated[
-    TyScalar | TyStruct | TyMemref | TyBuffer | TySOA | TyPtr | TySSA,
-    Field(discriminator="type"),
-]
 
 class TyNodeBase(BaseModel, ABC):
     model_config = ConfigDict(
@@ -64,15 +51,6 @@ def dump_ty(value: TyNodeBase) -> Any:
     return value.model_dump(mode="json", by_alias=True)
 # LMX fin
 
-# LMX Est-ce vraiment nécéssaire ?
-_ty_adapter_instance: TypeAdapter[Any] | None = None
-def _get_ty_union_adapter() -> TypeAdapter[Any]:
-    global _ty_adapter_instance
-    if _ty_adapter_instance is None:
-        _ty_adapter_instance = TypeAdapter(union)
-    return _ty_adapter_instance
-
-
 def _coerce_ty_node(value: Any) -> Any:
     """Accepte raccourcis (``\"i64\"``) et formes legacy en entrée de champ ``TyNode``."""
     if isinstance(value, TyNodeBase):
@@ -88,13 +66,39 @@ def _coerce_ty_node(value: Any) -> Any:
 TyNested = Annotated[TyNodeBase, BeforeValidator(_coerce_ty_node)]
 
 
+# Les types concrets sont importés APRÈS la définition de ``TyNodeBase`` /
+# ``TyNested`` : ils en héritent, et les importer plus tôt déclencherait un
+# import circulaire (``ty`` <-> ``ty_*``).
+from jsonmlir.variables.ty.ty_buffer import TyBuffer
+from jsonmlir.variables.ty.ty_memref import TyMemref
+from jsonmlir.variables.ty.ty_ptr import TyPtr
+from jsonmlir.variables.ty.ty_scalar import TyScalar
+from jsonmlir.variables.ty.ty_SOA import TySOA
+from jsonmlir.variables.ty.ty_SSA import TySSA
+from jsonmlir.variables.ty.ty_struct import TyStruct
+
+
+union = Annotated[
+    TyScalar | TyStruct | TyMemref | TyBuffer | TySOA | TyPtr | TySSA,
+    Field(discriminator="type"),
+]
+
+# LMX Est-ce vraiment nécéssaire ?
+_ty_adapter_instance: TypeAdapter[Any] | None = None
+def _get_ty_union_adapter() -> TypeAdapter[Any]:
+    global _ty_adapter_instance
+    if _ty_adapter_instance is None:
+        _ty_adapter_instance = TypeAdapter(union)
+    return _ty_adapter_instance
+
+# LMX FIN
+
+
 if TYPE_CHECKING:
     TyNode = union
     TyNested = TyNode
 else:
     TyNode = Annotated[union, BeforeValidator(_coerce_ty_node)]
-
-# LMX FIN
 
 
 def parse_ty(value: Any) -> TyNodeBase:
@@ -107,6 +111,9 @@ def parse_ty(value: Any) -> TyNodeBase:
             return {"type": "scalar", "name": value}
 
         elif isinstance(value, dict):
+            if "type" in value:
+                return value
+
             if "addr" in value:
                 return {"type": "ptr", "base": value["addr"]}
 
@@ -121,5 +128,4 @@ def parse_ty(value: Any) -> TyNodeBase:
 
         return {"legacy": value}
 
-    return _get_ty_union_adapter().validate_python(convert_to_dict(value))
     return _get_ty_union_adapter().validate_python(convert_to_dict(value))
