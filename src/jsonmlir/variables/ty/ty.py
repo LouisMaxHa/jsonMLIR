@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING, Annotated, Any, Union
 from mlir.ir import MemRefType, Type
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, TypeAdapter
 
+from jsonmlir.utils.schema_shape import ast_schema_extra
+
 """ABC commune aux types valeur (scalaires, struct, array).
 
 Les types concrets forment une union discriminée ``TyNode`` sur le champ
@@ -18,6 +20,7 @@ class TyNodeBase(BaseModel, ABC):
         frozen=True,
         populate_by_name=True,
         arbitrary_types_allowed=True,
+        json_schema_extra=ast_schema_extra,
     )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:

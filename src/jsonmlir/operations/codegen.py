@@ -7,6 +7,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
+from jsonmlir.utils.schema_shape import ast_schema_extra
 from jsonmlir.variables.val.val import ValNode
 
 
@@ -16,6 +17,7 @@ class OpNode(BaseModel, ABC):
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
         populate_by_name=True,
+        json_schema_extra=ast_schema_extra,
     )
 
     # Pydantic n'accepte que des arguments nommés : on mappe les arguments

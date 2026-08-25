@@ -75,38 +75,6 @@ def _strip_generic_titles(node: Any) -> None:
             _strip_generic_titles(item)
 
 
-def _set_additional_properties_false(node: Any) -> None:
-    if isinstance(node, dict):
-        if node.get("type") == "object" and "additionalProperties" not in node:
-            node["additionalProperties"] = False
-        for value in node.values():
-            _set_additional_properties_false(value)
-    elif isinstance(node, list):
-        for item in node:
-            _set_additional_properties_false(item)
-
-
-def _require_const_discriminants(node: Any) -> None:
-    """Rend les discriminants ``op`` / ``type`` (``const``) obligatoires, sans default."""
-    if isinstance(node, dict):
-        if node.get("type") == "object":
-            props = node.get("properties")
-            if isinstance(props, dict):
-                for key in ("op", "type"):
-                    disc = props.get(key)
-                    if isinstance(disc, dict) and "const" in disc:
-                        disc.pop("title", None)
-                        disc.pop("default", None)
-                        required = node.setdefault("required", [])
-                        if key not in required:
-                            required.append(key)
-        for value in node.values():
-            _require_const_discriminants(value)
-    elif isinstance(node, list):
-        for item in node:
-            _require_const_discriminants(item)
-
-
 def _replace_refs(node: Any, mapping: dict[str, str]) -> None:
     if isinstance(node, dict):
         ref = node.get("$ref")
@@ -194,7 +162,5 @@ def clean_ast_schema_for_ts(schema: dict[str, Any]) -> dict[str, Any]:
     defs["JsonOp"] = json_op
 
     _strip_generic_titles(out)
-    _require_const_discriminants(out)
-    _set_additional_properties_false(out)
 
     return out
