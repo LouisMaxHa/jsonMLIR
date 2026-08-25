@@ -100,6 +100,11 @@ def _coerce_ty_node(value: Any) -> Any:
     return value
 
 
+# Champs imbriqués (``TyPtr.base``, ``TyMemref.base``) : même coercition JSON que
+# ``TyNode``, sans importer l'union (elle contient déjà TyPtr / TyMemref).
+TyNested = Annotated[TyNodeBase, BeforeValidator(_coerce_ty_node)]
+
+
 def _build_ty_node_alias() -> Any:
     from jsonmlir.variables.ty.ty_buffer import TyBuffer
     from jsonmlir.variables.ty.ty_memref import TyMemref
@@ -137,6 +142,7 @@ if TYPE_CHECKING:
         Union[TyScalar, TyStruct, TyMemref, TyBuffer, TySOA, TyPtr, TySSA],
         Field(discriminator="type"),
     ]
+    TyNested = TyNode
 else:
     TyNode = _build_ty_node_alias()
 

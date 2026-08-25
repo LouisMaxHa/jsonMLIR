@@ -8,14 +8,14 @@ from pydantic import Field
 
 from jsonmlir.utils.discriminants import json_ty_discriminator
 from jsonmlir.utils.enum_scalars import Scalar
-from jsonmlir.variables.ty.ty import TyNodeBase
+from jsonmlir.variables.ty.ty import TyNested, TyNodeBase
 from jsonmlir.variables.ty.ty_struct import TyStruct
 
 
 class TyMemref(TyNodeBase):
     type: Literal["memref"] = json_ty_discriminator("memref")
     dimensions: tuple[int | None, ...] = Field(alias="dims")
-    base: TyNodeBase
+    base: TyNested
 
     def get_n_elements(self) -> Sequence[int | None]:
         return list(self.dimensions)
