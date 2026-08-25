@@ -95,14 +95,14 @@ def _replace_refs(node: Any, mapping: dict[str, str]) -> None:
             _replace_refs(item, mapping)
 
 
-def _fix_struct_field(defs: dict[str, Any], ty_node: dict[str, Any]) -> None:
+def _fix_struct_field(defs: dict[str, Any]) -> None:
     defs["StructField"] = {
         "type": "array",
         "minItems": 4,
         "maxItems": 4,
-        "prefixItems": [
+        "items": [
             {"type": "string"},
-            copy.deepcopy(ty_node),
+            {"$ref": "#/$defs/TyNode"},
             {"type": "integer"},
             {"type": "integer"},
         ],
@@ -150,6 +150,54 @@ def _collapse_json_op_unions(node: Any) -> None:
             _collapse_json_op_unions(item)
 
 
+def _downgrade_prefix_items(node: Any) -> None:
+    """Convertit ``prefixItems`` (draft 2020-12) en tuple ``items`` (draft-07).
+
+    json-schema-to-typescript v15 ne résout pas les ``$ref`` dans les
+    éléments de ``prefixItems`` (génère ``unknown``). La forme ``items`` en
+    tableau résout correctement ``#/$defs/TyNode``.
+    """
+    if isinstance(node, dict):
+        node_dict = cast(dict[str, Any], node)
+        prefix = node_dict.get("prefixItems")
+        if isinstance(prefix, list):
+            node_dict["items"] = prefix
+            del node_dict["prefixItems"]
+        for value in node_dict.values():
+            _downgrade_prefix_items(value)
+    elif isinstance(node, list):
+        for item in cast(list[Any], node):
+            _downgrade_prefix_items(item)
+
+
+def _is_ty_node_union(node: dict[str, Any]) -> bool:
+    disc = node.get("discriminator")
+    if isinstance(disc, dict):
+        disc_dict = cast(dict[str, Any], disc)
+        return disc_dict.get("propertyName") == "type" and isinstance(
+            node.get("oneOf"), list,
+        )
+    return False
+
+
+def _alias_ty_node_in_tuples(node: Any) -> None:
+    """Remplace l'union TyNode inline par ``$ref`` dans les tuples (items listes)."""
+    if isinstance(node, dict):
+        node_dict = cast(dict[str, Any], node)
+        items = node_dict.get("items")
+        if isinstance(items, list):
+            for i, item in enumerate(cast(list[Any], items)):
+                if isinstance(item, dict) and _is_ty_node_union(
+                    cast(dict[str, Any], item),
+                ):
+                    items[i] = {"$ref": "#/$defs/TyNode"}
+        for value in node_dict.values():
+            _alias_ty_node_in_tuples(value)
+    elif isinstance(node, list):
+        for item in cast(list[Any], node):
+            _alias_ty_node_in_tuples(item)
+
+
 def clean_ast_schema_for_ts(schema: dict[str, Any]) -> dict[str, Any]:
     """Retourne une copie du schéma optimisée pour json-schema-to-typescript."""
     out = copy.deepcopy(schema)
@@ -158,7 +206,7 @@ def clean_ast_schema_for_ts(schema: dict[str, Any]) -> dict[str, Any]:
     ty_node = _ty_node_schema(defs)
     json_op = _json_op_schema(defs)
     _add_ty_node_def(defs, ty_node)
-    _fix_struct_field(defs, ty_node)
+    _fix_struct_field(defs)
 
     _replace_refs(
         out,
@@ -171,6 +219,9 @@ def clean_ast_schema_for_ts(schema: dict[str, Any]) -> dict[str, Any]:
 
     _collapse_json_op_unions(out)
     defs["JsonOp"] = json_op
+
+    _downgrade_prefix_items(out)
+    _alias_ty_node_in_tuples(out)
 
     _strip_generic_titles(out)
 

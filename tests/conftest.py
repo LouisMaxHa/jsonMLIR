@@ -11,6 +11,9 @@ from typing import Any
 
 
 def _install_mlir_stubs() -> None:
+    if importlib.util.find_spec("mlir") is not None:
+        return
+
     class _AutoStubModule(types.ModuleType):
         def __getattr__(self, name: str) -> Any:
             full = f"{self.__name__}.{name}"

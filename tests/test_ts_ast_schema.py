@@ -16,8 +16,6 @@ if TYPE_CHECKING:
 
 ROOT = Path(__file__).resolve().parents[1]
 TS_AST = ROOT / "ts-ast"
-SCHEMA_JSON = TS_AST / "schema" / "ast.schema.json"
-SCHEMA_TS = TS_AST / "generated" / "schema.ts"
 GENERATOR = ROOT / "scripts" / "generate_ts_ast.py"
 SOMME_JSON = ROOT / "examples" / "somme" / "main.json"
 
@@ -66,7 +64,8 @@ def test_schema_clean_for_ts():
 
     struct_field = cleaned["$defs"]["StructField"]
     assert struct_field["minItems"] == 4
-    assert struct_field["prefixItems"][0]["type"] == "string"
+    assert struct_field["items"][0]["type"] == "string"
+    assert struct_field["items"][1]["$ref"] == "#/$defs/TyNode"
 
     # Le nettoyage ne modifie pas le schéma brut utilisé côté Python
     assert "TyNodeBase" in raw["$defs"]
@@ -90,22 +89,28 @@ def test_json_round_trip(module_json_op_type: type[ModuleJsonOp]) -> None:
     assert restored.model_dump(mode="json", by_alias=True) == dumped
 
 
-def test_generator_is_up_to_date():
+def test_generator_produces_ts_ready_schema(tmp_path: Path) -> None:
     assert GENERATOR.is_file()
-    before_schema = SCHEMA_JSON.read_text(encoding="utf-8") if SCHEMA_JSON.is_file() else ""
-    before_ts = SCHEMA_TS.read_text(encoding="utf-8") if SCHEMA_TS.is_file() else ""
+    out = tmp_path / "ast.schema.json"
     subprocess.run(
-        [sys.executable, str(GENERATOR)],
+        [sys.executable, str(GENERATOR), str(out)],
         cwd=ROOT,
         check=True,
     )
-    after_schema = SCHEMA_JSON.read_text(encoding="utf-8")
-    after_ts = SCHEMA_TS.read_text(encoding="utf-8")
-    assert before_schema == after_schema, "Regenerate: python scripts/generate_ts_ast.py"
-    assert before_ts == after_ts, "Regenerate: python scripts/generate_ts_ast.py"
+    schema = json.loads(out.read_text(encoding="utf-8"))
+    assert "$defs" in schema
+
+    struct_field = schema["$defs"]["StructField"]
+    assert struct_field["items"][1]["$ref"] == "#/$defs/TyNode"
+
+    for op in ("DefineFunctionOp", "FunctionOp"):
+        args = schema["$defs"][op]["properties"]["args"]["items"]
+        assert args["items"][1]["$ref"] == "#/$defs/TyNode"
 
 
 def test_typescript_example_validates_in_python(module_json_op_type: type[ModuleJsonOp]) -> None:
+    if not TS_AST.is_dir():
+        pytest.skip("ts-ast submodule not checked out")
     if not (TS_AST / "node_modules").is_dir():
         pytest.skip("Run npm install in ts-ast first")
     proc = subprocess.run(

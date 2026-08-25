@@ -58,8 +58,10 @@ def _coerce_ty_node(value: Any) -> Any:
     """Accepte raccourcis (``"i64"``) et formes legacy en entrée de champ ``TyNode``."""
     if isinstance(value, TyNodeBase):
         return value
-    if isinstance(value, (str, dict)):
+    if isinstance(value, str):
         return parse_ty(value)
+    if isinstance(value, dict):
+        return parse_ty(cast(dict[str, Any], value))
     return value
 
 
@@ -106,7 +108,8 @@ else:
 """Construit le type correspondant à une description JSON (y compris legacy)."""
 def parse_ty(value: Any | TyNode) -> TyNode:
 
-    # Si notre type implémente TyNodeBase, on doit pouvoir le cast parmis l'union des classes TyNode
+    # Si notre type implémente TyNodeBase, on peut le cast parmis l'union des
+    # classes TyNode
     if isinstance(value, TyNodeBase):
         return cast(TyNode, value)
 
