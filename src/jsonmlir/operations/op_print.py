@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Literal
 
 from mlir.dialects.func import CallOp
 
-from jsonmlir.utils.discriminants import json_op_discriminator
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.val.val import ValNode
@@ -29,7 +28,7 @@ class PrintOp(OpNode):
     pipeline jsonMLIR et l'objet du fichier d'appel.
     """
 
-    op: Literal["print"] = json_op_discriminator("print")
+    op: Literal["print"] = "print"
     value: BaseValue
 
     @trace_step("PrintOp")

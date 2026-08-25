@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, Literal
 from mlir.dialects.func import CallOp as MLIRCallOp
 from mlir.ir import Value
 
-from jsonmlir.utils.discriminants import json_op_discriminator
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.memory import functions_registry
@@ -24,7 +23,7 @@ class CallOp(OpNode):
     résolus automatiquement depuis le registre global des fonctions.
     """
 
-    op: Literal["call"] = json_op_discriminator("call")
+    op: Literal["call"] = "call"
     name: str
     args: Sequence[BaseValue] = ()
 

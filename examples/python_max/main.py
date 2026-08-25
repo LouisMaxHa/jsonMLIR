@@ -1,18 +1,18 @@
 import sys
 
-from jsonmlir.operations import (
+from jsonmlir.operations.dsl import (
     Binary,
     Call,
     Cond,
     DefineFunction,
     Function,
     Module,
-    Scalar,
     Set,
-    TyScalar,
     Var,
 )
 from jsonmlir.pipeline.compiler import compiler
+from jsonmlir.utils.enum_scalars import Scalar
+from jsonmlir.variables.ty.ty_scalar import TyScalar
 
 module = Module([
     # Déclaration de la signature de max_i64 (entrées + sortie)

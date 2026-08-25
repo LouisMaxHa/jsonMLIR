@@ -20,7 +20,6 @@ from mlir.dialects.arith import (
 )
 from mlir.ir import Value
 
-from jsonmlir.utils.discriminants import json_op_discriminator
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.operations.op_operator import OperatorOp
 from jsonmlir.utils.trace import trace_step
@@ -95,7 +94,7 @@ def binary_codegen(
 class BinaryOp(OpNode):
     """Opération binaire composée de deux opérandes."""
 
-    op: Literal["binary"] = json_op_discriminator("binary")
+    op: Literal["binary"] = "binary"
     lhs: BaseValue
     rhs: BaseValue
     ope: OperatorOp

@@ -5,9 +5,8 @@ from collections.abc import Sequence
 from enum import EnumMeta
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict
 
-from jsonmlir.utils.discriminants import normalize_op_discriminant
 from jsonmlir.variables.val.val import ValNode
 
 
@@ -19,21 +18,15 @@ class OpNode(BaseModel, ABC):
         populate_by_name=True,
     )
 
-    @model_validator(mode="before")
-    @classmethod
-    def _normalize_discriminant(cls, data: Any) -> Any:
-        return normalize_op_discriminant(data)
-
+    # Pydantic n'accepte que des arguments nommés : on mappe les arguments
+    # positionnels sur les champs déclarés (hors discriminant "op") pour
+    # permettre l'instanciation manuelle, ex. Const(1, "i32").
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        # Pydantic n'accepte que des arguments nommés : on mappe les arguments
-        # positionnels sur les champs déclarés (hors discriminant "op") pour
-        # permettre l'instanciation manuelle, ex. Const(1, "i32").
         if args:
             fields = [f for f in type(self).model_fields if f != "op"]
             if len(args) > len(fields):
                 raise TypeError(
-                    f"{type(self).__name__} accepte au plus {len(fields)} "
-                    f"arguments positionnels, {len(args)} reçus"
+                    f"{type(self).__name__} need {len(fields)} arguments, got {len(args)}"
                 )
             for name, value in zip(fields, args):
                 if name in kwargs:

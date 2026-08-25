@@ -48,9 +48,9 @@ def test_schema_clean_for_ts():
 
     call_op = cleaned["$defs"]["CallOp"]
     assert call_op["additionalProperties"] is False
-    assert "$type" in call_op["required"]
-    assert call_op["properties"]["$type"]["const"] == "call"
-    assert "default" not in call_op["properties"]["$type"]
+    assert "op" in call_op["required"]
+    assert call_op["properties"]["op"]["const"] == "call"
+    assert "default" not in call_op["properties"]["op"]
     assert cleaned.get("additionalProperties") is False
 
     assert "TyNode" in cleaned["$defs"]
@@ -75,13 +75,13 @@ def test_legacy_json_dual_read(module_json_op_type):
     assert module.op == "module"
 
 
-def test_dollar_type_round_trip(module_json_op_type):
+def test_json_round_trip(module_json_op_type):
     adapter: TypeAdapter = TypeAdapter(module_json_op_type)
     data = json.loads(SOMME_JSON.read_text(encoding="utf-8"))
     module = adapter.validate_python(data)
     dumped = module.model_dump(mode="json", by_alias=True)
-    assert dumped["$type"] == "module"
-    assert dumped["body"][0]["$type"] == "function"
+    assert dumped["op"] == "module"
+    assert dumped["body"][0]["op"] == "function"
     restored = adapter.validate_python(dumped)
     assert restored.model_dump(mode="json", by_alias=True) == dumped
 

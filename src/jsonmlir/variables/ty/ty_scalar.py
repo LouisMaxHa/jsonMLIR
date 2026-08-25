@@ -5,13 +5,12 @@ from typing import Literal
 from mlir.ir import MemRefType, Type
 from pydantic import Field
 
-from jsonmlir.utils.discriminants import json_ty_discriminator
 from jsonmlir.utils.enum_scalars import Scalar
 from jsonmlir.variables.ty.ty import TyNodeBase
 
 
 class TyScalar(TyNodeBase):
-    type: Literal["scalar"] = json_ty_discriminator("scalar")
+    type: Literal["scalar"] = "scalar"
     scalar: Scalar = Field(alias="name")
 
     def get_type(self) -> Type:

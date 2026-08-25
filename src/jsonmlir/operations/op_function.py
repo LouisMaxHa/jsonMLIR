@@ -8,7 +8,6 @@ from mlir.ir import FunctionType, InsertionPoint, TypeAttr, UnitAttr
 
 from jsonmlir.operations.base import BaseValue
 from jsonmlir.operations.block import codegenBlock
-from jsonmlir.utils.discriminants import json_op_discriminator
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.utils.ssa_val import const_heap
@@ -20,7 +19,7 @@ from jsonmlir.variables.val.val_SSA import ValSSA
 
 availables_functions = {}
 class FunctionOp(OpNode):
-    op: Literal["function"] = json_op_discriminator("function")
+    op: Literal["function"] = "function"
     name: str
     args: Sequence[tuple[str, TyNode]] = ()
     body: Sequence[BaseValue] = ()

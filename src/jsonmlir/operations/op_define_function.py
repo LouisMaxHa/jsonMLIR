@@ -3,7 +3,6 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Literal
 
-from jsonmlir.utils.discriminants import json_op_discriminator
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.memory import FunctionSignature, functions_registry
@@ -18,7 +17,7 @@ class DefineFunctionOp(OpNode):
     CallOp pour résoudre les types de retour et vérifier les types des arguments.
     """
 
-    op: Literal["define_function"] = json_op_discriminator("define_function")
+    op: Literal["define_function"] = "define_function"
     name: str
     args: Sequence[tuple[str, TyNode]] = ()
     return_types: Sequence[TyNode] = ()

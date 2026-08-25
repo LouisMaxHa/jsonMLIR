@@ -4,12 +4,11 @@ from typing import Literal
 
 from mlir.ir import MemRefType, Type
 
-from jsonmlir.utils.discriminants import json_ty_discriminator
 from jsonmlir.variables.ty.ty import TyNodeBase
 
 
 class TySSA(TyNodeBase):
-    type: Literal["ssa"] = json_ty_discriminator("ssa")
+    type: Literal["ssa"] = "ssa"
 
     def get_type(self) -> Type:
         raise ValueError("SSAValue can be any type")

@@ -5,7 +5,6 @@ from typing import Literal
 
 from pydantic import Field
 
-from jsonmlir.utils.discriminants import json_op_discriminator
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.ty.ty import TyNode
@@ -14,7 +13,7 @@ from jsonmlir.variables.var import Var
 
 
 class VarOp(OpNode):
-    op: Literal["var"] = json_op_discriminator("var")
+    op: Literal["var"] = "var"
     name: str
     indices: Sequence[int | str | VarOp] = Field(default_factory=list)
     type: TyNode | None = None

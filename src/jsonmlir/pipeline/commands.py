@@ -16,7 +16,6 @@ from mlir.ir import Module
 from pydantic import TypeAdapter
 
 from jsonmlir.operations.op_module import ModuleJsonOp
-from jsonmlir.utils.discriminants import normalize_dollar_type
 
 
 # Path -> Json
@@ -49,7 +48,7 @@ def load_input_file(path: Path) -> Any:
 # Json -> Pydantic
 def build_sample_ast_json(data: Any) -> ModuleJsonOp:
     adapter: TypeAdapter[ModuleJsonOp] = TypeAdapter(ModuleJsonOp)
-    return adapter.validate_python(normalize_dollar_type(data))
+    return adapter.validate_python(data)
 
 @dataclass(frozen=True)
 class Toolchain:

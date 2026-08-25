@@ -7,7 +7,6 @@ from mlir.dialects import memref
 from mlir.ir import Value
 from pydantic import Field
 
-from jsonmlir.utils.discriminants import json_op_discriminator
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.operations.op_var import VarOp
 from jsonmlir.utils.trace import trace_step
@@ -20,7 +19,7 @@ from jsonmlir.variables.val.val import ValNode
 
 class AllocOp(OpNode):
 
-    op: Literal["alloc"] = json_op_discriminator("alloc")
+    op: Literal["alloc"] = "alloc"
     name: str
     type: TyNode
     size: Sequence[int | VarOp] = Field(default_factory=list[int | VarOp])

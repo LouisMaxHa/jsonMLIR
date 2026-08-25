@@ -7,7 +7,6 @@ from typing import Literal
 from mlir.ir import MemRefType, ShapedType
 from pydantic import Field
 
-from jsonmlir.utils.discriminants import json_ty_discriminator
 from jsonmlir.utils.enum_scalars import Scalar
 from jsonmlir.utils.ssa_check import all_int
 from jsonmlir.variables.ty.ty import TyNodeBase
@@ -15,7 +14,7 @@ from jsonmlir.variables.ty.ty_struct import StructRef
 
 
 class TyBuffer(TyNodeBase):
-    type: Literal["buffer"] = json_ty_discriminator("buffer")
+    type: Literal["buffer"] = "buffer"
     dimensions: tuple[int | None, ...] = Field(alias="dims")
     base: StructRef
 

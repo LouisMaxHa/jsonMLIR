@@ -7,7 +7,6 @@ from mlir.dialects import scf
 from mlir.ir import InsertionPoint
 
 from jsonmlir.operations.block import codegenBlock
-from jsonmlir.utils.discriminants import json_op_discriminator
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.val.val import ValNode
@@ -17,7 +16,7 @@ if TYPE_CHECKING:
 
 
 class WhileOp(OpNode):
-    op: Literal["while"] = json_op_discriminator("while")
+    op: Literal["while"] = "while"
     cond: BaseValue
     thenBlock: Sequence[BaseValue] = ()
 

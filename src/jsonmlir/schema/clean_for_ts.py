@@ -8,8 +8,8 @@ from typing import Any
 # Titres génériques Pydantic : json2ts en fait des alias (`Name`, `Name1`, …) au lieu d'inliner.
 _GENERIC_PROPERTY_TITLES = frozenset(
     {
-        "$Type",
         "Name",
+        "Op",
         "Size",
         "Val",
         "Args",
@@ -86,24 +86,25 @@ def _set_additional_properties_false(node: Any) -> None:
             _set_additional_properties_false(item)
 
 
-def _normalize_dollar_type(node: Any) -> None:
-    """Inline les littéraux $type et les rend obligatoires."""
+def _require_const_discriminants(node: Any) -> None:
+    """Rend les discriminants ``op`` / ``type`` (``const``) obligatoires, sans default."""
     if isinstance(node, dict):
         if node.get("type") == "object":
             props = node.get("properties")
-            if isinstance(props, dict) and "$type" in props:
-                dollar = props["$type"]
-                if isinstance(dollar, dict) and "const" in dollar:
-                    dollar.pop("title", None)
-                    dollar.pop("default", None)
-                    required = node.setdefault("required", [])
-                    if "$type" not in required:
-                        required.append("$type")
+            if isinstance(props, dict):
+                for key in ("op", "type"):
+                    disc = props.get(key)
+                    if isinstance(disc, dict) and "const" in disc:
+                        disc.pop("title", None)
+                        disc.pop("default", None)
+                        required = node.setdefault("required", [])
+                        if key not in required:
+                            required.append(key)
         for value in node.values():
-            _normalize_dollar_type(value)
+            _require_const_discriminants(value)
     elif isinstance(node, list):
         for item in node:
-            _normalize_dollar_type(item)
+            _require_const_discriminants(item)
 
 
 def _replace_refs(node: Any, mapping: dict[str, str]) -> None:
@@ -193,7 +194,7 @@ def clean_ast_schema_for_ts(schema: dict[str, Any]) -> dict[str, Any]:
     defs["JsonOp"] = json_op
 
     _strip_generic_titles(out)
-    _normalize_dollar_type(out)
+    _require_const_discriminants(out)
     _set_additional_properties_false(out)
 
     return out

@@ -6,14 +6,13 @@ from typing import Literal
 from mlir.ir import MemRefType, ShapedType
 from pydantic import Field
 
-from jsonmlir.utils.discriminants import json_ty_discriminator
 from jsonmlir.utils.enum_scalars import Scalar
 from jsonmlir.variables.ty.ty import TyNested, TyNodeBase
 from jsonmlir.variables.ty.ty_struct import TyStruct
 
 
 class TyMemref(TyNodeBase):
-    type: Literal["memref"] = json_ty_discriminator("memref")
+    type: Literal["memref"] = "memref"
     dimensions: tuple[int | None, ...] = Field(alias="dims")
     base: TyNested
 

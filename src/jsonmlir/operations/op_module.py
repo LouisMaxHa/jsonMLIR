@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Annotated, Any, Literal
+from typing import Annotated, Literal
 
-from pydantic import Field, model_validator
+from pydantic import Field
 
-from jsonmlir.utils.discriminants import json_op_discriminator, normalize_dollar_type
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.operations.op_define_function import DefineFunctionOp
 from jsonmlir.operations.op_define_struct import DefineStructOp
@@ -24,13 +23,8 @@ ModuleStatement = Annotated[
 class ModuleJsonOp(OpNode):
     """Racine JSON de type module : enregistre les structs puis génère les fonctions."""
 
-    op: Literal["module"] = json_op_discriminator("module")
+    op: Literal["module"] = "module"
     body: Sequence[ModuleStatement] = ()
-
-    @model_validator(mode="before")
-    @classmethod
-    def _normalize_json_tree(cls, data: Any) -> Any:
-        return normalize_dollar_type(data)
 
     @trace_step("ModuleJsonOp")
     def codegen(self) -> Sequence[ValNode]:

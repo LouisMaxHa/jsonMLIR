@@ -5,15 +5,13 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Annotated, Any, Union
 
 from mlir.ir import MemRefType, Type
-from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, BeforeValidator, model_validator
-
-from jsonmlir.utils.discriminants import normalize_ty_discriminant
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, BeforeValidator
 
 """ABC commune aux types valeur (scalaires, struct, array).
 
 Les types concrets forment une union discriminée ``TyNode`` sur le champ
-``type`` (alias JSON ``$type``). Les formes historiques restent acceptées
-via :func:`parse_ty` à la frontière JSON.
+``type``. Les formes historiques restent acceptées via :func:`parse_ty`
+à la frontière JSON.
 """
 
 
@@ -23,11 +21,6 @@ class TyNodeBase(BaseModel, ABC):
         populate_by_name=True,
         arbitrary_types_allowed=True,
     )
-
-    @model_validator(mode="before")
-    @classmethod
-    def _normalize_discriminant(cls, data: Any) -> Any:
-        return normalize_ty_discriminant(data)
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         if args:
@@ -172,8 +165,6 @@ def parse_ty(value: Any) -> TyNodeBase:
         value = {"type": "scalar", "name": value}
 
     elif isinstance(value, dict):
-        if "$type" in value and "type" not in value:
-            value = {**value, "type": value["$type"]}
         if "type" not in value:
             legacy = _legacy(value)
             if legacy is None:

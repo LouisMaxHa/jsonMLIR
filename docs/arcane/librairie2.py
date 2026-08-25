@@ -1,6 +1,7 @@
 import sys
 
-from jsonmlir.operations import (
+from jsonmlir.operations.dsl import (
+    Alloca,
     Binary,
     Call,
     Const,
@@ -9,15 +10,14 @@ from jsonmlir.operations import (
     Function,
     Math,
     Module,
-    Scalar,
     Set,
-    TyMemref,
-    TyPtr,
-    TyScalar,
     Var,
 )
-from jsonmlir.operations.dsl import Alloca
 from jsonmlir.pipeline.compiler import compiler
+from jsonmlir.utils.enum_scalars import Scalar
+from jsonmlir.variables.ty.ty_memref import TyMemref
+from jsonmlir.variables.ty.ty_ptr import TyPtr
+from jsonmlir.variables.ty.ty_scalar import TyScalar
 from jsonmlir.variables.ty.ty_struct import TyStruct
 
 module = Module([

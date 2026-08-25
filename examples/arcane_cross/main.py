@@ -1,16 +1,16 @@
 import sys
 
-from jsonmlir.operations import (
+from jsonmlir.operations.dsl import (
     Alloc,
     Binary,
     DefineStruct,
     Function,
     Module,
     Set,
-    TyPtr,
     Var,
 )
 from jsonmlir.pipeline.compiler import compiler
+from jsonmlir.variables.ty.ty_ptr import TyPtr
 from jsonmlir.variables.ty.ty_struct import TyStruct
 
 module = Module([

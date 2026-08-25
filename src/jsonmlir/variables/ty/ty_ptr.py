@@ -4,12 +4,11 @@ from typing import Literal
 
 from mlir.ir import IntegerType, MemRefType
 
-from jsonmlir.utils.discriminants import json_ty_discriminator
 from jsonmlir.variables.ty.ty import TyNested, TyNodeBase
 
 
 class TyPtr(TyNodeBase):
-    type: Literal["ptr"] = json_ty_discriminator("ptr")
+    type: Literal["ptr"] = "ptr"
     base: TyNested
 
     def get_type(self) -> IntegerType:

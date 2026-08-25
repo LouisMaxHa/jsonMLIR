@@ -6,13 +6,12 @@ from typing import Literal
 from mlir.ir import MemRefType, Type
 from pydantic import Field
 
-from jsonmlir.utils.discriminants import json_ty_discriminator
 from jsonmlir.variables.ty.ty import TyNodeBase
 from jsonmlir.variables.ty.ty_struct import StructRef
 
 
 class TySOA(TyNodeBase):
-    type: Literal["soa"] = json_ty_discriminator("soa")
+    type: Literal["soa"] = "soa"
 
     # Number of struct contained
     n_elements: tuple[int | None, ...] = Field(alias="dims")
