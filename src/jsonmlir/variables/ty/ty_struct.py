@@ -6,11 +6,12 @@ from mlir.ir import MemRefType
 from pydantic import BeforeValidator, PlainSerializer, PrivateAttr
 
 from jsonmlir.utils.discriminants import json_ty_discriminator
+from jsonmlir.utils.enum_scalars import Scalar
 from jsonmlir.variables.memory import STRUCTS_TYPE, structs_type
-from jsonmlir.variables.ty.ty import TyNode
+from jsonmlir.variables.ty.ty import TyNodeBase
 
 
-class TyStruct(TyNode):
+class TyStruct(TyNodeBase):
     type: Literal["struct"] = json_ty_discriminator("struct")
     name: str
 

@@ -8,9 +8,9 @@ from mlir.ir import Type, Value
 
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.utils.ssa_dim import index_to_ssa
-from jsonmlir.variables.ty.ty import TyNode
+from jsonmlir.variables.ty.ty import TyNodeBase
 
-T = TypeVar("T", bound=TyNode)
+T = TypeVar("T", bound=TyNodeBase)
 
 
 def auto_log(log_format):

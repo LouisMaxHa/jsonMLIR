@@ -5,12 +5,12 @@ from typing import Literal
 from mlir.ir import IntegerType, MemRefType
 
 from jsonmlir.utils.discriminants import json_ty_discriminator
-from jsonmlir.variables.ty.ty import TyNode
+from jsonmlir.variables.ty.ty import TyNodeBase
 
 
-class TyPtr(TyNode):
+class TyPtr(TyNodeBase):
     type: Literal["ptr"] = json_ty_discriminator("ptr")
-    base: TyNode
+    base: TyNodeBase
 
     def get_type(self) -> IntegerType:
         # Adresse en i64 à la frontière ABI ; le pointeur LLVM n'apparaît

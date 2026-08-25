@@ -7,11 +7,11 @@ from mlir.ir import MemRefType, Type
 from pydantic import Field
 
 from jsonmlir.utils.discriminants import json_ty_discriminator
-from jsonmlir.variables.ty.ty import TyNode
+from jsonmlir.variables.ty.ty import TyNodeBase
 from jsonmlir.variables.ty.ty_struct import StructRef
 
 
-class TySOA(TyNode):
+class TySOA(TyNodeBase):
     type: Literal["soa"] = json_ty_discriminator("soa")
 
     # Number of struct contained

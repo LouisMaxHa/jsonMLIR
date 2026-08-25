@@ -79,17 +79,19 @@ The `jsonmlir` wrapper will:
 
 ## TypeScript AST (`ts-ast`)
 
-The [ts-ast/](ts-ast/) directory is a git submodule ([jsonMLIR-modane](https://github.com/LouisMaxHa/jsonMLIR-modane)) whose **generated** classes mirror the Pydantic models in `src/jsonmlir/`. Python remains the source of truth.
+The [ts-ast/](ts-ast/) submodule ([jsonMLIR-modane](https://github.com/LouisMaxHa/jsonMLIR-modane)) shares the same JSON Schema as the Pydantic models.
 
 ```bash
-# Regenerate TypeScript from Pydantic (writes ts-ast/generated/ only)
+# Export JSON Schema + generate TypeScript interfaces (json-schema-to-typescript)
 python scripts/generate_ts_ast.py
 
-# Build JSON from TypeScript
+# Build JSON from the TypeScript DSL
 cd ts-ast && npm install && npm run example
 ```
 
-JSON wire format uses `"$type"` as the discriminant (legacy `"op"` / `"type"` keys are still accepted on input). Hand-written DSL helpers live in [ts-ast/manual.ts](ts-ast/manual.ts) and are never overwritten by the generator.
+Pipeline: **Pydantic → `schema/ast.schema.json` → `generated/schema.ts` (interfaces) + `manual.ts` (DSL)**.
+
+JSON wire format uses `"$type"` as the discriminant (legacy `"op"` / `"type"` keys remain accepted on input).
 
 ## Example
 

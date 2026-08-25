@@ -5,38 +5,19 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Annotated, Any, Union
 
 from mlir.ir import MemRefType, Type
-from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, model_validator
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, BeforeValidator, model_validator
 
 from jsonmlir.utils.discriminants import normalize_ty_discriminant
 
 """ABC commune aux types valeur (scalaires, struct, array).
 
-Les types sont des modèles Pydantic formant une union discriminée sur le champ
-``type``. Un champ annoté ``TyNode`` accepte donc n'importe quelle description
-JSON canonique :
-
-- scalaire : ``{"type": "scalar", "name": "i64"}`` (ou le raccourci ``"i64"``)
-- struct   : ``{"type": "struct", "name": "structName"}``
-- memref   : ``{"type": "memref", "dims": [dim...], "base": type}``
-- soa      : ``{"type": "soa",    "dims": [dim...], "base": "structName"}``
-- buffer   : ``{"type": "buffer", "dims": [dim...], "base": "structName"}``
-- ptr      : ``{"type": "ptr",    "base": type}``
-
-Les formes historiques (``{"memref": [...]}``, ``{"addr": ...}``, ...) restent
-acceptées en entrée via :func:`parse_ty`, qui les normalise en émettant un
-``DeprecationWarning``.
+Les types concrets forment une union discriminée ``TyNode`` sur le champ
+``type`` (alias JSON ``$type``). Les formes historiques restent acceptées
+via :func:`parse_ty` à la frontière JSON.
 """
 
 
-if TYPE_CHECKING:
-    from pydantic import GetCoreSchemaHandler
-    from pydantic_core import CoreSchema
-
-
-class TyNode(BaseModel, ABC):
-    # ``frozen`` : les types sont des valeurs, hachables et partageables.
-    # ``populate_by_name`` : les champs restent accessibles sous leur nom Python
-    # même lorsqu'ils portent un alias JSON (``dimensions`` / ``dims``).
+class TyNodeBase(BaseModel, ABC):
     model_config = ConfigDict(
         frozen=True,
         populate_by_name=True,
@@ -49,8 +30,6 @@ class TyNode(BaseModel, ABC):
         return normalize_ty_discriminant(data)
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        # Pydantic n'accepte que des arguments nommés : on mappe les arguments
-        # positionnels sur les champs déclarés (hors discriminant "type").
         if args:
             names = [f for f in type(self).model_fields if f != "type"]
             if len(args) > len(names):
@@ -67,7 +46,6 @@ class TyNode(BaseModel, ABC):
                 kwargs[name] = value
         super().__init__(**kwargs)
 
-    # ──────────── Type ────────────
     @abstractmethod
     def get_type(self) -> Type:
         raise NotImplementedError
@@ -76,45 +54,18 @@ class TyNode(BaseModel, ABC):
     def get_memref_type(self) -> MemRefType:
         raise NotImplementedError
 
-    # ──────────── Pydantic ────────────
-    @classmethod
-    def __get_pydantic_core_schema__(
-        cls,
-        source_type: Any,
-        handler: GetCoreSchemaHandler,
-    ) -> CoreSchema:
-        from pydantic_core import core_schema
 
-        # Les sous-classes concrètes gardent le schéma de modèle standard ;
-        # seule l'ABC se comporte comme l'union discriminée de tous les types.
-        if not cls.__abstractmethods__:
-            return handler(source_type)
-
-        # Indirection par lambda : ``parse_ty`` / ``dump_ty`` sont définis plus
-        # bas dans le module, après la classe qu'ils manipulent.
-        return core_schema.no_info_plain_validator_function(
-            lambda value: parse_ty(value),
-            serialization=core_schema.plain_serializer_function_ser_schema(
-                lambda value: dump_ty(value), when_used="json"
-            ),
-        )
-
-
-def dump_ty(value: TyNode) -> Any:
-    """Sérialise un ``TyNode`` dans sa forme JSON canonique."""
+def dump_ty(value: TyNodeBase) -> Any:
+    """Sérialise un type dans sa forme JSON canonique."""
     return value.model_dump(mode="json", by_alias=True)
 
 
-_ty_adapter: TypeAdapter[Any] | None = None
+_ty_adapter_instance: TypeAdapter[Any] | None = None
 
 
-def _adapter() -> TypeAdapter[Any]:
-    """Union discriminée de tous les types, construite paresseusement.
-
-    L'import différé casse le cycle ``ty`` -> ``ty_struct`` -> ``memory`` -> ``ty``.
-    """
-    global _ty_adapter
-    if _ty_adapter is None:
+def _get_ty_union_adapter() -> TypeAdapter[Any]:
+    global _ty_adapter_instance
+    if _ty_adapter_instance is None:
         from jsonmlir.variables.ty.ty_buffer import TyBuffer
         from jsonmlir.variables.ty.ty_memref import TyMemref
         from jsonmlir.variables.ty.ty_ptr import TyPtr
@@ -123,19 +74,74 @@ def _adapter() -> TypeAdapter[Any]:
         from jsonmlir.variables.ty.ty_SSA import TySSA
         from jsonmlir.variables.ty.ty_struct import TyStruct
 
-        _ty_adapter = TypeAdapter(
+        _ty_adapter_instance = TypeAdapter(
             Annotated[
-                Union[  # noqa: UP007 - `Union[...]` requis dans un Annotated dynamique
-                    TyScalar, TyStruct, TyMemref, TyBuffer, TySOA, TyPtr, TySSA
+                Union[  # noqa: UP007
+                    TyScalar,
+                    TyStruct,
+                    TyMemref,
+                    TyBuffer,
+                    TySOA,
+                    TyPtr,
+                    TySSA,
                 ],
                 Field(discriminator="type"),
             ]
         )
-    return _ty_adapter
+    return _ty_adapter_instance
+
+
+def _coerce_ty_node(value: Any) -> Any:
+    """Accepte raccourcis (``\"i64\"``) et formes legacy en entrée de champ ``TyNode``."""
+    if isinstance(value, TyNodeBase):
+        return value
+    if isinstance(value, (str, dict)):
+        return parse_ty(value)
+    return value
+
+
+def _build_ty_node_alias() -> Any:
+    from jsonmlir.variables.ty.ty_buffer import TyBuffer
+    from jsonmlir.variables.ty.ty_memref import TyMemref
+    from jsonmlir.variables.ty.ty_ptr import TyPtr
+    from jsonmlir.variables.ty.ty_scalar import TyScalar
+    from jsonmlir.variables.ty.ty_SOA import TySOA
+    from jsonmlir.variables.ty.ty_SSA import TySSA
+    from jsonmlir.variables.ty.ty_struct import TyStruct
+
+    union = Annotated[
+        Union[  # noqa: UP007
+            TyScalar,
+            TyStruct,
+            TyMemref,
+            TyBuffer,
+            TySOA,
+            TyPtr,
+            TySSA,
+        ],
+        Field(discriminator="type"),
+    ]
+    return Annotated[union, BeforeValidator(_coerce_ty_node)]
+
+
+if TYPE_CHECKING:
+    from jsonmlir.variables.ty.ty_buffer import TyBuffer
+    from jsonmlir.variables.ty.ty_memref import TyMemref
+    from jsonmlir.variables.ty.ty_ptr import TyPtr
+    from jsonmlir.variables.ty.ty_scalar import TyScalar
+    from jsonmlir.variables.ty.ty_SOA import TySOA
+    from jsonmlir.variables.ty.ty_SSA import TySSA
+    from jsonmlir.variables.ty.ty_struct import TyStruct
+
+    TyNode = Annotated[
+        Union[TyScalar, TyStruct, TyMemref, TyBuffer, TySOA, TyPtr, TySSA],
+        Field(discriminator="type"),
+    ]
+else:
+    TyNode = _build_ty_node_alias()
 
 
 def _legacy(value: dict[str, Any]) -> dict[str, Any] | None:
-    """Convertit une description de type historique en forme canonique."""
     if "addr" in value:
         return {"type": "ptr", "base": value["addr"]}
 
@@ -151,12 +157,11 @@ def _legacy(value: dict[str, Any]) -> dict[str, Any] | None:
     return None
 
 
-def parse_ty(value: Any) -> TyNode:
-    """Construit le ``TyNode`` correspondant à une description JSON."""
-    if isinstance(value, TyNode):
+def parse_ty(value: Any) -> TyNodeBase:
+    """Construit le type correspondant à une description JSON (y compris legacy)."""
+    if isinstance(value, TyNodeBase):
         return value
 
-    # Raccourci scalaire : "i64" équivaut à {"type": "scalar", "name": "i64"}.
     if isinstance(value, str):
         value = {"type": "scalar", "name": value}
 
@@ -174,4 +179,4 @@ def parse_ty(value: Any) -> TyNode:
             )
             value = legacy
 
-    return _adapter().validate_python(value)
+    return _get_ty_union_adapter().validate_python(value)

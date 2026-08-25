@@ -1,25 +1,21 @@
 from __future__ import annotations
 
-from typing import NamedTuple
+from typing import TYPE_CHECKING, NamedTuple
 
 from mlir.ir import Type
 
-from jsonmlir.variables.ty.ty import TyNode
-from jsonmlir.variables.val.val import ValNode
+from jsonmlir.variables.struct_field import StructField
 
-
-class FIELD_TYPE(NamedTuple):
-    NAME: str
-    TYPE: TyNode
-    OFFSET: int
-    SIZE: int
+if TYPE_CHECKING:
+    from jsonmlir.variables.ty.ty import TyNode
+    from jsonmlir.variables.val.val import ValNode
 
 
 class STRUCTS_TYPE(NamedTuple):
     NAME: str
     LLVM_TYPE: Type
     SIZE: int
-    FIELDS: dict[str, FIELD_TYPE]
+    FIELDS: dict[str, StructField]
 
 
 class FunctionSignature(NamedTuple):
@@ -30,3 +26,6 @@ class FunctionSignature(NamedTuple):
 structs_type: dict[str, STRUCTS_TYPE] = {}
 variables_heap: dict[str, ValNode] = {}
 functions_registry: dict[str, FunctionSignature] = {}
+
+# Rétrocompatibilité
+FIELD_TYPE = StructField

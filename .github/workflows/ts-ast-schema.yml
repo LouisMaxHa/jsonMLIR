@@ -26,20 +26,20 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install jsonmlir (no MLIR bindings required for schema tests)
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Python deps
         run: pip install pydantic pytest
+
+      - name: Install ts-ast deps
+        run: cd ts-ast && npm install
 
       - name: Regenerate ts-ast and check diff
         run: |
           python scripts/generate_ts_ast.py
-          git diff --exit-code ts-ast/generated
-
-      - name: Setup Node for TS example
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
+          git diff --exit-code ts-ast/schema ts-ast/generated
 
       - name: Run schema tests
-        run: |
-          cd ts-ast && npm install
-          cd .. && PYTHONPATH=src pytest tests/test_ts_ast_schema.py -v
+        run: PYTHONPATH=src pytest tests/test_ts_ast_schema.py -v

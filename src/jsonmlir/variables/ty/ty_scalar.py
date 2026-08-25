@@ -7,10 +7,10 @@ from pydantic import Field
 
 from jsonmlir.utils.discriminants import json_ty_discriminator
 from jsonmlir.utils.enum_scalars import Scalar
-from jsonmlir.variables.ty.ty import TyNode
+from jsonmlir.variables.ty.ty import TyNodeBase
 
 
-class TyScalar(TyNode):
+class TyScalar(TyNodeBase):
     type: Literal["scalar"] = json_ty_discriminator("scalar")
     scalar: Scalar = Field(alias="name")
 
