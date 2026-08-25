@@ -7,6 +7,7 @@ Ce module expose des fonctions factory typées pour l'écriture manuelle en Pyth
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import cast
 
 from jsonmlir.operations.base import BaseValue
 from jsonmlir.operations.op_alloc import AllocOp
@@ -34,7 +35,9 @@ FieldSpec = tuple[str, str | TyNode, int, int] | StructField
 
 
 def _parse_ty(value: str | TyNode) -> TyNode:
-    return parse_ty(value) if isinstance(value, str) else value
+    if isinstance(value, str):
+        return cast(TyNode, parse_ty(value))
+    return value
 
 
 def _parse_scalar(value: str | Scalar) -> Scalar:

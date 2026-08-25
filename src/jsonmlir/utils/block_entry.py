@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from mlir.ir import Block, Operation
 
 

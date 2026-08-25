@@ -36,7 +36,9 @@ class CondOp(OpNode):
         scf.YieldOp([], ip=InsertionPoint(if_op.then_block))
 
         # Région else
-        codegenBlock(self.elseBlock, if_op.else_block)
-        scf.YieldOp([], ip=InsertionPoint(if_op.else_block))
+        else_block = if_op.else_block
+        assert else_block is not None
+        codegenBlock(self.elseBlock, else_block)
+        scf.YieldOp([], ip=InsertionPoint(else_block))
 
         return []

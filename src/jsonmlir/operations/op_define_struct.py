@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Literal
+from typing import Any, Literal, cast
 
 from mlir.dialects import llvm
 
@@ -31,8 +31,9 @@ class DefineStructOp(OpNode):
             for field in self.fields
         ]
 
-        # Structure
-        LLVM_TYPE = llvm.StructType.get_identified(self.name)
+        # Structure. ``llvm.StructType`` vient du module compilé
+        # ``_mlirDialectsLLVM`` (pas de stub) : accès via Any + ignore ciblé.
+        LLVM_TYPE = cast(Any, llvm.StructType).get_identified(self.name)  # type: ignore[reportAttributeAccessIssue]
         LLVM_TYPE.set_body(types, packed=False)
         structs_type[self.name] = STRUCTS_TYPE(
             self.name,

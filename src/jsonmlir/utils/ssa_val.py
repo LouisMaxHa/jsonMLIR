@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import cast
+from typing import Any, cast
 
 from mlir.dialects.arith import ConstantOp, IndexCastOp
 from mlir.ir import (
@@ -53,7 +53,13 @@ def val_to_SSAValues(
         # Insert it at the start of the enclosing function's entry block
         current_ip = cast(InsertionPoint, InsertionPoint.current)
         entry_block = function_entry_block(current_ip.block)
-        op = ConstantOp(attr, ip=InsertionPoint.at_block_begin(entry_block))
+        # ``arith.ConstantOp`` accepte un Attribute en 2e position à l'exécution
+        # mais les overloads du stub ne couvrent que int|float|array : cast Any.
+        op = ConstantOp(
+            mlir_type,
+            cast(Any, attr),
+            ip=InsertionPoint.at_block_begin(entry_block),
+        )
         const_heap[key] = list(op.results)
 
     return const_heap[key]

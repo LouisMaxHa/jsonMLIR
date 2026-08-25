@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import cast
 
 from mlir.dialects import arith, memref
 from mlir.ir import MemRefType, ShapedType, StridedLayoutAttr, Value
@@ -129,7 +130,9 @@ class ValBuffer(ValNode[TyBuffer]):
         row_count = self.get_size()
         stride_size = struct.SIZE // field.SIZE
         if isinstance(row_count, int):
-            flat_size = row_count * stride_size
+            # ``Value | int`` n'est pas rétréci par isinstance (stub Value
+            # non générique) : cast explicite.
+            flat_size = cast(int, row_count) * stride_size
             flat_size_ssa = []
             resulting_size = row_count
 

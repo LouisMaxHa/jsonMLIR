@@ -25,14 +25,16 @@ class WhileOp(OpNode):
         while_op = scf.WhileOp([], [])
 
         # Condition block (before region)
-        before_block = while_op.before.blocks.append()
+        # ``BlockList.append`` a un ``*args`` non annoté dans le stub MLIR :
+        # ignore ciblé (l'appel sans argument est valide).
+        before_block = while_op.before.blocks.append()  # type: ignore[reportUnknownMemberType]
         with InsertionPoint(before_block):
             conds_ssa = self.cond.codegen()
             assert len(conds_ssa) == 1
             scf.ConditionOp(conds_ssa[0].get_SSA([]), [])
 
         # After region: body + scf.yield to loop back to the before region.
-        after_block = while_op.after.blocks.append()
+        after_block = while_op.after.blocks.append()  # type: ignore[reportUnknownMemberType]
         codegenBlock(self.thenBlock, after_block)
         scf.YieldOp([], ip=InsertionPoint(after_block))
 
