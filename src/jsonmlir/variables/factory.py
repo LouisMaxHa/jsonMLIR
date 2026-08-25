@@ -15,7 +15,7 @@ from jsonmlir.variables.ty.ty_scalar import TyScalar
 from jsonmlir.variables.ty.ty_SOA import TySOA
 from jsonmlir.variables.ty.ty_SSA import TySSA
 from jsonmlir.variables.ty.ty_struct import TyStruct
-from jsonmlir.variables.val.val import ValNode
+from jsonmlir.variables.val.val import ValNodeAny
 from jsonmlir.variables.val.val_buffer import ValBuffer
 from jsonmlir.variables.val.val_memref import ValMemref
 from jsonmlir.variables.val.val_ptr import ValPtr
@@ -28,7 +28,7 @@ from jsonmlir.variables.val.val_struct import ValStruct
 class Factory:
     @staticmethod
     @trace_step("Factory.from_val", display_entry=True)
-    def from_val(type: TyNode, value: ValNode) -> ValNode:
+    def from_val(type: TyNode, value: ValNodeAny) -> ValNodeAny:
         match type:
             case TyPtr():
                 return ValPtr.init_from(type, value)
@@ -49,7 +49,7 @@ class Factory:
 
     @staticmethod
     @trace_step("Factory.from_SSA", display_entry=True)
-    def from_SSA(type: TyNode, addr: Value) -> ValNode:
+    def from_SSA(type: TyNode, addr: Value) -> ValNodeAny:
         return Factory.from_val(type, ValSSA(addr))
 
     @staticmethod

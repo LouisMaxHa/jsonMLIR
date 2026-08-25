@@ -13,15 +13,15 @@ from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_memref import TyMemref
 from jsonmlir.variables.ty.ty_SSA import TySSA
 from jsonmlir.variables.ty.ty_struct import TyStruct
-from jsonmlir.variables.val.val import ValNode
+from jsonmlir.variables.val.val import ValNode, ValNodeAny
 
 
 class ValMemref(ValNode[TyMemref]):
-    addr: Value[MemRefType]
+    # ``addr`` est inféré depuis ``__init__`` (voir val_SSA.py).
 
     # ──────────── Init ────────────
     # Problème avec les structs, j'ai du memref<5xmemref<8xi8>>
-    def __init__(self, ty: TyMemref, addr: Value[MemRefType]):
+    def __init__(self, ty: TyMemref, addr: Value):
         ssa_type = addr.type
         assert isinstance(ssa_type, MemRefType), f"Got {type(addr)}"
         ty_shape = list(ty.get_type().shape)
@@ -40,7 +40,7 @@ class ValMemref(ValNode[TyMemref]):
 
     @staticmethod
     @trace_step("ValMemref.init_from", display_entry=True)
-    def init_from(type: TyNode, source: ValNode) -> ValMemref:
+    def init_from(type: TyNode, source: ValNodeAny) -> ValMemref:
         assert isinstance(type, TyMemref)
 
         match source.get_ty():
@@ -67,7 +67,7 @@ class ValMemref(ValNode[TyMemref]):
     def _load(
         self,
         index: Sequence[str | Value],
-    ) -> ValNode:
+    ) -> ValNodeAny:
         from jsonmlir.variables.factory import Factory
 
         if index == []:
@@ -109,7 +109,7 @@ class ValMemref(ValNode[TyMemref]):
     def _store(
         self,
         index: Sequence[str | Value],
-        source: ValNode,
+        source: ValNodeAny,
     ):
 
         # Split index

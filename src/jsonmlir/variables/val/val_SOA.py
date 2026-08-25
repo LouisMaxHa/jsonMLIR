@@ -9,7 +9,7 @@ from jsonmlir.variables.memory import STRUCTS_TYPE
 from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_buffer import TyBuffer
 from jsonmlir.variables.ty.ty_SOA import TySOA
-from jsonmlir.variables.val.val import ValNode
+from jsonmlir.variables.val.val import ValNode, ValNodeAny
 from jsonmlir.variables.val.val_buffer import ValBuffer
 from jsonmlir.variables.val.val_memref import ValMemref
 
@@ -64,7 +64,7 @@ class ValSOA(ValNode[TySOA]):
     def _load(
         self,
         index: Sequence[str | Value],
-    ) -> ValNode:
+    ) -> ValNodeAny:
 
         assert len(index) >= 1
         assert isinstance(index[0], str)
@@ -79,7 +79,7 @@ class ValSOA(ValNode[TySOA]):
     def _store(
         self,
         index: Sequence[str | Value],
-        source: ValNode,
+        source: ValNodeAny,
     ):
         assert len(index) >= 1
         assert isinstance(index[0], str)
@@ -94,24 +94,26 @@ class ValSOA(ValNode[TySOA]):
 
     @staticmethod
     @trace_step("ValSOA.init_from", display_entry=True)
-    def init_from(type: TyNode, source: ValNode) -> ValSOA:
+    def init_from(type: TyNode, source: ValNodeAny) -> ValSOA:
         from jsonmlir.variables.ty.ty_SOA import TySOA
 
         assert isinstance(type, TySOA)
         assert len(type.n_elements) == 1, "Need to test this before"
 
         # We need to have a ValBuffer
-        if not isinstance(source, ValBuffer):
-            source = ValBuffer.init_from(
+        if isinstance(source, ValBuffer):
+            buffer = source
+        else:
+            buffer = ValBuffer.init_from(
                 TyBuffer(type.get_sizes(), type.base),
                 source,
             )
 
-        struct: STRUCTS_TYPE = source.ty.base.struct
+        struct: STRUCTS_TYPE = buffer.ty.base.struct
 
         # Init for all attributs
         addrs: dict[str, ValBuffer | ValMemref] = {}
         for attribut in struct.FIELDS.values():
-            addrs[attribut.NAME] = source.build_view(attribut.NAME)
+            addrs[attribut.NAME] = buffer.build_view(attribut.NAME)
 
         return ValSOA(type, addrs)

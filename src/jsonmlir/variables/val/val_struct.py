@@ -10,12 +10,12 @@ from jsonmlir.utils import ssa_val
 from jsonmlir.utils.enum_scalars import Scalar
 from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_struct import TyStruct
-from jsonmlir.variables.val.val import ValNode
+from jsonmlir.variables.val.val import ValNode, ValNodeAny
 from jsonmlir.variables.val.val_SSA import ValSSA
 
 
 class ValStruct(ValNode[TyStruct]):
-    addr: Value
+    # ``addr`` est inféré depuis ``__init__`` (voir val_SSA.py).
 
     # ──────────── Init ────────────
     def __init__(
@@ -32,7 +32,7 @@ class ValStruct(ValNode[TyStruct]):
     @staticmethod
     @trace_step("ValStruct.init_from", display_entry=True)
     def init_from(
-        type: TyNode, source: ValNode
+        type: TyNode, source: ValNodeAny
     ) -> ValStruct:
         assert isinstance(type, TyStruct)
         return ValStruct(
@@ -52,7 +52,7 @@ class ValStruct(ValNode[TyStruct]):
     def _load(
         self,
         index: Sequence[str | Value],
-    ) -> ValNode:
+    ) -> ValNodeAny:
         from jsonmlir.variables.factory import Factory
 
         if len(index) == 0:
@@ -80,7 +80,7 @@ class ValStruct(ValNode[TyStruct]):
     def _store(
         self,
         index: Sequence[str | Value],
-        source: ValNode,
+        source: ValNodeAny,
     ) -> None:
         assert len(index) > 0
         assert isinstance(index[0], str)

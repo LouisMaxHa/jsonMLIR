@@ -7,11 +7,12 @@ from mlir.ir import Type, Value
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_SSA import TySSA
-from jsonmlir.variables.val.val import ValNode
+from jsonmlir.variables.val.val import ValNode, ValNodeAny
 
 
 class ValSSA(ValNode[TySSA]):
-    addr: Value
+    # ``addr`` est inféré depuis ``__init__`` : ``Value`` (stub MLIR non-générique)
+    # ne peut pas être annoté comme attribut de classe.
 
     # ──────────── Init ────────────
     def __init__(self, addr: Value):
@@ -21,7 +22,7 @@ class ValSSA(ValNode[TySSA]):
     @staticmethod
     @trace_step("ValSSA.init_from", display_entry=True)
     def init_from(
-        type: TyNode, source: ValNode
+        type: TyNode, source: ValNodeAny
     ) -> ValSSA:
         raise ValueError("ValSSA should not be used for operations")
 
@@ -42,7 +43,7 @@ class ValSSA(ValNode[TySSA]):
     def _load(
         self,
         index: Sequence[str | Value],
-    ) -> ValNode:
+    ) -> ValNodeAny:
         raise ValueError("ValSSA should not be used for operations")
 
 
@@ -50,6 +51,6 @@ class ValSSA(ValNode[TySSA]):
     def _store(
         self,
         index: Sequence[str | Value],
-        source: ValNode,
+        source: ValNodeAny,
     ):
         raise ValueError("ValSSA should not be used for operations")

@@ -8,7 +8,7 @@ from jsonmlir.variables.struct_field import StructField
 
 if TYPE_CHECKING:
     from jsonmlir.variables.ty.ty import TyNode
-    from jsonmlir.variables.val.val import ValNode
+    from jsonmlir.variables.val.val import ValNodeAny
 
 
 class STRUCTS_TYPE(NamedTuple):
@@ -24,7 +24,7 @@ class FunctionSignature(NamedTuple):
 
 
 structs_type: dict[str, STRUCTS_TYPE] = {}
-variables_heap: dict[str, ValNode] = {}
+variables_heap: dict[str, ValNodeAny] = {}
 functions_registry: dict[str, FunctionSignature] = {}
 
 # LMX Toujours nécéssaire ?
