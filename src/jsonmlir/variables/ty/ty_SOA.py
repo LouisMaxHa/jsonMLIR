@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Literal
+from typing import Any, Literal
 
 from mlir.ir import MemRefType, Type
 from pydantic import Field
@@ -16,6 +16,10 @@ class TySOA(TyNodeBase):
     # Number of struct contained
     n_elements: tuple[int | None, ...] = Field(alias="dims")
     base: StructRef
+
+    # Constructeurs positionnels gérés par ``TyNodeBase.__init__`` (voir ty_buffer.py).
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
 
     def get_count(self) -> Sequence[int | None]:
         return list(self.n_elements)
