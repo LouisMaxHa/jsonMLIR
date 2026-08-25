@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Annotated, Any, Union
+from typing import TYPE_CHECKING, Annotated, Any
 
 from mlir.ir import MemRefType, Type
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, TypeAdapter

@@ -41,7 +41,8 @@ def load_input_file(path: Path) -> Any:
         )
 
     except (ValueError, OSError, json.JSONDecodeError, yaml.YAMLError) as exc:
-        raise ValueError(f"Erreur lors du chargement de {path} : {exc}", file=sys.stderr)
+        print(f"Erreur lors du chargement de {path} : {exc}", file=sys.stderr)
+        raise ValueError(f"Erreur lors du chargement de {path} : {exc}")
 
 
 # Json -> Pydantic

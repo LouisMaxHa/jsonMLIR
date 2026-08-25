@@ -1,21 +1,22 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
-from typing import Generic, TypeVar
+from collections.abc import Callable, Sequence
+from typing import Any, Generic, TypeVar
 
 from mlir.ir import Type, Value
 
 from jsonmlir.utils.ssa_dim import index_to_ssa
 from jsonmlir.utils.trace import trace_step
-from jsonmlir.variables.ty.ty import TyNodeBase
+from jsonmlir.variables.ty.ty import TyNode, TyNodeBase
 
 T = TypeVar("T", bound=TyNodeBase)
+_F = TypeVar("_F", bound=Callable[..., Any])
 
 
-def auto_log(log_format):
-    def wrapper(func):
-        func._log_format = log_format
+def auto_log(log_format: str) -> Callable[[_F], _F]:
+    def wrapper(func: _F) -> _F:
+        setattr(func, "_log_format", log_format)
         return func
     return wrapper
 

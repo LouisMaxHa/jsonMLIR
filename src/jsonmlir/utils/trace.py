@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import contextvars
 import inspect
-import os
 from collections.abc import Callable
 from functools import wraps
 from string import Formatter
