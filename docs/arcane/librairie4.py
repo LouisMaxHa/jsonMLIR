@@ -1,68 +1,71 @@
-import sys
+from __future__ import annotations
 
-def SetReal3(result, v1, ope: str, v2, skip_att_v2=False):
+import sys
+from typing import Any, Sequence, cast
+
+def SetReal3(result: list[str | int], v1: list[str | int], ope: str, v2: list[str | int], skip_att_v2: bool = False):
     return [
         Set(
-            Var(result[0], result[1:] + [attribut]),
+            Var(cast(str, result[0]), result[1:] + [attribut]),
             Binary(
                 ope,
-                Var(v1[0], v1[1:] + [attribut]),
-                Var(v2[0], v2[1:] + ([attribut] if not skip_att_v2 else [])),
+                Var(cast(str, v1[0]), v1[1:] + [attribut]),
+                Var(cast(str, v2[0]), v2[1:] + ([attribut] if not skip_att_v2 else [])),
             ),
         )
         for attribut in ["x", "y", "z"]
     ]
 
 
-def CopyReal3(result, source):
+def CopyReal3(result: list[str | int], source: list[str | int]):
     return [
-        Set(Var(result[0], result[1:] + [attribut]), Var(source[0], source[1:] + [attribut]))
+        Set(Var(cast(str, result[0]), result[1:] + [attribut]), Var(cast(str, source[0]), source[1:] + [attribut]))
         for attribut in ["x", "y", "z"]
     ]
 
 
-def CrossReal3(result, v1, v2):
+def CrossReal3(result: list[str | int], v1: list[str | int], v2: list[str | int]):
     """result = v1 × v2"""
     return [
         Set(
-            Var(result[0], result[1:] + ["x"]),
+            Var(cast(str, result[0]), result[1:] + ["x"]),
             Binary(
                 "-f",
-                Binary("*f", Var(v1[0], v1[1:] + ["y"]), Var(v2[0], v2[1:] + ["z"])),
-                Binary("*f", Var(v1[0], v1[1:] + ["z"]), Var(v2[0], v2[1:] + ["y"])),
+                Binary("*f", Var(cast(str, v1[0]), v1[1:] + ["y"]), Var(cast(str, v2[0]), v2[1:] + ["z"])),
+                Binary("*f", Var(cast(str, v1[0]), v1[1:] + ["z"]), Var(cast(str, v2[0]), v2[1:] + ["y"])),
             ),
         ),
         Set(
-            Var(result[0], result[1:] + ["y"]),
+            Var(cast(str, result[0]), result[1:] + ["y"]),
             Binary(
                 "-f",
-                Binary("*f", Var(v1[0], v1[1:] + ["z"]), Var(v2[0], v2[1:] + ["x"])),
-                Binary("*f", Var(v1[0], v1[1:] + ["x"]), Var(v2[0], v2[1:] + ["z"])),
+                Binary("*f", Var(cast(str, v1[0]), v1[1:] + ["z"]), Var(cast(str, v2[0]), v2[1:] + ["x"])),
+                Binary("*f", Var(cast(str, v1[0]), v1[1:] + ["x"]), Var(cast(str, v2[0]), v2[1:] + ["z"])),
             ),
         ),
         Set(
-            Var(result[0], result[1:] + ["z"]),
+            Var(cast(str, result[0]), result[1:] + ["z"]),
             Binary(
                 "-f",
-                Binary("*f", Var(v1[0], v1[1:] + ["x"]), Var(v2[0], v2[1:] + ["y"])),
-                Binary("*f", Var(v1[0], v1[1:] + ["y"]), Var(v2[0], v2[1:] + ["x"])),
+                Binary("*f", Var(cast(str, v1[0]), v1[1:] + ["x"]), Var(cast(str, v2[0]), v2[1:] + ["y"])),
+                Binary("*f", Var(cast(str, v1[0]), v1[1:] + ["y"]), Var(cast(str, v2[0]), v2[1:] + ["x"])),
             ),
         ),
     ]
 
 
-def SumReal3(result, terms):
+def SumReal3(result: list[str | int], terms: Sequence[str]):
     ops = CopyReal3(result, [terms[0]])
     for term in terms[1:]:
         ops += SetReal3(result, result, "+f", [term])
     return ops
 
 
-def flatten(lst):
-    flat_list = []
+def flatten(lst: Sequence[Any]) -> list[Any]:
+    flat_list: list[Any] = []
     for element in lst:
         if isinstance(element, list):
-            flat_list.extend(flatten(element))
+            flat_list.extend(flatten(cast(list[Any], element)))
         else:
             flat_list.append(element)
     return flat_list
@@ -99,7 +102,7 @@ _CQS = [
 ]
 
 
-def emit_normal(name, na, nb, face_idx):
+def emit_normal(name: str, na: int, nb: int, face_idx: int):
     """n = 0.5 * cross(node[na] - face[face_idx], node[nb] - face[face_idx])"""
     return [
         Alloca(f"{name}_a", TyStruct("Real3")),
@@ -112,7 +115,7 @@ def emit_normal(name, na, nb, face_idx):
     ]
 
 
-def emit_cqs(i, five_terms, one_terms):
+def emit_cqs(i: int, five_terms: Sequence[str], one_terms: Sequence[str]):
     return [
         Alloca(f"sum5_{i}", TyStruct("Real3")),
         Alloca(f"sum1_{i}", TyStruct("Real3")),
@@ -257,7 +260,7 @@ module = Module([
             ("in_out_volume", TyMemref([100], TyScalar(Scalar.f64))),
             ("out_old_volume", TyMemref([100], TyScalar(Scalar.f64))),
             ("out_caracteristic_length", TyMemref([100], TyScalar(Scalar.f64))),
-        ], [  # pyright: ignore[reportUnknownArgumentType]
+        ], [
             # --- cnc.nodes(cid) : slice CSR items[indexes[cid] .. + nb[cid]] ---
             Set(
                 Var("nodes_offset", type=TyScalar(Scalar.i32)),

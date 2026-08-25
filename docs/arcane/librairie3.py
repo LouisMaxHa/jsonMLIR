@@ -1,19 +1,28 @@
+from __future__ import annotations
+
 import sys
+from typing import Any, Sequence, cast
 
 # Set(Var("median1", ["x"]), Binary("-f", Var("face_coord", [0, "x"]), Var("face_coord", [3, "x"]))),
 # Set(Var("median1", ["y"]), Binary("-f", Var("face_coord", [0, "y"]), Var("face_coord", [3, "y"]))),
 # Set(Var("median1", ["z"]), Binary("-f", Var("face_coord", [0, "z"]), Var("face_coord", [3, "z"]))),
-def SetReal3(result, v1, ope: str, v2, skip_att_v2=False):
+def SetReal3(
+    result: list[str | int],
+    v1: list[str | int],
+    ope: str,
+    v2: list[str | int],
+    skip_att_v2: bool = False,
+):
     return [
-        Set(Var(result[0], result[1::] + [attribut]), Binary(ope, Var(v1[0], v1[1::] + [attribut]), Var(v2[0], v2[1::] + ([attribut] if not skip_att_v2 else []))))
+        Set(Var(cast(str, result[0]), result[1::] + [attribut]), Binary(ope, Var(cast(str, v1[0]), v1[1::] + [attribut]), Var(cast(str, v2[0]), v2[1::] + ([attribut] if not skip_att_v2 else []))))
         for attribut in ["x", "y", "z"]
     ]
 
-def flatten(lst):
-    flat_list = []
+def flatten(lst: Sequence[Any]) -> list[Any]:
+    flat_list: list[Any] = []
     for element in lst:
         if isinstance(element, list):
-            flat_list.extend(flatten(element))
+            flat_list.extend(flatten(cast(list[Any], element)))
         else:
             flat_list.append(element)
     return flat_list
@@ -80,7 +89,7 @@ module = Module([
             ("coord", TyMemref([8], TyStruct("Real3"))),
             ("cid", TyScalar(Scalar.i64)),
             ("out_caracteristic_length", TyMemref([100], TyScalar(Scalar.f64))),
-        ], [  # pyright: ignore[reportUnknownArgumentType]
+        ], [
             Alloca("face_coord", TyMemref([6], TyStruct("Real3"))),
             Set(Var("c025", type=TyScalar(Scalar.f64)), Const(0.25, type="f64")),
             *flatten([
