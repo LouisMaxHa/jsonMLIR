@@ -5,7 +5,7 @@ from __future__ import annotations
 import copy
 from typing import Any, cast
 
-# Titres génériques Pydantic : json2ts en fait des alias (`Name`, `Name1`, …) au lieu d'inliner.
+# Titres génériques Pydantic
 _GENERIC_PROPERTY_TITLES = frozenset(
     {
         "Name",
@@ -73,7 +73,9 @@ def _strip_generic_titles(node: Any) -> None:
             node_dict.pop("title", None)
         for value in node_dict.values():
             _strip_generic_titles(value)
-    elif isinstance(node, list):
+        return
+    
+    if isinstance(node, list):
         for item in cast(list[Any], node):
             _strip_generic_titles(item)
 
@@ -86,7 +88,9 @@ def _replace_refs(node: Any, mapping: dict[str, str]) -> None:
             node_dict["$ref"] = mapping[ref]
         for value in node_dict.values():
             _replace_refs(value, mapping)
-    elif isinstance(node, list):
+        return
+
+    if isinstance(node, list):
         for item in cast(list[Any], node):
             _replace_refs(item, mapping)
 

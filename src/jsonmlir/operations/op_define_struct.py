@@ -7,7 +7,7 @@ from mlir.dialects import llvm
 
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.utils.trace import trace_step
-from jsonmlir.variables.memory import STRUCTS_TYPE, structs_type
+from jsonmlir.variables.memory import StructDescriptor, structs_type
 from jsonmlir.variables.struct_field import StructField
 from jsonmlir.variables.val.val import ValNodeAny
 
@@ -27,20 +27,18 @@ class DefineStructOp(OpNode):
 
         # OpNode attribute of ValNodes
         types = [
-            field.TYPE.get_type()
+            field.type.get_type()
             for field in self.fields
         ]
 
-        # Structure. ``llvm.StructType`` vient du module compilé
-        # ``_mlirDialectsLLVM`` (pas de stub) : accès via Any + ignore ciblé.
-        LLVM_TYPE = cast(Any, llvm.StructType).get_identified(self.name)  # type: ignore[reportAttributeAccessIssue]
-        LLVM_TYPE.set_body(types, packed=False)
-        structs_type[self.name] = STRUCTS_TYPE(
+        llvmType = cast(Any, llvm.StructType).get_identified(self.name)  # type: ignore[reportAttributeAccessIssue]
+        llvmType.set_body(types, packed=False)
+        structs_type[self.name] = StructDescriptor(
             self.name,
-            LLVM_TYPE,
+            llvmType,
             self.size,
             {
-                field.NAME: field
+                field.name: field
                 for field in self.fields
             }
         )

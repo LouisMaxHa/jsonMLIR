@@ -16,7 +16,6 @@ class TyMemref(TyNodeBase):
     dimensions: tuple[int | None, ...] = Field(alias="dims")
     base: TyNested
 
-    # Constructeurs positionnels gérés par ``TyNodeBase.__init__`` (voir ty_buffer.py).
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
@@ -28,7 +27,7 @@ class TyMemref(TyNodeBase):
         dimension = [d if d is not None else dynamic for d in self.dimensions]
 
         if isinstance(self.base, TyStruct):
-            struct_size = self.base.struct.SIZE
+            struct_size = self.base.struct.size
             if dimension[-1] != dynamic:
                 dimension[-1] *= struct_size
             return MemRefType.get(dimension, Scalar.i8.get_type())

@@ -12,7 +12,6 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from mlir.ir import Module
 from pydantic import TypeAdapter
 
 from jsonmlir.operations.op_module import ModuleJsonOp
@@ -149,11 +148,6 @@ def run_command(cmd: Sequence[str]) -> str:
 
         print('\033[91m' + exc.stderr + '\033[0m', file=sys.stderr)
         raise ValueError("Failed to run command")
-
-
-# Écrit le module MLIR en texte
-def write_mlir(module: Module, output_path: Path):
-    output_path.write_text(str(module), encoding="utf-8")
 
 
 # Apply MLIR passes

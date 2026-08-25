@@ -11,11 +11,11 @@ if TYPE_CHECKING:
     from jsonmlir.variables.val.val import ValNodeAny
 
 
-class STRUCTS_TYPE(NamedTuple):
-    NAME: str
-    LLVM_TYPE: Type
-    SIZE: int
-    FIELDS: dict[str, StructField]
+class StructDescriptor(NamedTuple):
+    name: str
+    llvmType: Type
+    size: int
+    fields: dict[str, StructField]
 
 
 class FunctionSignature(NamedTuple):
@@ -23,12 +23,6 @@ class FunctionSignature(NamedTuple):
     return_types: list[TyNode]
 
 
-structs_type: dict[str, STRUCTS_TYPE] = {}
+structs_type: dict[str, StructDescriptor] = {}
 variables_heap: dict[str, ValNodeAny] = {}
 functions_registry: dict[str, FunctionSignature] = {}
-
-# LMX Toujours nécéssaire ?
-# Rétrocompatibilité
-FIELD_TYPE = StructField
-
-# LMX fin

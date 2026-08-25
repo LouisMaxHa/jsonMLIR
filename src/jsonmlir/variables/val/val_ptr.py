@@ -16,8 +16,6 @@ from jsonmlir.variables.val.val_SSA import ValSSA
 
 
 class ValPtr(ValNode[TyPtr]):
-    # ``addr`` est inféré depuis ``__init__`` (voir val_SSA.py).
-
     # ──────────── Init ────────────
 
     def __init__(self, ty: TyPtr, addr: Value):
@@ -79,8 +77,6 @@ class ValPtr(ValNode[TyPtr]):
 
         # i64 -> llvm.ptr
         ssa_i64 = self._get_SSA()
-        # ``llvm.PointerType`` vient du module compilé ``_mlirDialectsLLVM``
-        # (pas de stub) : accès via Any + ignore ciblé.
         ssa_ptr_llvm = llvm.IntToPtrOp(
             cast(Any, llvm.PointerType).get(),  # type: ignore[reportAttributeAccessIssue]
             ssa_i64,

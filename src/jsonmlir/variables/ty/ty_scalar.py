@@ -13,7 +13,6 @@ class TyScalar(TyNodeBase):
     type: Literal["scalar"] = "scalar"
     scalar: Scalar = Field(alias="name")
 
-    # Constructeurs positionnels gérés par ``TyNodeBase.__init__`` (voir ty_buffer.py).
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 

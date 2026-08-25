@@ -55,7 +55,7 @@ def dump_ty(value: TyNodeBase) -> Any:
 # LMX fin
 
 def _coerce_ty_node(value: Any) -> Any:
-    """Accepte raccourcis (``\"i64\"``) et formes legacy en entrée de champ ``TyNode``."""
+    """Accepte raccourcis (``"i64"``) et formes legacy en entrée de champ ``TyNode``."""
     if isinstance(value, TyNodeBase):
         return value
     if isinstance(value, (str, dict)):
@@ -68,10 +68,10 @@ def _coerce_ty_node(value: Any) -> Any:
 
 TyNested = Annotated[TyNodeBase, BeforeValidator(_coerce_ty_node)]
 
-
 # Les types concrets sont importés APRÈS la définition de ``TyNodeBase`` /
 # ``TyNested`` : ils en héritent, et les importer plus tôt déclencherait un
 # import circulaire (``ty`` <-> ``ty_*``).
+
 from jsonmlir.variables.ty.ty_buffer import TyBuffer
 from jsonmlir.variables.ty.ty_memref import TyMemref
 from jsonmlir.variables.ty.ty_ptr import TyPtr
@@ -79,7 +79,6 @@ from jsonmlir.variables.ty.ty_scalar import TyScalar
 from jsonmlir.variables.ty.ty_SOA import TySOA
 from jsonmlir.variables.ty.ty_SSA import TySSA
 from jsonmlir.variables.ty.ty_struct import TyStruct
-
 
 union = Annotated[
     TyScalar | TyStruct | TyMemref | TyBuffer | TySOA | TyPtr | TySSA,
@@ -104,10 +103,12 @@ else:
     TyNode = Annotated[union, BeforeValidator(_coerce_ty_node)]
 
 
-def parse_ty(value: Any) -> TyNodeBase:
-    """Construit le type correspondant à une description JSON (y compris legacy)."""
+"""Construit le type correspondant à une description JSON (y compris legacy)."""
+def parse_ty(value: Any | TyNode) -> TyNode:
+
+    # Si notre type implémente TyNodeBase, on doit pouvoir le cast parmis l'union des classes TyNode
     if isinstance(value, TyNodeBase):
-        return value
+        return cast(TyNode, value)
 
     def convert_to_dict(value: Any) -> dict[str, Any]:
         if isinstance(value, str):

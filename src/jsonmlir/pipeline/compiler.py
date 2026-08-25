@@ -9,18 +9,11 @@ from mlir.ir import Context, InsertionPoint, Location, Module
 
 from jsonmlir.operations.op_module import ModuleJsonOp
 from jsonmlir.pipeline.cli import parse_args, resolve_output_name
-from jsonmlir.pipeline.commands import (
-    Toolchain,
-    build_sample_ast_json,
-    compile_llvm_to_object,
-    convert_to_llvm,
-    link_executable,
-    load_input_file,
-    run_llvm_opt,
-    run_mlir_opt,
-    set_display_cmd,
-    write_mlir,
-)
+from jsonmlir.pipeline.commands import (Toolchain, build_sample_ast_json,
+                                        compile_llvm_to_object,
+                                        convert_to_llvm, link_executable,
+                                        load_input_file, run_llvm_opt,
+                                        run_mlir_opt, set_display_cmd)
 from jsonmlir.utils.trace import enable_trace
 
 
@@ -151,7 +144,8 @@ def compiler(module_ast: ModuleJsonOp, argv: Sequence[str] | None = None) -> int
             module_ast.codegen()
 
         # Print
-        write_mlir(module, path_mlir)
+        path_mlir.write_text(str(module), encoding="utf-8")
+
     print_if(
         args.mlir,
         "MLIR (codegen)",

@@ -5,7 +5,7 @@ from collections.abc import Sequence
 from mlir.ir import Type, Value
 
 from jsonmlir.utils.trace import trace_step
-from jsonmlir.variables.memory import STRUCTS_TYPE
+from jsonmlir.variables.memory import StructDescriptor
 from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_buffer import TyBuffer
 from jsonmlir.variables.ty.ty_SOA import TySOA
@@ -47,7 +47,7 @@ class ValSOA(ValNode[TySOA]):
     ) -> Value:
         assert len(index) >= 1
         assert isinstance(index[0], str)
-        assert index[0] in self.ty.base.struct.FIELDS
+        assert index[0] in self.ty.base.struct.fields
 
         consumming = index[0]
         remaining = index[1::]
@@ -68,7 +68,7 @@ class ValSOA(ValNode[TySOA]):
 
         assert len(index) >= 1
         assert isinstance(index[0], str)
-        assert index[0] in self.ty.base.struct.FIELDS
+        assert index[0] in self.ty.base.struct.fields
 
         # Load
         consumming = index[0]
@@ -83,7 +83,7 @@ class ValSOA(ValNode[TySOA]):
     ):
         assert len(index) >= 1
         assert isinstance(index[0], str)
-        assert index[0] in self.ty.base.struct.FIELDS
+        assert index[0] in self.ty.base.struct.fields
 
         # Store
         consumming = index[0]
@@ -109,11 +109,11 @@ class ValSOA(ValNode[TySOA]):
                 source,
             )
 
-        struct: STRUCTS_TYPE = buffer.ty.base.struct
+        struct: StructDescriptor = buffer.ty.base.struct
 
         # Init for all attributs
         addrs: dict[str, ValBuffer | ValMemref] = {}
-        for attribut in struct.FIELDS.values():
-            addrs[attribut.NAME] = buffer.build_view(attribut.NAME)
+        for attribut in struct.fields.values():
+            addrs[attribut.name] = buffer.build_view(attribut.name)
 
         return ValSOA(type, addrs)

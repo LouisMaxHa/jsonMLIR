@@ -18,9 +18,8 @@ class TyBuffer(TyNodeBase):
     dimensions: tuple[int | None, ...] = Field(alias="dims")
     base: StructRef
 
-    # Les constructeurs positionnels (ex. ``TyBuffer(dims, base)``) sont
-    # gérés par ``TyNodeBase.__init__`` ; on les déclare ici pour pyright,
-    # qui synthétiserait sinon une signature pydantic keyword-only.
+    # Les constructeurs (``TyBuffer(dims, base)``) sont
+    # gérés par ``TyNodeBase.__init__`` ; on les déclare ici pour pyright
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
@@ -40,8 +39,8 @@ class TyBuffer(TyNodeBase):
             return list(self.dimensions)
 
         # Verify last items is multiple of struct size
-        assert self.dimensions[-1] % self.base.struct.SIZE == 0
-        n_element = self.dimensions[-1] // self.base.struct.SIZE
+        assert self.dimensions[-1] % self.base.struct.size == 0
+        n_element = self.dimensions[-1] // self.base.struct.size
         return list(self.dimensions[:-1:]) + [n_element]
 
     def get_bytes_size(self) -> None | int:

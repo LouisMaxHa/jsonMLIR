@@ -25,8 +25,6 @@ class WhileOp(OpNode):
         while_op = scf.WhileOp([], [])
 
         # Condition block (before region)
-        # ``BlockList.append`` a un ``*args`` non annoté dans le stub MLIR :
-        # ignore ciblé (l'appel sans argument est valide).
         before_block = while_op.before.blocks.append()  # type: ignore[reportUnknownMemberType]
         with InsertionPoint(before_block):
             conds_ssa = self.cond.codegen()

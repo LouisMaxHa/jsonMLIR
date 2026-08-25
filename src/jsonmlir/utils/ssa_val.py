@@ -1,24 +1,21 @@
 from __future__ import annotations
 
-from typing import Any, cast
+from typing import cast
 
 from mlir.dialects.arith import ConstantOp, IndexCastOp
 from mlir.ir import (
-    FloatAttr,
     IndexType,
     InsertionPoint,
-    IntegerAttr,
     IntegerType,
     Value,
 )
 
 from jsonmlir.utils.block_entry import function_entry_block
-from jsonmlir.utils.enum_scalars import Scalar, ScalarFamily
+from jsonmlir.utils.enum_scalars import Scalar
 
 const_heap: dict[tuple[int | float, str], list[Value]] = {}
 
 # TODO: Clear variable end of function
-
 
 def ensure_index(value: Value) -> Value:
     """Cast un entier vers ``index`` si besoin (requis par memref.load/store)."""
@@ -43,21 +40,13 @@ def val_to_SSAValues(
     if key not in const_heap.keys():
         # Create const
         mlir_type = type.get_type()
-        match type.get_kind():
-            case ScalarFamily.float:
-                attr = FloatAttr.get(mlir_type, float(value))
-
-            case ScalarFamily.int | ScalarFamily.idx:
-                attr = IntegerAttr.get(mlir_type, int(value))
 
         # Insert it at the start of the enclosing function's entry block
         current_ip = cast(InsertionPoint, InsertionPoint.current)
         entry_block = function_entry_block(current_ip.block)
-        # ``arith.ConstantOp`` accepte un Attribute en 2e position à l'exécution
-        # mais les overloads du stub ne couvrent que int|float|array : cast Any.
         op = ConstantOp(
             mlir_type,
-            cast(Any, attr),
+            value,
             ip=InsertionPoint.at_block_begin(entry_block),
         )
         const_heap[key] = list(op.results)

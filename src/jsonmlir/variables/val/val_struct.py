@@ -5,9 +5,9 @@ from collections.abc import Sequence
 from mlir.dialects import memref
 from mlir.ir import MemRefType, Value
 
-from jsonmlir.utils.trace import trace_step
 from jsonmlir.utils import ssa_val
 from jsonmlir.utils.enum_scalars import Scalar
+from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_struct import TyStruct
 from jsonmlir.variables.val.val import ValNode, ValNodeAny
@@ -15,8 +15,6 @@ from jsonmlir.variables.val.val_SSA import ValSSA
 
 
 class ValStruct(ValNode[TyStruct]):
-    # ``addr`` est inféré depuis ``__init__`` (voir val_SSA.py).
-
     # ──────────── Init ────────────
     def __init__(
         self, ty: TyStruct, addr: Value
@@ -66,7 +64,7 @@ class ValStruct(ValNode[TyStruct]):
 
         # Load
         valNode = Factory.from_val(
-            self.ty.struct.FIELDS[consuming].TYPE,
+            self.ty.struct.fields[consuming].type,
             ValSSA(self._get_field(consuming)),
         )
 
@@ -103,7 +101,7 @@ class ValStruct(ValNode[TyStruct]):
 
     # ──────────── size ────────────
     def get_size(self) -> int:
-        return self.ty.struct.SIZE
+        return self.ty.struct.size
 
 
     def _get_field(
@@ -113,13 +111,13 @@ class ValStruct(ValNode[TyStruct]):
 
         # Load infos
         struct = self.ty.struct
-        field = struct.FIELDS[field_name]
-        field_ty = struct.FIELDS[field_name].TYPE
-        assert struct.SIZE % field.SIZE == 0, f"{struct.SIZE} % {field.SIZE} == {struct.SIZE % field.SIZE}"
+        field = struct.fields[field_name]
+        field_ty = struct.fields[field_name].type
+        assert struct.size % field.size == 0, f"{struct.size} % {field.size} == {struct.size % field.size}"
 
 
         # Get dimensions
-        offset_ssa = ssa_val.val_to_SSAValue(field.OFFSET, Scalar.idx)
+        offset_ssa = ssa_val.val_to_SSAValue(field.offset, Scalar.idx)
 
         # Flatten
         view_op = memref.ViewOp(

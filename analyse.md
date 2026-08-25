@@ -78,7 +78,7 @@ break. Tests only pass because `conftest.py` manipulates `sys.path`.
 Codegen state lives in **module-level mutable dicts** (`variables/memory.py:26-28`):
 
 ```python
-structs_type: dict[str, STRUCTS_TYPE] = {}
+structs_type: dict[str, StructDescriptor] = {}
 variables_heap: dict[str, ValNode] = {}
 functions_registry: dict[str, FunctionSignature] = {}
 ```
@@ -142,7 +142,7 @@ invalid JSON produces **garbage IR or segfaults** instead of clean errors.
   (lines 70-82, 110-121, 134-137).
 - `val_ptr`/`val_scalar` share the alloca→store→load init pattern and a
   verbatim multi-line assert message.
-- Double lookups: `struct.FIELDS[field_name]` twice in `val_struct.py:116-117`;
+- Double lookups: `struct.fields[field_name]` twice in `val_struct.py:116-117`;
   `get_size()` recomputed in `val_buffer.build_view` (lines 125 and 134).
 - `ValMemref.init_from` has two **identical** `match` branches (`TyMemref` and
   `TySSA`, `val_memref.py:47-51`).
@@ -213,7 +213,7 @@ Replace `memory.py` globals with a context object created per module:
 ```python
 @dataclass
 class CodegenContext:
-    structs: dict[str, STRUCTS_TYPE] = field(default_factory=dict)
+    structs: dict[str, StructDescriptor] = field(default_factory=dict)
     functions: dict[str, FunctionSignature] = field(default_factory=dict)
     heap: dict[str, ValNode] = field(default_factory=dict)
     consts: dict[tuple, list[Value]] = field(default_factory=dict)

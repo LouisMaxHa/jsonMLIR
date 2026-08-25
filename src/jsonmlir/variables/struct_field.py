@@ -44,22 +44,3 @@ class StructField(BaseModel):
 
         ty = dump_ty(self.type) if isinstance(self.type, TyNodeBase) else self.type
         return [self.name, ty, self.offset, self.size]
-
-    @property
-    def NAME(self) -> str:
-        return self.name
-
-    @property
-    def TYPE(self) -> Any:
-        return self.type
-
-    @property
-    def OFFSET(self) -> int:
-        return self.offset
-
-    @property
-    def SIZE(self) -> int:
-        return self.size
-
-
-FIELD_TYPE = StructField

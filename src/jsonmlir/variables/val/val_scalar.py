@@ -13,8 +13,6 @@ from jsonmlir.variables.val.val_SSA import ValSSA
 
 
 class ValScalar(ValNode[TyScalar]):
-    # ``addr`` est inféré depuis ``__init__`` (voir val_SSA.py).
-
     # ──────────── Init ────────────
 
     def __init__(self, ty: TyScalar, addr: Value):

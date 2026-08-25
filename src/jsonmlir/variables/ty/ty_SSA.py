@@ -10,7 +10,6 @@ from jsonmlir.variables.ty.ty import TyNodeBase
 class TySSA(TyNodeBase):
     type: Literal["ssa"] = "ssa"
 
-    # Constructeurs positionnels gérés par ``TyNodeBase.__init__`` (voir ty_buffer.py).
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 

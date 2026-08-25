@@ -17,7 +17,6 @@ class TySOA(TyNodeBase):
     n_elements: tuple[int | None, ...] = Field(alias="dims")
     base: StructRef
 
-    # Constructeurs positionnels gérés par ``TyNodeBase.__init__`` (voir ty_buffer.py).
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
@@ -26,7 +25,7 @@ class TySOA(TyNodeBase):
 
     def get_sizes(self) -> Sequence[int | None]:
         return [
-            n * self.base.struct.SIZE
+            n * self.base.struct.size
             if isinstance(n, int) else None
             for n in self.n_elements
         ]

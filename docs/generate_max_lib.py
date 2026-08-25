@@ -12,8 +12,6 @@
 Prérequis : PYTHONPATH doit pointer vers
 `build/tools/mlir/python_packages/mlir_core` (voir instructions.md).
 """
-# Les bindings MLIR sont du Python non typé (pas de stubs) : le mode strict
-# ne peut pas s'appliquer. On garde l'analyse Pyright en mode basic.
 # pyright: basic
 
 import ctypes

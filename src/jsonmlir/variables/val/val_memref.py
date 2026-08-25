@@ -17,8 +17,6 @@ from jsonmlir.variables.val.val import ValNode, ValNodeAny
 
 
 class ValMemref(ValNode[TyMemref]):
-    # ``addr`` est inféré depuis ``__init__`` (voir val_SSA.py).
-
     # ──────────── Init ────────────
     # Problème avec les structs, j'ai du memref<5xmemref<8xi8>>
     def __init__(self, ty: TyMemref, addr: Value):
@@ -81,7 +79,7 @@ class ValMemref(ValNode[TyMemref]):
         # Load
         if isinstance(self.ty.base, TyStruct):
             assert len(self.ty.dimensions) == 1, "Array of struct supported for only 1D"
-            struct_size = self.ty.base.struct.SIZE
+            struct_size = self.ty.base.struct.size
             # ViewOp (pas subview) : conserve un layout identité, requis ensuite
             # par les memref.view de champs de struct.
             offset = arith.MulIOp(

@@ -29,16 +29,16 @@ class CondOp(OpNode):
         cond_ssa = conds_ssa[0].get_SSA([])
 
         # Create IfOp (les blocs then/else appartiennent à ses régions)
-        if_op = scf.IfOp(cond_ssa, has_else=True)
+        has_else = self.elseBlock is not None
+        if_op = scf.IfOp(cond_ssa, has_else=has_else)
 
         # Région then
         codegenBlock(self.thenBlock, if_op.then_block)
         scf.YieldOp([], ip=InsertionPoint(if_op.then_block))
 
         # Région else
-        else_block = if_op.else_block
-        assert else_block is not None
-        codegenBlock(self.elseBlock, else_block)
-        scf.YieldOp([], ip=InsertionPoint(else_block))
+        if if_op.else_block:
+            codegenBlock(self.elseBlock, if_op.else_block)
+            scf.YieldOp([], ip=InsertionPoint(if_op.else_block))
 
         return []

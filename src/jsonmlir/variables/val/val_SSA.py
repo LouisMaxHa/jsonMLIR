@@ -11,9 +11,6 @@ from jsonmlir.variables.val.val import ValNode, ValNodeAny
 
 
 class ValSSA(ValNode[TySSA]):
-    # ``addr`` est inféré depuis ``__init__`` : ``Value`` (stub MLIR non-générique)
-    # ne peut pas être annoté comme attribut de classe.
-
     # ──────────── Init ────────────
     def __init__(self, addr: Value):
         self.ty = TySSA()
