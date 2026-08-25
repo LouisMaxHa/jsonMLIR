@@ -8,7 +8,7 @@ from mlir.dialects.math import SqrtOp
 
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.utils.trace import trace_step
-from jsonmlir.variables.val.val import ValNode
+from jsonmlir.variables.val.val import ValNodeAny
 from jsonmlir.variables.val.val_SSA import ValSSA
 
 if TYPE_CHECKING:
@@ -26,7 +26,7 @@ class MathOp(OpNode):
     value: BaseValue
 
     @trace_step("MathOp: {self.ope.value}")
-    def codegen(self) -> Sequence[ValNode]:
+    def codegen(self) -> Sequence[ValNodeAny]:
         value = self.value.codegen()
         value_ssa = value[0].get_SSA([])
 

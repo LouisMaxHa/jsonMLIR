@@ -10,7 +10,7 @@ from jsonmlir.operations.op_constant import ConstOp
 from jsonmlir.operations.op_operator import OperatorOp
 from jsonmlir.utils.enum_scalars import Scalar, ScalarFamily
 from jsonmlir.utils.trace import trace_step
-from jsonmlir.variables.val.val import ValNode
+from jsonmlir.variables.val.val import ValNodeAny
 
 if TYPE_CHECKING:
     from jsonmlir.operations.base import BaseValue
@@ -29,7 +29,7 @@ class UnaryOp(OpNode):
     value: BaseValue
 
     @trace_step("UnaryOp: {self.ope.value}")
-    def codegen(self) -> Sequence[ValNode]:
+    def codegen(self) -> Sequence[ValNodeAny]:
         values = self.value.codegen()
         assert len(values) == 1, (
             f"Unary value expect one SSA value, got {len(values)} values."

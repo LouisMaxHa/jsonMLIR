@@ -9,7 +9,7 @@ from mlir.ir import InsertionPoint
 from jsonmlir.operations.block import codegenBlock
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.utils.trace import trace_step
-from jsonmlir.variables.val.val import ValNode
+from jsonmlir.variables.val.val import ValNodeAny
 
 if TYPE_CHECKING:
     from jsonmlir.operations.base import BaseValue
@@ -21,7 +21,7 @@ class WhileOp(OpNode):
     thenBlock: Sequence[BaseValue] = ()
 
     @trace_step("WhileOp")
-    def codegen(self) -> Sequence[ValNode]:
+    def codegen(self) -> Sequence[ValNodeAny]:
         while_op = scf.WhileOp([], [])
 
         # Condition block (before region)

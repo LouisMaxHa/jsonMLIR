@@ -14,7 +14,7 @@ from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.factory import Factory
 from jsonmlir.variables.memory import variables_heap
 from jsonmlir.variables.ty.ty import TyNode
-from jsonmlir.variables.val.val import ValNode
+from jsonmlir.variables.val.val import ValNodeAny
 from jsonmlir.variables.val.val_SSA import ValSSA
 
 availables_functions = {}
@@ -25,7 +25,7 @@ class FunctionOp(OpNode):
     body: Sequence[BaseValue] = ()
 
     @trace_step("FunctionOp: {self.name}")
-    def codegen(self) -> Sequence[ValNode]:
+    def codegen(self) -> Sequence[ValNodeAny]:
         variables_heap.clear()
         const_heap.clear()
 

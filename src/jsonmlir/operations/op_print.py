@@ -7,7 +7,7 @@ from mlir.dialects.func import CallOp
 
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.utils.trace import trace_step
-from jsonmlir.variables.val.val import ValNode
+from jsonmlir.variables.val.val import ValNodeAny
 
 if TYPE_CHECKING:
     from jsonmlir.operations.base import BaseValue
@@ -32,7 +32,7 @@ class PrintOp(OpNode):
     value: BaseValue
 
     @trace_step("PrintOp")
-    def codegen(self) -> Sequence[ValNode]:
+    def codegen(self) -> Sequence[ValNodeAny]:
         value_ssa = self.value.codegen()
         if len(value_ssa) != 1:
             raise ValueError(

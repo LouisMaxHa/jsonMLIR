@@ -12,7 +12,7 @@ from jsonmlir.operations.codegen import OpNode
 from jsonmlir.operations.op_operator import OperatorOp
 from jsonmlir.utils.same_types import assert_same_types
 from jsonmlir.utils.trace import trace_step
-from jsonmlir.variables.val.val import ValNode
+from jsonmlir.variables.val.val import ValNodeAny
 from jsonmlir.variables.val.val_SSA import ValSSA
 
 if TYPE_CHECKING:
@@ -22,12 +22,12 @@ class BinaryOp(OpNode):
     """Opération binaire composée de deux opérandes."""
 
     op: Literal["binary"] = "binary"
-    lhs: BaseValue | Sequence[ValNode]
-    rhs: BaseValue | Sequence[ValNode]
+    lhs: BaseValue | Sequence[ValNodeAny]
+    rhs: BaseValue | Sequence[ValNodeAny]
     ope: OperatorOp
 
     @trace_step("BinaryOp: {self.ope.value}")
-    def codegen(self) -> Sequence[ValNode]:
+    def codegen(self) -> Sequence[ValNodeAny]:
         """Applique un opérateur binaire sur des opérandes déjà générés."""
         # Recursive codegen (operands already materialized are used as-is)
         lhs = self.lhs.codegen() if not isinstance(self.lhs, Sequence) else self.lhs

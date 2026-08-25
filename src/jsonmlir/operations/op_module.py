@@ -11,7 +11,7 @@ from jsonmlir.operations.op_define_struct import DefineStructOp
 from jsonmlir.operations.op_function import FunctionOp
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.memory import functions_registry, structs_type
-from jsonmlir.variables.val.val import ValNode
+from jsonmlir.variables.val.val import ValNodeAny
 
 # Déclaration de struct, de signature de fonction, ou de corps de fonction
 ModuleStatement = Annotated[
@@ -27,7 +27,7 @@ class ModuleJsonOp(OpNode):
     body: Sequence[ModuleStatement] = ()
 
     @trace_step("ModuleJsonOp")
-    def codegen(self) -> Sequence[ValNode]:
+    def codegen(self) -> Sequence[ValNodeAny]:
         structs_type.clear()
         functions_registry.clear()
 

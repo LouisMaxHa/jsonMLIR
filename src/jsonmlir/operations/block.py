@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from mlir.ir import Block, InsertionPoint
 
 from jsonmlir.utils.trace import trace_step
-from jsonmlir.variables.val.val import ValNode
+from jsonmlir.variables.val.val import ValNodeAny
 
 if TYPE_CHECKING:
     from jsonmlir.operations.base import BaseValue
@@ -17,14 +17,14 @@ if TYPE_CHECKING:
 def codegenBlock(
     content: Sequence[BaseValue] | None,
     block: Block,
-) -> tuple[Block, Sequence[ValNode]]:
+) -> tuple[Block, Sequence[ValNodeAny]]:
 
     # Gen block
     if content is None:
         return block, []
 
     # Populate block
-    last_value: Sequence[ValNode] = []
+    last_value: Sequence[ValNodeAny] = []
     with InsertionPoint(block):
         for element in content:
             last_value = element.codegen()

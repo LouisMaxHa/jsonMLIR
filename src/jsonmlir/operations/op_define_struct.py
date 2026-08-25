@@ -9,7 +9,7 @@ from jsonmlir.operations.codegen import OpNode
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.memory import STRUCTS_TYPE, structs_type
 from jsonmlir.variables.struct_field import StructField
-from jsonmlir.variables.val.val import ValNode
+from jsonmlir.variables.val.val import ValNodeAny
 
 
 class DefineStructOp(OpNode):
@@ -20,7 +20,7 @@ class DefineStructOp(OpNode):
 
     # TODO: Need to insert it with builder ?
     @trace_step("DefineStructOp")
-    def codegen(self) -> Sequence[ValNode]:
+    def codegen(self) -> Sequence[ValNodeAny]:
 
         # Not already defined
         assert self.name not in structs_type.keys()

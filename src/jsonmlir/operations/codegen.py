@@ -8,7 +8,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict
 
 from jsonmlir.utils.schema_shape import ast_schema_extra
-from jsonmlir.variables.val.val import ValNode
+from jsonmlir.variables.val.val import ValNodeAny
 
 
 # ABC : Abstract Base Class
@@ -42,7 +42,7 @@ class OpNode(BaseModel, ABC):
 
     # @abstractmethod force les sous-classes à implémenter cette méthode abstraite
     @abstractmethod
-    def codegen(self) -> Sequence[ValNode]:
+    def codegen(self) -> Sequence[ValNodeAny]:
         """Génère l'opération MLIR au point d'insertion courant et retourne la SSA produite."""
         raise NotImplementedError
 

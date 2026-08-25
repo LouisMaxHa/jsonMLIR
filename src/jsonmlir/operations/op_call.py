@@ -9,7 +9,7 @@ from mlir.ir import Value
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.memory import functions_registry
-from jsonmlir.variables.val.val import ValNode
+from jsonmlir.variables.val.val import ValNodeAny
 from jsonmlir.variables.val.val_SSA import ValSSA
 
 if TYPE_CHECKING:
@@ -28,7 +28,7 @@ class CallOp(OpNode):
     args: Sequence[BaseValue] = ()
 
     @trace_step("CallOp: {self.name}")
-    def codegen(self) -> Sequence[ValNode]:
+    def codegen(self) -> Sequence[ValNodeAny]:
         sig = functions_registry.get(self.name)
         if sig is None:
             raise ValueError(
@@ -38,7 +38,7 @@ class CallOp(OpNode):
 
         # Évaluation des arguments
         arg_ssas: list[Value] = []
-        arg_vals: list[ValNode] = []
+        arg_vals: list[ValNodeAny] = []
         for arg in self.args:
             vals = arg.codegen()
             arg_vals.extend(vals)
