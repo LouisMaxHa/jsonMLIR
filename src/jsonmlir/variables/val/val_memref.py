@@ -1,28 +1,25 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from sqlite3 import NotSupportedError
 
 from mlir.dialects import arith, memref
 from mlir.ir import MemRefType, ShapedType, Value
 
-from jsonmlir.utils.trace import trace_step
 from jsonmlir.utils.ssa_check import all_ssavalues
 from jsonmlir.utils.ssa_dim import dimensions_to_ssa
 from jsonmlir.utils.ssa_val import idx_to_ssavalues
+from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_memref import TyMemref
 from jsonmlir.variables.ty.ty_SSA import TySSA
 from jsonmlir.variables.ty.ty_struct import TyStruct
-from jsonmlir.variables.val.val import ValNode
+from jsonmlir.variables.val.val import ValNode, ValNodeAny
 
 
 class ValMemref(ValNode[TyMemref]):
-    addr: Value[MemRefType]
-
     # ──────────── Init ────────────
     # Problème avec les structs, j'ai du memref<5xmemref<8xi8>>
-    def __init__(self, ty: TyMemref, addr: Value[MemRefType]):
+    def __init__(self, ty: TyMemref, addr: Value):
         ssa_type = addr.type
         assert isinstance(ssa_type, MemRefType), f"Got {type(addr)}"
         ty_shape = list(ty.get_type().shape)
@@ -41,16 +38,18 @@ class ValMemref(ValNode[TyMemref]):
 
     @staticmethod
     @trace_step("ValMemref.init_from", display_entry=True)
-    def init_from(type: TyNode, source: ValNode) -> ValMemref:
+    def init_from(type: TyNode, source: ValNodeAny) -> ValMemref:
         assert isinstance(type, TyMemref)
 
         match source.get_ty():
             case TyMemref():
                 return ValMemref(type, source.get_SSA([]))
             case TySSA():
-                return ValMemref(type, source.get_SSA([]))
+                return ValMemref(        type, source.get_SSA([]))
             case _:
-                raise NotSupportedError
+                raise ValueError("Not supported")
+
+
 
     # ──────────── Getter ────────────
     def get_base(self) -> TyNode:
@@ -66,7 +65,7 @@ class ValMemref(ValNode[TyMemref]):
     def _load(
         self,
         index: Sequence[str | Value],
-    ) -> ValNode:
+    ) -> ValNodeAny:
         from jsonmlir.variables.factory import Factory
 
         if index == []:
@@ -80,7 +79,7 @@ class ValMemref(ValNode[TyMemref]):
         # Load
         if isinstance(self.ty.base, TyStruct):
             assert len(self.ty.dimensions) == 1, "Array of struct supported for only 1D"
-            struct_size = self.ty.base.struct.SIZE
+            struct_size = self.ty.base.struct.size
             # ViewOp (pas subview) : conserve un layout identité, requis ensuite
             # par les memref.view de champs de struct.
             offset = arith.MulIOp(
@@ -108,7 +107,7 @@ class ValMemref(ValNode[TyMemref]):
     def _store(
         self,
         index: Sequence[str | Value],
-        source: ValNode,
+        source: ValNodeAny,
     ):
 
         # Split index

@@ -1,16 +1,20 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from typing import Any, Literal
 
 from mlir.ir import MemRefType, Type
+from pydantic import Field
 
 from jsonmlir.utils.enum_scalars import Scalar
-from jsonmlir.variables.ty.ty import TyNode
+from jsonmlir.variables.ty.ty import TyNodeBase
 
 
-@dataclass(frozen=True)
-class TyScalar(TyNode):
-    scalar: Scalar
+class TyScalar(TyNodeBase):
+    type: Literal["scalar"] = "scalar"
+    scalar: Scalar = Field(alias="name")
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
 
     def get_type(self) -> Type:
         return self.scalar.get_type()

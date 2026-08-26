@@ -18,8 +18,8 @@ docker build -t jsonmlir .
 export PATH="$(pwd)/bin:$PATH"
 
 # Run
-jsonmlir examples/somme/main.json -A         # JSON -> Shared librairie
-jsonmlir examples/python_max/main.py         # or from python project
+jsonmlir examples/somme/main.json -A         # Generate a shared librairie from JSON
+jsonmlir examples/python_max/main.py         # Generate a shared librairie from python project
 jsonmlir jsonmlir python tests/run_tests.py  # run tests
 ```
 
@@ -27,6 +27,16 @@ The `jsonmlir` wrapper will:
 - Mounts the current directory on `/workspace`
 - Mounts the source repository (latest version of the code without need to rebuild)
 - Rebuilds the image if the `Dockerfile` or `pyproject.toml` has changed
+
+## Use jsonMLIR with your codebase
+You can export a json description of the AST used by this project. This description can help you generate the same AST on any other language.
+One usecase can be found here for typescript, [jsonMLIR-typescript](https://github.com/LouisMaxHa/jsonMLIR-typescript)
+
+You can get the json description using:
+```bash
+jsonmlir python scripts/generate_ts_ast.py output_json_schema.json
+```
+
 
 ## Options
 - `--ast`, `-a`         : Print the Python **a**ST
@@ -72,6 +82,11 @@ The `jsonmlir` wrapper will:
 │       ├── factory.py     # Create instances from a type
 │       ├── memory.py      # Register and access instances
 │       └── var.py         # Association between variable name <-> instance
+│
+├── ts-ast/           # TypeScript AST (schema + DSL)
+│   ├── schema/            # JSON Schema exported from Pydantic
+│   ├── generated/         # TypeScript interfaces (do not edit)
+│   └── manual.ts          # Hand-written DSL helpers
 │
 └── tests/
     └── run_tests.py       # Run tests

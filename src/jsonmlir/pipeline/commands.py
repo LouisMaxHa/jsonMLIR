@@ -12,7 +12,6 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from mlir.ir import Module
 from pydantic import TypeAdapter
 
 from jsonmlir.operations.op_module import ModuleJsonOp
@@ -23,8 +22,7 @@ def load_input_file(path: Path) -> Any:
     """Charge un fichier JSON ou YAML et renvoie le dictionnaire correspondant."""
 
     if not path.is_file():
-        print(f"Erreur : fichier introuvable : {path}", file=sys.stderr)
-        return 1
+        raise ValueError(f"Erreur : fichier introuvable : {path}")
 
 
     suffix = path.suffix.lower()
@@ -36,14 +34,15 @@ def load_input_file(path: Path) -> Any:
         if suffix in (".yaml", ".yml"):
             return yaml.safe_load(text)
 
+        raise ValueError(
+            f"Extension de fichier non supportée : {suffix!r}. "
+            "Utilisez .json, .yaml ou .yml."
+        )
+
     except (ValueError, OSError, json.JSONDecodeError, yaml.YAMLError) as exc:
         print(f"Erreur lors du chargement de {path} : {exc}", file=sys.stderr)
-        raise
+        raise ValueError(f"Erreur lors du chargement de {path} : {exc}")
 
-    raise ValueError(
-        f"Extension de fichier non supportée : {suffix!r}. "
-        "Utilisez .json, .yaml ou .yml."
-    )
 
 # Json -> Pydantic
 def build_sample_ast_json(data: Any) -> ModuleJsonOp:
@@ -148,12 +147,7 @@ def run_command(cmd: Sequence[str]) -> str:
             print("stdout:", exc.stdout)
 
         print('\033[91m' + exc.stderr + '\033[0m', file=sys.stderr)
-        exit(1)
-
-
-# Écrit le module MLIR en texte
-def write_mlir(module: Module, output_path: Path):
-    output_path.write_text(str(module), encoding="utf-8")
+        raise ValueError("Failed to run command")
 
 
 # Apply MLIR passes

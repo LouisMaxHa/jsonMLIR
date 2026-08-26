@@ -8,8 +8,6 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from jsonmlir.operations.op_math import MathOp, MathOperator
-
 from jsonmlir.operations.base import BaseValue
 from jsonmlir.operations.op_alloc import AllocOp
 from jsonmlir.operations.op_alloca import AllocaOp
@@ -20,6 +18,7 @@ from jsonmlir.operations.op_constant import ConstOp
 from jsonmlir.operations.op_define_function import DefineFunctionOp
 from jsonmlir.operations.op_define_struct import DefineStructOp
 from jsonmlir.operations.op_function import FunctionOp
+from jsonmlir.operations.op_math import MathOp, MathOperator
 from jsonmlir.operations.op_module import ModuleJsonOp, ModuleStatement
 from jsonmlir.operations.op_operator import OperatorOp
 from jsonmlir.operations.op_print import PrintOp
@@ -28,14 +27,16 @@ from jsonmlir.operations.op_unary import UnaryOp, UnaryOperator
 from jsonmlir.operations.op_var import VarOp
 from jsonmlir.operations.op_while import WhileOp
 from jsonmlir.utils.enum_scalars import Scalar
-from jsonmlir.variables.memory import FIELD_TYPE
+from jsonmlir.variables.struct_field import StructField
 from jsonmlir.variables.ty.ty import TyNode, parse_ty
 
-FieldSpec = tuple[str, str | TyNode, int, int] | FIELD_TYPE
+FieldSpec = tuple[str, str | TyNode, int, int] | StructField
 
 
 def _parse_ty(value: str | TyNode) -> TyNode:
-    return parse_ty(value) if isinstance(value, str) else value
+    if isinstance(value, str):
+        return parse_ty(value)
+    return value
 
 
 def _parse_scalar(value: str | Scalar) -> Scalar:
@@ -44,11 +45,11 @@ def _parse_scalar(value: str | Scalar) -> Scalar:
     return Scalar(value)
 
 
-def _parse_field(field: FieldSpec) -> FIELD_TYPE:
-    if isinstance(field, FIELD_TYPE):
+def _parse_field(field: FieldSpec) -> StructField:
+    if isinstance(field, StructField):
         return field
     name, ty, offset, size = field
-    return FIELD_TYPE(name, _parse_ty(ty), offset, size)
+    return StructField(name=name, type=_parse_ty(ty), offset=offset, size=size)
 
 
 def _parse_ope(ope: str | OperatorOp) -> OperatorOp:

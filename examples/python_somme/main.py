@@ -1,17 +1,17 @@
 import sys
 
-from jsonmlir.operations import (
+from jsonmlir.operations.dsl import (
     Binary,
     Const,
     Function,
     Module,
-    Scalar,
     Set,
-    TyScalar,
     Var,
     While,
 )
 from jsonmlir.pipeline.compiler import compiler
+from jsonmlir.utils.enum_scalars import Scalar
+from jsonmlir.variables.ty.ty_scalar import TyScalar
 
 module = Module([
     Function(

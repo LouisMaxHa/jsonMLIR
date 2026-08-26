@@ -1,22 +1,21 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import Any, cast
 
 from mlir.dialects import llvm, memref
 from mlir.ir import MemRefType, Value
 
-from jsonmlir.utils.trace import trace_step
 from jsonmlir.utils.bare_ptr import bare_ptr_to_memref
+from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_ptr import TyPtr
-from jsonmlir.variables.val.val import ValNode
+from jsonmlir.variables.val.val import ValNode, ValNodeAny
 from jsonmlir.variables.val.val_scalar import ValScalar
 from jsonmlir.variables.val.val_SSA import ValSSA
 
 
 class ValPtr(ValNode[TyPtr]):
-    addr: Value
-
     # ──────────── Init ────────────
 
     def __init__(self, ty: TyPtr, addr: Value):
@@ -34,7 +33,7 @@ class ValPtr(ValNode[TyPtr]):
     @staticmethod
     @trace_step("ValPtr.init_from", display_entry=True)
     def init_from(
-        type: TyNode, source: ValNode
+        type: TyNode, source: ValNodeAny
     ) -> ValPtr:
         assert isinstance(type, TyPtr)
         assert isinstance(source, (ValSSA, ValScalar, ValPtr))
@@ -64,8 +63,9 @@ class ValPtr(ValNode[TyPtr]):
     def _load(
         self,
         index: Sequence[str | Value],
-    ) -> ValNode:
+    ) -> ValNodeAny:
         from jsonmlir.variables.factory import Factory
+
         # Return ptr
         if index == []:
             return ValSSA(self.get_SSA(index))
@@ -78,7 +78,8 @@ class ValPtr(ValNode[TyPtr]):
         # i64 -> llvm.ptr
         ssa_i64 = self._get_SSA()
         ssa_ptr_llvm = llvm.IntToPtrOp(
-            llvm.PointerType.get(), ssa_i64
+            cast(Any, llvm.PointerType).get(),  # type: ignore[reportAttributeAccessIssue]
+            ssa_i64,
         ).result
 
         # llvm.ptr -> memref (descripteur LLVM explicite)
@@ -101,7 +102,7 @@ class ValPtr(ValNode[TyPtr]):
     def _store(
         self,
         index: Sequence[str | Value],
-        source: ValNode,
+        source: ValNodeAny,
     ):
         assert index == []
         assert isinstance(source, (ValSSA, ValPtr, ValScalar))

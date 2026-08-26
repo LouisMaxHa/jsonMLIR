@@ -34,13 +34,16 @@
         [
           "coords",
           {
-            "addr": {
-              "memref": [
-                null,
-                {
-                  "struct": "xyz"
-                }
-              ]
+            "type": "ptr",
+            "base": {
+              "type": "memref",
+              "dims": [
+                null
+              ],
+              "base": {
+                "type": "struct",
+                "name": "xyz"
+              }
             }
           },
           0,
@@ -62,8 +65,10 @@
         [
           "positions",
           {
-            "addr": {
-              "struct": "noeuds"
+            "type": "ptr",
+            "base": {
+              "type": "struct",
+              "name": "noeuds"
             }
           },
           0,
@@ -72,8 +77,10 @@
         [
           "temperatures",
           {
-            "addr": {
-              "struct": "noeuds"
+            "type": "ptr",
+            "base": {
+              "type": "struct",
+              "name": "noeuds"
             }
           },
           8,
@@ -88,8 +95,10 @@
         [
           "simuReference",
           {
-            "addr": {
-              "struct": "simu"
+            "type": "ptr",
+            "base": {
+              "type": "struct",
+              "name": "simu"
             }
           }
         ],

@@ -15,10 +15,11 @@
           "op": "alloc",
           "name": "myArray",
           "type": {
-            "memref": [
-              10,
-              "i64"
-            ]
+            "type": "memref",
+            "dims": [
+              10
+            ],
+            "base": "i64"
           }
         },
         {

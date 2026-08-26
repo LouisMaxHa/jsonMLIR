@@ -3,27 +3,20 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 from mlir.dialects import arith, memref
-from mlir.ir import (
-    MemRefType,
-    ShapedType,
-    StridedLayoutAttr,
-    Value,
-)
+from mlir.ir import MemRefType, ShapedType, StridedLayoutAttr, Value
 
-from jsonmlir.utils.trace import trace_step
 from jsonmlir.utils import ssa_val
 from jsonmlir.utils.enum_scalars import Scalar
 from jsonmlir.utils.ssa_dim import dimensions_to_ssa
+from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_buffer import TyBuffer
-from jsonmlir.variables.val.val import ValNode
+from jsonmlir.variables.val.val import ValNode, ValNodeAny
 from jsonmlir.variables.val.val_memref import ValMemref
 from jsonmlir.variables.val.val_SSA import ValSSA
 
 
 class ValBuffer(ValNode[TyBuffer]):
-    addr: Value
-
     # ──────────── Init ────────────
     def __init__(
         self, ty: TyBuffer, addr: Value
@@ -42,7 +35,7 @@ class ValBuffer(ValNode[TyBuffer]):
     @staticmethod
     @trace_step("ValBuffer.init_from", display_entry=True)
     def init_from(
-        type: TyNode, source: ValNode
+        type: TyNode, source: ValNodeAny
     ) -> ValBuffer:
         assert isinstance(type, TyBuffer)
         assert isinstance(source, (ValMemref, ValSSA))
@@ -66,7 +59,7 @@ class ValBuffer(ValNode[TyBuffer]):
     def _load(
         self,
         index: Sequence[str | Value],
-    ) -> ValNode:
+    ) -> ValNodeAny:
         assert index == []
         return self
 
@@ -75,7 +68,7 @@ class ValBuffer(ValNode[TyBuffer]):
     def _store(
         self,
         index: Sequence[str | Value],
-        source: ValNode,
+        source: ValNodeAny,
     ) -> None:
         raise NotImplementedError
 
@@ -84,7 +77,7 @@ class ValBuffer(ValNode[TyBuffer]):
     """Nombre d'éléments struct = taille buffer / taille struct (octets)."""
     def get_size(self) -> Value | int:
         assert len(self.ty.dimensions) >= 1
-        struct_size = self.ty.base.struct.SIZE
+        struct_size = self.ty.base.struct.size
 
         # Static size
         n_bytes = self.ty.get_bytes_size()
@@ -119,22 +112,22 @@ class ValBuffer(ValNode[TyBuffer]):
 
         # Load infos
         struct = self.ty.base.struct
-        field = struct.FIELDS[field_name]
-        field_info = struct.FIELDS[field_name]
-        field_type = field_info.TYPE.get_type()
+        field = struct.fields[field_name]
+        field_info = struct.fields[field_name]
+        field_type = field_info.type.get_type()
         row_count = self.get_size()
-        assert struct.SIZE % field.SIZE == 0
+        assert struct.size % field.size == 0
 
 
         # ──────────── Get dimensions
         # Offset
-        offset_ssa = ssa_val.val_to_SSAValue(field.OFFSET, Scalar.idx)
+        offset_ssa = ssa_val.val_to_SSAValue(field.offset, Scalar.idx)
 
         # Size after flatten
         row_count = self.get_size()
-        stride_size = struct.SIZE // field.SIZE
+        stride_size = struct.size // field.size
         if isinstance(row_count, int):
-            flat_size = row_count * stride_size
+            flat_size = int(row_count) * stride_size
             flat_size_ssa = []
             resulting_size = row_count
 
@@ -181,6 +174,6 @@ class ValBuffer(ValNode[TyBuffer]):
         dimension = row_count if isinstance(row_count, int) else None
         return Factory.generic_memref(
             [dimension],
-            field_info.TYPE,
+            field_info.type,
             cast_op.result
         )

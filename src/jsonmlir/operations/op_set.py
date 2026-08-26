@@ -12,7 +12,7 @@ from jsonmlir.operations.op_var import VarOp
 from jsonmlir.utils.trace import trace_note, trace_step
 from jsonmlir.variables.factory import Factory
 from jsonmlir.variables.memory import variables_heap
-from jsonmlir.variables.val.val import ValNode
+from jsonmlir.variables.val.val import ValNodeAny
 
 
 class SetOp(OpNode):
@@ -23,7 +23,7 @@ class SetOp(OpNode):
     val: BinaryOp | ConstOp | VarOp | CallOp | UnaryOp
 
     @trace_step("SetOp: {self.var.name}")
-    def codegen(self) -> Sequence[ValNode]:
+    def codegen(self) -> Sequence[ValNodeAny]:
         var = self.var.as_var()
         trace_note(f"Var: {var.get_ty()}")
 

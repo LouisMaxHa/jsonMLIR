@@ -1,29 +1,33 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass
+from typing import Any, Literal
 
 from mlir.ir import MemRefType, ShapedType
+from pydantic import Field
 
 from jsonmlir.utils.enum_scalars import Scalar
-from jsonmlir.variables.ty.ty import TyNode
+from jsonmlir.variables.ty.ty import TyNested, TyNodeBase
 from jsonmlir.variables.ty.ty_struct import TyStruct
 
 
-@dataclass(frozen=True)
-class TyMemref(TyNode):
-    dimensions: Sequence[int | None]
-    base: TyNode
+class TyMemref(TyNodeBase):
+    type: Literal["memref"] = "memref"
+    dimensions: tuple[int | None, ...] = Field(alias="dims")
+    base: TyNested
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
 
     def get_n_elements(self) -> Sequence[int | None]:
-        return self.dimensions
+        return list(self.dimensions)
 
     def get_type(self) -> MemRefType:
         dynamic = ShapedType.get_dynamic_size()
         dimension = [d if d is not None else dynamic for d in self.dimensions]
 
         if isinstance(self.base, TyStruct):
-            struct_size = self.base.struct.SIZE
+            struct_size = self.base.struct.size
             if dimension[-1] != dynamic:
                 dimension[-1] *= struct_size
             return MemRefType.get(dimension, Scalar.i8.get_type())

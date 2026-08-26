@@ -1,21 +1,22 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
-from typing import Generic, TypeVar
+from collections.abc import Callable, Sequence
+from typing import Any, Generic, TypeVar
 
 from mlir.ir import Type, Value
 
-from jsonmlir.utils.trace import trace_step
 from jsonmlir.utils.ssa_dim import index_to_ssa
-from jsonmlir.variables.ty.ty import TyNode
+from jsonmlir.utils.trace import trace_step
+from jsonmlir.variables.ty.ty import TyNode, TyNodeBase
 
-T = TypeVar("T", bound=TyNode)
+T = TypeVar("T", bound=TyNodeBase)
+_F = TypeVar("_F", bound=Callable[..., Any])
 
 
-def auto_log(log_format):
-    def wrapper(func):
-        func._log_format = log_format
+def auto_log(log_format: str) -> Callable[[_F], _F]:
+    def wrapper(func: _F) -> _F:
+        setattr(func, "_log_format", log_format)
         return func
     return wrapper
 
@@ -25,17 +26,17 @@ class ValNode(ABC, Generic[T]):
     # ──────────── Init ────────────
     @staticmethod
     @abstractmethod
-    def init_from(type: TyNode, source: ValNode) -> ValNode:
+    def init_from(type: TyNode, source: ValNodeAny) -> ValNodeAny:
         raise NotImplementedError
 
     # Plutôt content de celui-la :)
     # L'idée est d'insérer automatiquement des trace-step sur nos opérateurs
-    def __init_subclass__(cls, **kwargs):
+    def __init_subclass__(cls, **kwargs: Any):
         super().__init_subclass__(**kwargs)
         for name, method in cls.__dict__.items():
             parent_method = getattr(super(cls, cls), name, None)
 
-            # On annote trace step que si c'est une méthode
+            # Si c'est une méthode
             if not callable(method):
                 continue
 
@@ -80,7 +81,7 @@ class ValNode(ABC, Generic[T]):
     def load(
         self,
         index: Sequence[str | Value | int],
-    ) -> ValNode:
+    ) -> ValNodeAny:
         return self._load(index_to_ssa(index))
 
     @auto_log("_load({index})")
@@ -88,14 +89,14 @@ class ValNode(ABC, Generic[T]):
     def _load(
         self,
         index: Sequence[str | Value],
-    ) -> ValNode:
+    ) -> ValNodeAny:
         raise NotImplementedError
 
     # ──────────── Store ────────────
     def store(
         self,
         index: Sequence[str | Value | int],
-        source: ValNode,
+        source: ValNodeAny,
     ) -> None:
         return self._store(index_to_ssa(index), source)
 
@@ -104,6 +105,13 @@ class ValNode(ABC, Generic[T]):
     def _store(
         self,
         index: Sequence[str | Value],
-        source: ValNode,
+        source: ValNodeAny,
     ) -> None:
         raise NotImplementedError
+
+
+# Un nœud dont le type statique est inconnu (collections hétérogènes,
+# résultats de codegen, etc.). ``ValNode`` est invariant en ``T`` (attribut
+# ``ty`` mutable) : ``Any`` est le seul paramètre acceptant tous les
+# ``ValNode[TyX]`` concrets.
+ValNodeAny = ValNode[Any]

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from pydantic import Field
+from pydantic import BaseModel, Field
 
 from jsonmlir.operations.op_alloc import AllocOp
 from jsonmlir.operations.op_alloca import AllocaOp
@@ -47,16 +47,6 @@ _types_namespace = {
 }
 
 # Rebuild pydantic model because of recursive definitions
-BinaryOp.model_rebuild(_types_namespace=_types_namespace)
-CallOp.model_rebuild(_types_namespace=_types_namespace)
-CondOp.model_rebuild(_types_namespace=_types_namespace)
-ConstOp.model_rebuild(_types_namespace=_types_namespace)
-DefineStructOp.model_rebuild(_types_namespace=_types_namespace)
-PrintOp.model_rebuild(_types_namespace=_types_namespace)
-SetOp.model_rebuild(_types_namespace=_types_namespace)
-VarOp.model_rebuild(_types_namespace=_types_namespace)
-WhileOp.model_rebuild(_types_namespace=_types_namespace)
-AllocOp.model_rebuild(_types_namespace=_types_namespace)
-AllocaOp.model_rebuild(_types_namespace=_types_namespace)
-MathOp.model_rebuild(_types_namespace=_types_namespace)
-UnaryOp.model_rebuild(_types_namespace=_types_namespace)
+for model in _types_namespace.values():
+    if isinstance(model, type) and issubclass(model, BaseModel):
+        model.model_rebuild(_types_namespace=_types_namespace)

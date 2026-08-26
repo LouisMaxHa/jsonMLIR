@@ -1,27 +1,31 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass
+from typing import Any, Literal
 
 from mlir.ir import MemRefType, Type
+from pydantic import Field
 
-from jsonmlir.variables.ty.ty import TyNode
-from jsonmlir.variables.ty.ty_struct import TyStruct
+from jsonmlir.variables.ty.ty import TyNodeBase
+from jsonmlir.variables.ty.ty_struct import StructRef
 
 
-@dataclass(frozen=True)
-class TySOA(TyNode):
-    base: TyStruct
+class TySOA(TyNodeBase):
+    type: Literal["soa"] = "soa"
 
     # Number of struct contained
-    n_elements: Sequence[int | None]
+    n_elements: tuple[int | None, ...] = Field(alias="dims")
+    base: StructRef
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
 
     def get_count(self) -> Sequence[int | None]:
-        return self.n_elements
+        return list(self.n_elements)
 
     def get_sizes(self) -> Sequence[int | None]:
         return [
-            n * self.base.struct.SIZE
+            n * self.base.struct.size
             if isinstance(n, int) else None
             for n in self.n_elements
         ]

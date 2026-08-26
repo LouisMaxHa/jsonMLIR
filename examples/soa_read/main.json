@@ -27,10 +27,11 @@
         [
           "buffer",
           {
-            "buffer": [
-              32,
-              "noeud"
-            ]
+            "type": "buffer",
+            "dims": [
+              32
+            ],
+            "base": "noeud"
           }
         ],
         [
@@ -44,10 +45,11 @@
           "var": {
             "name": "soa",
             "type": {
-              "soa": [
-                2,
-                "noeud"
-              ]
+              "type": "soa",
+              "dims": [
+                2
+              ],
+              "base": "noeud"
             }
           },
           "val": {

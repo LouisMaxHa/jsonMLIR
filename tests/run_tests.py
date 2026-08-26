@@ -82,15 +82,43 @@ def _parse_expectations(stdout: str) -> tuple[list[tuple[str, str]], int]:
     return (mismatches, n_tests)
 
 
+def _resolve_python(project_root: Path) -> str:
+    """Prefer the project virtualenv interpreter when available.
+
+    The ``mlir`` Python bindings and the editable ``jsonmlir`` package are
+    installed in the project's ``.venv``; using ``sys.executable`` when the
+    runner is launched outside the venv would hide them from subprocesses.
+    """
+    candidates = [
+        project_root / ".venv" / "bin" / "python",
+        project_root / ".venv" / "Scripts" / "python.exe",
+    ]
+    for candidate in candidates:
+        if candidate.is_file():
+            return str(candidate)
+    return sys.executable
+
+
+def _subprocess_env(project_root: Path) -> dict[str, str]:
+    """Return an environment that makes the ``src`` package importable."""
+    env = os.environ.copy()
+    src_dir = str((project_root / "src").resolve())
+    existing = env.get("PYTHONPATH")
+    env["PYTHONPATH"] = src_dir if not existing else src_dir + os.pathsep + existing
+    return env
+
+
 def _compile_example(
     input_path: Path,
     project_root: Path,
 ) -> subprocess.CompletedProcess[str] | None:
     """Compile an example in a subprocess for process-level isolation."""
+    env = _subprocess_env(project_root)
+    python = _resolve_python(project_root)
     output_name = input_path.parent.name
     if input_path.suffix == ".py":
         cmd = [
-            sys.executable,
+            python,
             str(input_path),
             "--project-root",
             str(project_root),
@@ -99,7 +127,7 @@ def _compile_example(
         ]
     else:
         cmd = [
-            sys.executable,
+            python,
             "-m",
             "jsonmlir.pipeline.cli",
             str(input_path),
@@ -116,6 +144,7 @@ def _compile_example(
             text=True,
             timeout=120,
             check=False,
+            env=env,
         )
     except Exception:
         return None

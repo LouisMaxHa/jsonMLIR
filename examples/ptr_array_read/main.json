@@ -8,11 +8,13 @@
         [
           "myArrayReference",
           {
-            "addr": {
-              "memref": [
-                5,
-                "i64"
-              ]
+            "type": "ptr",
+            "base": {
+              "type": "memref",
+              "dims": [
+                5
+              ],
+              "base": "i64"
             }
           }
         ],

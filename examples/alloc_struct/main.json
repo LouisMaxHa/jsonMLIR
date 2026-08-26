@@ -35,7 +35,8 @@
           "op": "alloc",
           "name": "myStruct",
           "type": {
-            "struct": "Real3"
+            "type": "struct",
+            "name": "Real3"
           }
         },
         {

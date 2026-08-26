@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from enum import StrEnum
+from functools import partial
 
 from mlir.ir import (
     F16Type,
@@ -18,103 +20,80 @@ class ScalarFamily(StrEnum):
     idx = "index"
 
 
+def _int_type(width: int) -> Callable[[], Type]:
+    return partial(IntegerType.get_signless, width)
+
+
 class Scalar(StrEnum):
-    i64 = "i64"
-    i32 = "i32"
-    i16 = "i16"
-    i8 = "i8"
-    i1 = "i1"
-    I64 = "I64"
-    I32 = "I32"
-    I16 = "I16"
-    I8 = "I8"
-    I1 = "I1"
-    f16 = "f16"
-    f32 = "f32"
-    f64 = "f64"
-    f80 = "f80"
-    f128 = "f128"
-    idx = "index"
+    """Scalaire MLIR. La valeur JSON est le nom (``i64``, ``index``, …)."""
+
+    _family: ScalarFamily
+    _byte_size: int
+    _make_type: Callable[[], Type] | None
+
+    def __new__(
+        cls,
+        value: str,
+        family: ScalarFamily,
+        byte_size: int,
+        make_type: Callable[[], Type] | None = None,
+    ):
+        obj = str.__new__(cls, value)
+        obj._value_ = value
+        obj._family = family
+        obj._byte_size = byte_size
+        obj._make_type = make_type
+        return obj
+
+    i64 = "i64", ScalarFamily.int, 8, _int_type(64)
+    i32 = "i32", ScalarFamily.int, 4, _int_type(32)
+    i16 = "i16", ScalarFamily.int, 2, _int_type(16)
+    i8 = "i8", ScalarFamily.int, 1, _int_type(8)
+    i1 = "i1", ScalarFamily.int, 1, _int_type(1)
+    I64 = "I64", ScalarFamily.int, 8, _int_type(64)
+    I32 = "I32", ScalarFamily.int, 4, _int_type(32)
+    I16 = "I16", ScalarFamily.int, 2, _int_type(16)
+    I8 = "I8", ScalarFamily.int, 1, _int_type(8)
+    I1 = "I1", ScalarFamily.int, 1, _int_type(1)
+    f16 = "f16", ScalarFamily.float, 2, F16Type.get
+    f32 = "f32", ScalarFamily.float, 4, F32Type.get
+    f64 = "f64", ScalarFamily.float, 8, F64Type.get
+    # Pas de Float80Type/Float128Type dans les bindings Python MLIR.
+    f80 = "f80", ScalarFamily.float, 10
+    f128 = "f128", ScalarFamily.float, 16
+    idx = "index", ScalarFamily.idx, 8, IndexType.get
 
     def byte_size(self) -> int:
-        """Taille en octets d'un scalaire MLIR."""
-        match self:
-            case Scalar.i1 | Scalar.I1:
-                return 1
-            case Scalar.i8 | Scalar.I8:
-                return 1
-            case Scalar.i16 | Scalar.I16 | Scalar.f16:
-                return 2
-            case Scalar.i32 | Scalar.I32 | Scalar.f32:
-                return 4
-            case Scalar.i64 | Scalar.I64 | Scalar.f64 | Scalar.idx:
-                return 8
-            case Scalar.f80:
-                return 10
-            case Scalar.f128:
-                return 16
+        return self._byte_size
 
     def get_kind(self) -> ScalarFamily:
-        match self:
-            case Scalar.i64 | Scalar.i32 | Scalar.i16 | Scalar.i8 \
-            | Scalar.i1 | Scalar.I64 | Scalar.I32 | Scalar.I16 \
-            | Scalar.I8 | Scalar.I1:
-                return ScalarFamily.int
-            case Scalar.f16 | Scalar.f32 | Scalar.f64 \
-                | Scalar.f80 | Scalar.f128:
-                return ScalarFamily.float
-            case Scalar.idx:
-                return ScalarFamily.idx
-
+        return self._family
 
     def get_type(self) -> Type:
-        match self:
-            case Scalar.i64 | Scalar.I64:
-                return IntegerType.get_signless(64)
-            case Scalar.i32 | Scalar.I32:
-                return IntegerType.get_signless(32)
-            case Scalar.i16 | Scalar.I16:
-                return IntegerType.get_signless(16)
-            case Scalar.i8 | Scalar.I8:
-                return IntegerType.get_signless(8)
-            case Scalar.i1 | Scalar.I1:
-                return IntegerType.get_signless(1)
-            case Scalar.f16:
-                return F16Type.get()
-            case Scalar.f32:
-                return F32Type.get()
-            case Scalar.f64:
-                return F64Type.get()
-            case Scalar.f80 | Scalar.f128:
-                # Pas de Float80Type/Float128Type dans les bindings Python MLIR.
-                raise ValueError(f"{self} non supporté par les bindings MLIR")
-            case Scalar.idx:
-                return IndexType.get()
+        if self._make_type is None:
+            raise ValueError(f"{self} non supporté par les bindings MLIR")
+        return self._make_type()
+
+    def _is_alias(self) -> bool:
+        return self.name[:1].isupper()
 
     @staticmethod
     def from_type(attr: Type) -> Scalar | None:
         if isinstance(attr, IntegerType):
-            match attr.width:
-                case 64:
-                    return Scalar.i64
-                case 32:
-                    return Scalar.i32
-                case 16:
-                    return Scalar.i16
-                case 8:
-                    return Scalar.i8
-                case 1:
-                    return Scalar.i1
-                case _:
-                    raise ValueError(f"Not supported {attr}")
+            for scalar in Scalar:
+                if scalar._is_alias() or scalar.get_kind() is not ScalarFamily.int:
+                    continue
+                produced = scalar.get_type()
+                if (
+                    isinstance(produced, IntegerType)
+                    and produced.width == attr.width
+                ):
+                    return scalar
+            raise ValueError(f"Not supported {attr}")
 
-        if isinstance(attr, F16Type):
-            return Scalar.f16
-        if isinstance(attr, F32Type):
-            return Scalar.f32
-        if isinstance(attr, F64Type):
-            return Scalar.f64
-        if isinstance(attr, IndexType):
-            return Scalar.idx
-
+        for scalar in Scalar:
+            if scalar._make_type is None or scalar.get_kind() is ScalarFamily.int:
+                continue
+            if isinstance(attr, type(scalar.get_type())):
+                return scalar
         return None
