@@ -18,8 +18,8 @@ docker build -t jsonmlir .
 export PATH="$(pwd)/bin:$PATH"
 
 # Run
-jsonmlir examples/somme/main.json -A         # JSON -> Shared librairie
-jsonmlir examples/python_max/main.py         # or from python project
+jsonmlir examples/somme/main.json -A         # Generate a shared librairie from JSON
+jsonmlir examples/python_max/main.py         # Generate a shared librairie from python project
 jsonmlir jsonmlir python tests/run_tests.py  # run tests
 ```
 
@@ -27,6 +27,16 @@ The `jsonmlir` wrapper will:
 - Mounts the current directory on `/workspace`
 - Mounts the source repository (latest version of the code without need to rebuild)
 - Rebuilds the image if the `Dockerfile` or `pyproject.toml` has changed
+
+## Use jsonMLIR with your codebase
+You can export a json description of the AST used by this project. This description can help you generate the same AST on any other language.
+One usecase can be found here for typescript, [jsonMLIR-typescript](https://github.com/LouisMaxHa/jsonMLIR-typescript)
+
+You can get the json description using:
+```bash
+jsonmlir python scripts/generate_ts_ast.py output_json_schema.json
+```
+
 
 ## Options
 - `--ast`, `-a`         : Print the Python **a**ST
@@ -81,41 +91,6 @@ The `jsonmlir` wrapper will:
 └── tests/
     └── run_tests.py       # Run tests
 ```
-
-## TypeScript generation
-
-The JSON accepted by jsonMLIR is defined by the Pydantic models in `src/jsonmlir/`. The same contract is exported as JSON Schema, then turned into TypeScript interfaces so a frontend (or another language) can build a valid AST without duplicating the Python types.
-
-The [ts-ast/](ts-ast/) package ([jsonMLIR-modane](https://github.com/LouisMaxHa/jsonMLIR-modane)) is that TypeScript side. Discriminants in the JSON are `"op"` for operations and `"type"` for types.
-
-**Pipeline**
-
-1. Pydantic models (`ModuleJsonOp`, ops, `TyNode`, …)
-2. JSON Schema → `ts-ast/schema/ast.schema.json`
-3. `json-schema-to-typescript` → `ts-ast/generated/schema.ts` (interfaces, overwritten)
-4. `ts-ast/manual.ts` — DSL (`Module`, `Function`, `Set`, …), never overwritten
-
-**Regenerate after changing Python models**
-
-```bash
-# From the repository root (Node.js required for json2ts)
-python scripts/generate_ts_ast.py
-
-# Schema only, skip TypeScript
-python scripts/generate_ts_ast.py --schema-only
-```
-
-Keep `generated/schema.ts` and `schema/ast.schema.json` in sync with the models: `tests/test_ts_ast_schema.py` fails if they are stale.
-
-**Build JSON from TypeScript**
-
-```bash
-cd ts-ast
-npm install
-npm run example    # prints JSON equivalent to examples/somme/main.json
-```
-
-`example.ts` uses the same constructors as the Python DSL (`Module`, `Function`, `Var`, `Const`, …). `generateJson(module)` serializes the AST; that JSON can be passed to `jsonmlir` like any `main.json`.
 
 ## Example
 
