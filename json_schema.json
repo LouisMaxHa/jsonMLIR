@@ -1,0 +1,1646 @@
+{
+  "$defs": {
+    "AllocOp": {
+      "additionalProperties": false,
+      "properties": {
+        "op": {
+          "const": "alloc",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "type": {
+          "discriminator": {
+            "mapping": {
+              "buffer": "#/$defs/TyBuffer",
+              "memref": "#/$defs/TyMemref",
+              "ptr": "#/$defs/TyPtr",
+              "scalar": "#/$defs/TyScalar",
+              "soa": "#/$defs/TySOA",
+              "ssa": "#/$defs/TySSA",
+              "struct": "#/$defs/TyStruct"
+            },
+            "propertyName": "type"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/TyScalar"
+            },
+            {
+              "$ref": "#/$defs/TyStruct"
+            },
+            {
+              "$ref": "#/$defs/TyMemref"
+            },
+            {
+              "$ref": "#/$defs/TyBuffer"
+            },
+            {
+              "$ref": "#/$defs/TySOA"
+            },
+            {
+              "$ref": "#/$defs/TyPtr"
+            },
+            {
+              "$ref": "#/$defs/TySSA"
+            }
+          ],
+          "title": "Type"
+        },
+        "size": {
+          "items": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "$ref": "#/$defs/VarOp"
+              }
+            ]
+          },
+          "title": "Size",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "type",
+        "op"
+      ],
+      "title": "AllocOp",
+      "type": "object"
+    },
+    "AllocaOp": {
+      "additionalProperties": false,
+      "properties": {
+        "op": {
+          "const": "alloca",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "type": {
+          "discriminator": {
+            "mapping": {
+              "buffer": "#/$defs/TyBuffer",
+              "memref": "#/$defs/TyMemref",
+              "ptr": "#/$defs/TyPtr",
+              "scalar": "#/$defs/TyScalar",
+              "soa": "#/$defs/TySOA",
+              "ssa": "#/$defs/TySSA",
+              "struct": "#/$defs/TyStruct"
+            },
+            "propertyName": "type"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/TyScalar"
+            },
+            {
+              "$ref": "#/$defs/TyStruct"
+            },
+            {
+              "$ref": "#/$defs/TyMemref"
+            },
+            {
+              "$ref": "#/$defs/TyBuffer"
+            },
+            {
+              "$ref": "#/$defs/TySOA"
+            },
+            {
+              "$ref": "#/$defs/TyPtr"
+            },
+            {
+              "$ref": "#/$defs/TySSA"
+            }
+          ],
+          "title": "Type"
+        },
+        "size": {
+          "items": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "$ref": "#/$defs/VarOp"
+              }
+            ]
+          },
+          "title": "Size",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "type",
+        "op"
+      ],
+      "title": "AllocaOp",
+      "type": "object"
+    },
+    "BinaryOp": {
+      "additionalProperties": false,
+      "description": "Op\u00e9ration binaire compos\u00e9e de deux op\u00e9randes.",
+      "properties": {
+        "op": {
+          "const": "binary",
+          "type": "string"
+        },
+        "lhs": {
+          "discriminator": {
+            "mapping": {
+              "alloc": "#/$defs/AllocOp",
+              "alloca": "#/$defs/AllocaOp",
+              "binary": "#/$defs/BinaryOp",
+              "call": "#/$defs/CallOp",
+              "const": "#/$defs/ConstOp",
+              "if": "#/$defs/CondOp",
+              "math": "#/$defs/MathOp",
+              "print": "#/$defs/PrintOp",
+              "set": "#/$defs/SetOp",
+              "unary": "#/$defs/UnaryOp",
+              "var": "#/$defs/VarOp",
+              "while": "#/$defs/WhileOp"
+            },
+            "propertyName": "op"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/BinaryOp"
+            },
+            {
+              "$ref": "#/$defs/CallOp"
+            },
+            {
+              "$ref": "#/$defs/ConstOp"
+            },
+            {
+              "$ref": "#/$defs/CondOp"
+            },
+            {
+              "$ref": "#/$defs/VarOp"
+            },
+            {
+              "$ref": "#/$defs/WhileOp"
+            },
+            {
+              "$ref": "#/$defs/PrintOp"
+            },
+            {
+              "$ref": "#/$defs/SetOp"
+            },
+            {
+              "$ref": "#/$defs/AllocOp"
+            },
+            {
+              "$ref": "#/$defs/AllocaOp"
+            },
+            {
+              "$ref": "#/$defs/MathOp"
+            },
+            {
+              "$ref": "#/$defs/UnaryOp"
+            }
+          ],
+          "title": "Lhs"
+        },
+        "rhs": {
+          "discriminator": {
+            "mapping": {
+              "alloc": "#/$defs/AllocOp",
+              "alloca": "#/$defs/AllocaOp",
+              "binary": "#/$defs/BinaryOp",
+              "call": "#/$defs/CallOp",
+              "const": "#/$defs/ConstOp",
+              "if": "#/$defs/CondOp",
+              "math": "#/$defs/MathOp",
+              "print": "#/$defs/PrintOp",
+              "set": "#/$defs/SetOp",
+              "unary": "#/$defs/UnaryOp",
+              "var": "#/$defs/VarOp",
+              "while": "#/$defs/WhileOp"
+            },
+            "propertyName": "op"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/BinaryOp"
+            },
+            {
+              "$ref": "#/$defs/CallOp"
+            },
+            {
+              "$ref": "#/$defs/ConstOp"
+            },
+            {
+              "$ref": "#/$defs/CondOp"
+            },
+            {
+              "$ref": "#/$defs/VarOp"
+            },
+            {
+              "$ref": "#/$defs/WhileOp"
+            },
+            {
+              "$ref": "#/$defs/PrintOp"
+            },
+            {
+              "$ref": "#/$defs/SetOp"
+            },
+            {
+              "$ref": "#/$defs/AllocOp"
+            },
+            {
+              "$ref": "#/$defs/AllocaOp"
+            },
+            {
+              "$ref": "#/$defs/MathOp"
+            },
+            {
+              "$ref": "#/$defs/UnaryOp"
+            }
+          ],
+          "title": "Rhs"
+        },
+        "ope": {
+          "$ref": "#/$defs/OperatorOp"
+        }
+      },
+      "required": [
+        "lhs",
+        "rhs",
+        "ope",
+        "op"
+      ],
+      "title": "BinaryOp",
+      "type": "object"
+    },
+    "CallOp": {
+      "additionalProperties": false,
+      "description": "Appel d'une fonction d\u00e9clar\u00e9e via DefineFunctionOp.\n\nLes types de retour et la v\u00e9rification des types d'arguments sont\nr\u00e9solus automatiquement depuis le registre global des fonctions.",
+      "properties": {
+        "op": {
+          "const": "call",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "args": {
+          "default": [],
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "alloc": "#/$defs/AllocOp",
+                "alloca": "#/$defs/AllocaOp",
+                "binary": "#/$defs/BinaryOp",
+                "call": "#/$defs/CallOp",
+                "const": "#/$defs/ConstOp",
+                "if": "#/$defs/CondOp",
+                "math": "#/$defs/MathOp",
+                "print": "#/$defs/PrintOp",
+                "set": "#/$defs/SetOp",
+                "unary": "#/$defs/UnaryOp",
+                "var": "#/$defs/VarOp",
+                "while": "#/$defs/WhileOp"
+              },
+              "propertyName": "op"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/BinaryOp"
+              },
+              {
+                "$ref": "#/$defs/CallOp"
+              },
+              {
+                "$ref": "#/$defs/ConstOp"
+              },
+              {
+                "$ref": "#/$defs/CondOp"
+              },
+              {
+                "$ref": "#/$defs/VarOp"
+              },
+              {
+                "$ref": "#/$defs/WhileOp"
+              },
+              {
+                "$ref": "#/$defs/PrintOp"
+              },
+              {
+                "$ref": "#/$defs/SetOp"
+              },
+              {
+                "$ref": "#/$defs/AllocOp"
+              },
+              {
+                "$ref": "#/$defs/AllocaOp"
+              },
+              {
+                "$ref": "#/$defs/MathOp"
+              },
+              {
+                "$ref": "#/$defs/UnaryOp"
+              }
+            ]
+          },
+          "title": "Args",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "op"
+      ],
+      "title": "CallOp",
+      "type": "object"
+    },
+    "CondOp": {
+      "additionalProperties": false,
+      "properties": {
+        "op": {
+          "const": "if",
+          "type": "string"
+        },
+        "cond": {
+          "discriminator": {
+            "mapping": {
+              "alloc": "#/$defs/AllocOp",
+              "alloca": "#/$defs/AllocaOp",
+              "binary": "#/$defs/BinaryOp",
+              "call": "#/$defs/CallOp",
+              "const": "#/$defs/ConstOp",
+              "if": "#/$defs/CondOp",
+              "math": "#/$defs/MathOp",
+              "print": "#/$defs/PrintOp",
+              "set": "#/$defs/SetOp",
+              "unary": "#/$defs/UnaryOp",
+              "var": "#/$defs/VarOp",
+              "while": "#/$defs/WhileOp"
+            },
+            "propertyName": "op"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/BinaryOp"
+            },
+            {
+              "$ref": "#/$defs/CallOp"
+            },
+            {
+              "$ref": "#/$defs/ConstOp"
+            },
+            {
+              "$ref": "#/$defs/CondOp"
+            },
+            {
+              "$ref": "#/$defs/VarOp"
+            },
+            {
+              "$ref": "#/$defs/WhileOp"
+            },
+            {
+              "$ref": "#/$defs/PrintOp"
+            },
+            {
+              "$ref": "#/$defs/SetOp"
+            },
+            {
+              "$ref": "#/$defs/AllocOp"
+            },
+            {
+              "$ref": "#/$defs/AllocaOp"
+            },
+            {
+              "$ref": "#/$defs/MathOp"
+            },
+            {
+              "$ref": "#/$defs/UnaryOp"
+            }
+          ],
+          "title": "Cond"
+        },
+        "thenBlock": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "alloc": "#/$defs/AllocOp",
+                "alloca": "#/$defs/AllocaOp",
+                "binary": "#/$defs/BinaryOp",
+                "call": "#/$defs/CallOp",
+                "const": "#/$defs/ConstOp",
+                "if": "#/$defs/CondOp",
+                "math": "#/$defs/MathOp",
+                "print": "#/$defs/PrintOp",
+                "set": "#/$defs/SetOp",
+                "unary": "#/$defs/UnaryOp",
+                "var": "#/$defs/VarOp",
+                "while": "#/$defs/WhileOp"
+              },
+              "propertyName": "op"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/BinaryOp"
+              },
+              {
+                "$ref": "#/$defs/CallOp"
+              },
+              {
+                "$ref": "#/$defs/ConstOp"
+              },
+              {
+                "$ref": "#/$defs/CondOp"
+              },
+              {
+                "$ref": "#/$defs/VarOp"
+              },
+              {
+                "$ref": "#/$defs/WhileOp"
+              },
+              {
+                "$ref": "#/$defs/PrintOp"
+              },
+              {
+                "$ref": "#/$defs/SetOp"
+              },
+              {
+                "$ref": "#/$defs/AllocOp"
+              },
+              {
+                "$ref": "#/$defs/AllocaOp"
+              },
+              {
+                "$ref": "#/$defs/MathOp"
+              },
+              {
+                "$ref": "#/$defs/UnaryOp"
+              }
+            ]
+          },
+          "title": "Thenblock",
+          "type": "array"
+        },
+        "elseBlock": {
+          "anyOf": [
+            {
+              "items": {
+                "discriminator": {
+                  "mapping": {
+                    "alloc": "#/$defs/AllocOp",
+                    "alloca": "#/$defs/AllocaOp",
+                    "binary": "#/$defs/BinaryOp",
+                    "call": "#/$defs/CallOp",
+                    "const": "#/$defs/ConstOp",
+                    "if": "#/$defs/CondOp",
+                    "math": "#/$defs/MathOp",
+                    "print": "#/$defs/PrintOp",
+                    "set": "#/$defs/SetOp",
+                    "unary": "#/$defs/UnaryOp",
+                    "var": "#/$defs/VarOp",
+                    "while": "#/$defs/WhileOp"
+                  },
+                  "propertyName": "op"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/BinaryOp"
+                  },
+                  {
+                    "$ref": "#/$defs/CallOp"
+                  },
+                  {
+                    "$ref": "#/$defs/ConstOp"
+                  },
+                  {
+                    "$ref": "#/$defs/CondOp"
+                  },
+                  {
+                    "$ref": "#/$defs/VarOp"
+                  },
+                  {
+                    "$ref": "#/$defs/WhileOp"
+                  },
+                  {
+                    "$ref": "#/$defs/PrintOp"
+                  },
+                  {
+                    "$ref": "#/$defs/SetOp"
+                  },
+                  {
+                    "$ref": "#/$defs/AllocOp"
+                  },
+                  {
+                    "$ref": "#/$defs/AllocaOp"
+                  },
+                  {
+                    "$ref": "#/$defs/MathOp"
+                  },
+                  {
+                    "$ref": "#/$defs/UnaryOp"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Elseblock"
+        }
+      },
+      "required": [
+        "cond",
+        "thenBlock",
+        "op"
+      ],
+      "title": "CondOp",
+      "type": "object"
+    },
+    "ConstOp": {
+      "additionalProperties": false,
+      "description": "Constant value operand.",
+      "properties": {
+        "op": {
+          "const": "const",
+          "type": "string"
+        },
+        "val": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "title": "Val"
+        },
+        "type": {
+          "$ref": "#/$defs/Scalar",
+          "default": "i64"
+        }
+      },
+      "required": [
+        "val",
+        "op"
+      ],
+      "title": "ConstOp",
+      "type": "object"
+    },
+    "DefineFunctionOp": {
+      "additionalProperties": false,
+      "description": "D\u00e9clare la signature d'une fonction (nom, types d'entr\u00e9e, types de sortie).\n\nNe g\u00e9n\u00e8re aucun IR \u2014 alimente uniquement le registre global utilis\u00e9 par\nCallOp pour r\u00e9soudre les types de retour et v\u00e9rifier les types des arguments.",
+      "properties": {
+        "op": {
+          "const": "define_function",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "args": {
+          "default": [],
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "string"
+              },
+              {
+                "discriminator": {
+                  "mapping": {
+                    "buffer": "#/$defs/TyBuffer",
+                    "memref": "#/$defs/TyMemref",
+                    "ptr": "#/$defs/TyPtr",
+                    "scalar": "#/$defs/TyScalar",
+                    "soa": "#/$defs/TySOA",
+                    "ssa": "#/$defs/TySSA",
+                    "struct": "#/$defs/TyStruct"
+                  },
+                  "propertyName": "type"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/TyScalar"
+                  },
+                  {
+                    "$ref": "#/$defs/TyStruct"
+                  },
+                  {
+                    "$ref": "#/$defs/TyMemref"
+                  },
+                  {
+                    "$ref": "#/$defs/TyBuffer"
+                  },
+                  {
+                    "$ref": "#/$defs/TySOA"
+                  },
+                  {
+                    "$ref": "#/$defs/TyPtr"
+                  },
+                  {
+                    "$ref": "#/$defs/TySSA"
+                  }
+                ]
+              }
+            ],
+            "type": "array"
+          },
+          "title": "Args",
+          "type": "array"
+        },
+        "return_types": {
+          "default": [],
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "buffer": "#/$defs/TyBuffer",
+                "memref": "#/$defs/TyMemref",
+                "ptr": "#/$defs/TyPtr",
+                "scalar": "#/$defs/TyScalar",
+                "soa": "#/$defs/TySOA",
+                "ssa": "#/$defs/TySSA",
+                "struct": "#/$defs/TyStruct"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/TyScalar"
+              },
+              {
+                "$ref": "#/$defs/TyStruct"
+              },
+              {
+                "$ref": "#/$defs/TyMemref"
+              },
+              {
+                "$ref": "#/$defs/TyBuffer"
+              },
+              {
+                "$ref": "#/$defs/TySOA"
+              },
+              {
+                "$ref": "#/$defs/TyPtr"
+              },
+              {
+                "$ref": "#/$defs/TySSA"
+              }
+            ]
+          },
+          "title": "Return Types",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "op"
+      ],
+      "title": "DefineFunctionOp",
+      "type": "object"
+    },
+    "DefineStructOp": {
+      "additionalProperties": false,
+      "properties": {
+        "op": {
+          "const": "define struct",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "size": {
+          "title": "Size",
+          "type": "integer"
+        },
+        "fields": {
+          "items": {
+            "$ref": "#/$defs/StructField"
+          },
+          "title": "Fields",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "size",
+        "fields",
+        "op"
+      ],
+      "title": "DefineStructOp",
+      "type": "object"
+    },
+    "FunctionOp": {
+      "additionalProperties": false,
+      "properties": {
+        "op": {
+          "const": "function",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "args": {
+          "default": [],
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "string"
+              },
+              {
+                "discriminator": {
+                  "mapping": {
+                    "buffer": "#/$defs/TyBuffer",
+                    "memref": "#/$defs/TyMemref",
+                    "ptr": "#/$defs/TyPtr",
+                    "scalar": "#/$defs/TyScalar",
+                    "soa": "#/$defs/TySOA",
+                    "ssa": "#/$defs/TySSA",
+                    "struct": "#/$defs/TyStruct"
+                  },
+                  "propertyName": "type"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/TyScalar"
+                  },
+                  {
+                    "$ref": "#/$defs/TyStruct"
+                  },
+                  {
+                    "$ref": "#/$defs/TyMemref"
+                  },
+                  {
+                    "$ref": "#/$defs/TyBuffer"
+                  },
+                  {
+                    "$ref": "#/$defs/TySOA"
+                  },
+                  {
+                    "$ref": "#/$defs/TyPtr"
+                  },
+                  {
+                    "$ref": "#/$defs/TySSA"
+                  }
+                ]
+              }
+            ],
+            "type": "array"
+          },
+          "title": "Args",
+          "type": "array"
+        },
+        "body": {
+          "default": [],
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "alloc": "#/$defs/AllocOp",
+                "alloca": "#/$defs/AllocaOp",
+                "binary": "#/$defs/BinaryOp",
+                "call": "#/$defs/CallOp",
+                "const": "#/$defs/ConstOp",
+                "if": "#/$defs/CondOp",
+                "math": "#/$defs/MathOp",
+                "print": "#/$defs/PrintOp",
+                "set": "#/$defs/SetOp",
+                "unary": "#/$defs/UnaryOp",
+                "var": "#/$defs/VarOp",
+                "while": "#/$defs/WhileOp"
+              },
+              "propertyName": "op"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/BinaryOp"
+              },
+              {
+                "$ref": "#/$defs/CallOp"
+              },
+              {
+                "$ref": "#/$defs/ConstOp"
+              },
+              {
+                "$ref": "#/$defs/CondOp"
+              },
+              {
+                "$ref": "#/$defs/VarOp"
+              },
+              {
+                "$ref": "#/$defs/WhileOp"
+              },
+              {
+                "$ref": "#/$defs/PrintOp"
+              },
+              {
+                "$ref": "#/$defs/SetOp"
+              },
+              {
+                "$ref": "#/$defs/AllocOp"
+              },
+              {
+                "$ref": "#/$defs/AllocaOp"
+              },
+              {
+                "$ref": "#/$defs/MathOp"
+              },
+              {
+                "$ref": "#/$defs/UnaryOp"
+              }
+            ]
+          },
+          "title": "Body",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "op"
+      ],
+      "title": "FunctionOp",
+      "type": "object"
+    },
+    "MathOp": {
+      "additionalProperties": false,
+      "description": "Op\u00e9ration binaire compos\u00e9e de deux op\u00e9randes.",
+      "properties": {
+        "op": {
+          "const": "math",
+          "type": "string"
+        },
+        "ope": {
+          "$ref": "#/$defs/MathOperator"
+        },
+        "value": {
+          "discriminator": {
+            "mapping": {
+              "alloc": "#/$defs/AllocOp",
+              "alloca": "#/$defs/AllocaOp",
+              "binary": "#/$defs/BinaryOp",
+              "call": "#/$defs/CallOp",
+              "const": "#/$defs/ConstOp",
+              "if": "#/$defs/CondOp",
+              "math": "#/$defs/MathOp",
+              "print": "#/$defs/PrintOp",
+              "set": "#/$defs/SetOp",
+              "unary": "#/$defs/UnaryOp",
+              "var": "#/$defs/VarOp",
+              "while": "#/$defs/WhileOp"
+            },
+            "propertyName": "op"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/BinaryOp"
+            },
+            {
+              "$ref": "#/$defs/CallOp"
+            },
+            {
+              "$ref": "#/$defs/ConstOp"
+            },
+            {
+              "$ref": "#/$defs/CondOp"
+            },
+            {
+              "$ref": "#/$defs/VarOp"
+            },
+            {
+              "$ref": "#/$defs/WhileOp"
+            },
+            {
+              "$ref": "#/$defs/PrintOp"
+            },
+            {
+              "$ref": "#/$defs/SetOp"
+            },
+            {
+              "$ref": "#/$defs/AllocOp"
+            },
+            {
+              "$ref": "#/$defs/AllocaOp"
+            },
+            {
+              "$ref": "#/$defs/MathOp"
+            },
+            {
+              "$ref": "#/$defs/UnaryOp"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "ope",
+        "value",
+        "op"
+      ],
+      "title": "MathOp",
+      "type": "object"
+    },
+    "MathOperator": {
+      "enum": [
+        "sqrt"
+      ],
+      "title": "MathOperator",
+      "type": "string"
+    },
+    "OperatorOp": {
+      "enum": [
+        "+",
+        "-",
+        "*",
+        "/",
+        "/f",
+        "+f",
+        "-f",
+        "*f",
+        "and",
+        "or",
+        "xor",
+        "==",
+        "!=",
+        ">",
+        "<",
+        ">=",
+        "<="
+      ],
+      "title": "OperatorOp",
+      "type": "string"
+    },
+    "PrintOp": {
+      "additionalProperties": false,
+      "description": "Affiche la valeur d'une expression via la fonction externe ``print_int``.\n\nLa d\u00e9claration ``func.func private @print_int(i64) -> ()`` est ajout\u00e9e\nautomatiquement au module par ``compiler.declare_runtime``. Le symbole\ndoit \u00eatre d\u00e9fini dans le fichier d'appel C++ associ\u00e9 (par exemple\n``examples/main.cpp``) avec un linkage ``extern \"C\"`` ; il est\nr\u00e9solu une fois pour toutes au link statique entre le ``.o`` issu du\npipeline jsonMLIR et l'objet du fichier d'appel.",
+      "properties": {
+        "op": {
+          "const": "print",
+          "type": "string"
+        },
+        "value": {
+          "discriminator": {
+            "mapping": {
+              "alloc": "#/$defs/AllocOp",
+              "alloca": "#/$defs/AllocaOp",
+              "binary": "#/$defs/BinaryOp",
+              "call": "#/$defs/CallOp",
+              "const": "#/$defs/ConstOp",
+              "if": "#/$defs/CondOp",
+              "math": "#/$defs/MathOp",
+              "print": "#/$defs/PrintOp",
+              "set": "#/$defs/SetOp",
+              "unary": "#/$defs/UnaryOp",
+              "var": "#/$defs/VarOp",
+              "while": "#/$defs/WhileOp"
+            },
+            "propertyName": "op"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/BinaryOp"
+            },
+            {
+              "$ref": "#/$defs/CallOp"
+            },
+            {
+              "$ref": "#/$defs/ConstOp"
+            },
+            {
+              "$ref": "#/$defs/CondOp"
+            },
+            {
+              "$ref": "#/$defs/VarOp"
+            },
+            {
+              "$ref": "#/$defs/WhileOp"
+            },
+            {
+              "$ref": "#/$defs/PrintOp"
+            },
+            {
+              "$ref": "#/$defs/SetOp"
+            },
+            {
+              "$ref": "#/$defs/AllocOp"
+            },
+            {
+              "$ref": "#/$defs/AllocaOp"
+            },
+            {
+              "$ref": "#/$defs/MathOp"
+            },
+            {
+              "$ref": "#/$defs/UnaryOp"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "value",
+        "op"
+      ],
+      "title": "PrintOp",
+      "type": "object"
+    },
+    "Scalar": {
+      "description": "Scalaire MLIR. La valeur JSON est le nom (``i64``, ``index``, \u2026).",
+      "enum": [
+        "i64",
+        "i32",
+        "i16",
+        "i8",
+        "i1",
+        "I64",
+        "I32",
+        "I16",
+        "I8",
+        "I1",
+        "f16",
+        "f32",
+        "f64",
+        "f80",
+        "f128",
+        "index"
+      ],
+      "title": "Scalar",
+      "type": "string"
+    },
+    "SetOp": {
+      "additionalProperties": false,
+      "description": "Affecte une expression \u00e0 une variable.",
+      "properties": {
+        "op": {
+          "const": "set",
+          "type": "string"
+        },
+        "var": {
+          "$ref": "#/$defs/VarOp"
+        },
+        "val": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BinaryOp"
+            },
+            {
+              "$ref": "#/$defs/ConstOp"
+            },
+            {
+              "$ref": "#/$defs/VarOp"
+            },
+            {
+              "$ref": "#/$defs/CallOp"
+            },
+            {
+              "$ref": "#/$defs/UnaryOp"
+            }
+          ],
+          "title": "Val"
+        }
+      },
+      "required": [
+        "var",
+        "val",
+        "op"
+      ],
+      "title": "SetOp",
+      "type": "object"
+    },
+    "StructField": {
+      "items": {},
+      "type": "array"
+    },
+    "TyBuffer": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "buffer",
+          "type": "string"
+        },
+        "dims": {
+          "items": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Dims",
+          "type": "array"
+        },
+        "base": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "dims",
+        "base",
+        "type"
+      ],
+      "title": "TyBuffer",
+      "type": "object"
+    },
+    "TyMemref": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "memref",
+          "type": "string"
+        },
+        "dims": {
+          "items": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Dims",
+          "type": "array"
+        },
+        "base": {
+          "$ref": "#/$defs/TyNodeBase"
+        }
+      },
+      "required": [
+        "dims",
+        "base",
+        "type"
+      ],
+      "title": "TyMemref",
+      "type": "object"
+    },
+    "TyNodeBase": {
+      "additionalProperties": false,
+      "properties": {},
+      "title": "TyNodeBase",
+      "type": "object"
+    },
+    "TyPtr": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "ptr",
+          "type": "string"
+        },
+        "base": {
+          "$ref": "#/$defs/TyNodeBase"
+        }
+      },
+      "required": [
+        "base",
+        "type"
+      ],
+      "title": "TyPtr",
+      "type": "object"
+    },
+    "TySOA": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "soa",
+          "type": "string"
+        },
+        "dims": {
+          "items": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Dims",
+          "type": "array"
+        },
+        "base": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "dims",
+        "base",
+        "type"
+      ],
+      "title": "TySOA",
+      "type": "object"
+    },
+    "TySSA": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "ssa",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "TySSA",
+      "type": "object"
+    },
+    "TyScalar": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "scalar",
+          "type": "string"
+        },
+        "name": {
+          "$ref": "#/$defs/Scalar"
+        }
+      },
+      "required": [
+        "name",
+        "type"
+      ],
+      "title": "TyScalar",
+      "type": "object"
+    },
+    "TyStruct": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "struct",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "type"
+      ],
+      "title": "TyStruct",
+      "type": "object"
+    },
+    "UnaryOp": {
+      "additionalProperties": false,
+      "description": "Op\u00e9ration unaire, r\u00e9\u00e9crite en op\u00e9ration binaire avec une constante.",
+      "properties": {
+        "op": {
+          "const": "unary",
+          "type": "string"
+        },
+        "ope": {
+          "$ref": "#/$defs/UnaryOperator"
+        },
+        "value": {
+          "discriminator": {
+            "mapping": {
+              "alloc": "#/$defs/AllocOp",
+              "alloca": "#/$defs/AllocaOp",
+              "binary": "#/$defs/BinaryOp",
+              "call": "#/$defs/CallOp",
+              "const": "#/$defs/ConstOp",
+              "if": "#/$defs/CondOp",
+              "math": "#/$defs/MathOp",
+              "print": "#/$defs/PrintOp",
+              "set": "#/$defs/SetOp",
+              "unary": "#/$defs/UnaryOp",
+              "var": "#/$defs/VarOp",
+              "while": "#/$defs/WhileOp"
+            },
+            "propertyName": "op"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/BinaryOp"
+            },
+            {
+              "$ref": "#/$defs/CallOp"
+            },
+            {
+              "$ref": "#/$defs/ConstOp"
+            },
+            {
+              "$ref": "#/$defs/CondOp"
+            },
+            {
+              "$ref": "#/$defs/VarOp"
+            },
+            {
+              "$ref": "#/$defs/WhileOp"
+            },
+            {
+              "$ref": "#/$defs/PrintOp"
+            },
+            {
+              "$ref": "#/$defs/SetOp"
+            },
+            {
+              "$ref": "#/$defs/AllocOp"
+            },
+            {
+              "$ref": "#/$defs/AllocaOp"
+            },
+            {
+              "$ref": "#/$defs/MathOp"
+            },
+            {
+              "$ref": "#/$defs/UnaryOp"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "ope",
+        "value",
+        "op"
+      ],
+      "title": "UnaryOp",
+      "type": "object"
+    },
+    "UnaryOperator": {
+      "enum": [
+        "-",
+        "!"
+      ],
+      "title": "UnaryOperator",
+      "type": "string"
+    },
+    "VarOp": {
+      "additionalProperties": false,
+      "properties": {
+        "op": {
+          "const": "var",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "indices": {
+          "items": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/$defs/VarOp"
+              }
+            ]
+          },
+          "title": "Indices",
+          "type": "array"
+        },
+        "type": {
+          "anyOf": [
+            {
+              "discriminator": {
+                "mapping": {
+                  "buffer": "#/$defs/TyBuffer",
+                  "memref": "#/$defs/TyMemref",
+                  "ptr": "#/$defs/TyPtr",
+                  "scalar": "#/$defs/TyScalar",
+                  "soa": "#/$defs/TySOA",
+                  "ssa": "#/$defs/TySSA",
+                  "struct": "#/$defs/TyStruct"
+                },
+                "propertyName": "type"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/TyScalar"
+                },
+                {
+                  "$ref": "#/$defs/TyStruct"
+                },
+                {
+                  "$ref": "#/$defs/TyMemref"
+                },
+                {
+                  "$ref": "#/$defs/TyBuffer"
+                },
+                {
+                  "$ref": "#/$defs/TySOA"
+                },
+                {
+                  "$ref": "#/$defs/TyPtr"
+                },
+                {
+                  "$ref": "#/$defs/TySSA"
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Type"
+        }
+      },
+      "required": [
+        "name",
+        "op"
+      ],
+      "title": "VarOp",
+      "type": "object"
+    },
+    "WhileOp": {
+      "additionalProperties": false,
+      "properties": {
+        "op": {
+          "const": "while",
+          "type": "string"
+        },
+        "cond": {
+          "discriminator": {
+            "mapping": {
+              "alloc": "#/$defs/AllocOp",
+              "alloca": "#/$defs/AllocaOp",
+              "binary": "#/$defs/BinaryOp",
+              "call": "#/$defs/CallOp",
+              "const": "#/$defs/ConstOp",
+              "if": "#/$defs/CondOp",
+              "math": "#/$defs/MathOp",
+              "print": "#/$defs/PrintOp",
+              "set": "#/$defs/SetOp",
+              "unary": "#/$defs/UnaryOp",
+              "var": "#/$defs/VarOp",
+              "while": "#/$defs/WhileOp"
+            },
+            "propertyName": "op"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/BinaryOp"
+            },
+            {
+              "$ref": "#/$defs/CallOp"
+            },
+            {
+              "$ref": "#/$defs/ConstOp"
+            },
+            {
+              "$ref": "#/$defs/CondOp"
+            },
+            {
+              "$ref": "#/$defs/VarOp"
+            },
+            {
+              "$ref": "#/$defs/WhileOp"
+            },
+            {
+              "$ref": "#/$defs/PrintOp"
+            },
+            {
+              "$ref": "#/$defs/SetOp"
+            },
+            {
+              "$ref": "#/$defs/AllocOp"
+            },
+            {
+              "$ref": "#/$defs/AllocaOp"
+            },
+            {
+              "$ref": "#/$defs/MathOp"
+            },
+            {
+              "$ref": "#/$defs/UnaryOp"
+            }
+          ],
+          "title": "Cond"
+        },
+        "thenBlock": {
+          "default": [],
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "alloc": "#/$defs/AllocOp",
+                "alloca": "#/$defs/AllocaOp",
+                "binary": "#/$defs/BinaryOp",
+                "call": "#/$defs/CallOp",
+                "const": "#/$defs/ConstOp",
+                "if": "#/$defs/CondOp",
+                "math": "#/$defs/MathOp",
+                "print": "#/$defs/PrintOp",
+                "set": "#/$defs/SetOp",
+                "unary": "#/$defs/UnaryOp",
+                "var": "#/$defs/VarOp",
+                "while": "#/$defs/WhileOp"
+              },
+              "propertyName": "op"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/BinaryOp"
+              },
+              {
+                "$ref": "#/$defs/CallOp"
+              },
+              {
+                "$ref": "#/$defs/ConstOp"
+              },
+              {
+                "$ref": "#/$defs/CondOp"
+              },
+              {
+                "$ref": "#/$defs/VarOp"
+              },
+              {
+                "$ref": "#/$defs/WhileOp"
+              },
+              {
+                "$ref": "#/$defs/PrintOp"
+              },
+              {
+                "$ref": "#/$defs/SetOp"
+              },
+              {
+                "$ref": "#/$defs/AllocOp"
+              },
+              {
+                "$ref": "#/$defs/AllocaOp"
+              },
+              {
+                "$ref": "#/$defs/MathOp"
+              },
+              {
+                "$ref": "#/$defs/UnaryOp"
+              }
+            ]
+          },
+          "title": "Thenblock",
+          "type": "array"
+        }
+      },
+      "required": [
+        "cond",
+        "op"
+      ],
+      "title": "WhileOp",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Racine JSON de type module : enregistre les structs puis g\u00e9n\u00e8re les fonctions.",
+  "properties": {
+    "op": {
+      "const": "module",
+      "type": "string"
+    },
+    "body": {
+      "default": [],
+      "items": {
+        "discriminator": {
+          "mapping": {
+            "define struct": "#/$defs/DefineStructOp",
+            "define_function": "#/$defs/DefineFunctionOp",
+            "function": "#/$defs/FunctionOp"
+          },
+          "propertyName": "op"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/DefineStructOp"
+          },
+          {
+            "$ref": "#/$defs/DefineFunctionOp"
+          },
+          {
+            "$ref": "#/$defs/FunctionOp"
+          }
+        ]
+      },
+      "title": "Body",
+      "type": "array"
+    }
+  },
+  "required": [
+    "op"
+  ],
+  "title": "ModuleJsonOp",
+  "type": "object"
+}

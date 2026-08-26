@@ -11,18 +11,30 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+from typing import Any
+
+from pydantic import TypeAdapter
+from pydantic.json_schema import JsonSchemaMode
+
+from jsonmlir.schema.export import clean_ast_schema_for_ts
 
 
-def get_schema(for_typescript: bool) -> str:
-    from jsonmlir.schema.export import export_ast_schema
+def get_schema(
+    mode: JsonSchemaMode = "serialization", for_typescript: bool = False
+) -> dict[str, Any]:
+    """Return the JSON Schema for the module AST root type."""
+    from jsonmlir.operations.op_module import ModuleJsonOp
 
-    schema = export_ast_schema(mode="serialization", for_ts=for_typescript)
-    return json.dumps(schema, indent=2) + "\n"
+    schema = TypeAdapter(ModuleJsonOp).json_schema(mode=mode)
+    if for_typescript:
+        schema = clean_ast_schema_for_ts(schema)
+    return schema
 
 
 def write(path: Path, txt: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(txt, encoding="utf-8")
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(
@@ -42,7 +54,8 @@ def main() -> None:
     args = parser.parse_args()
 
     schema = get_schema(for_typescript=args.typescript)
-    write(args.output, schema)
+    schema_txt = json.dumps(schema, indent=2) + "\n"
+    write(args.output, schema_txt)
     print(f"Generated {args.output}")
 
 
