@@ -1,7 +1,16 @@
 """Constructeurs DSL à arguments positionnels, compatibles basedpyright.
-
-Les classes ``*Op`` restent des modèles Pydantic (validation JSON, codegen).
 Ce module expose des fonctions factory typées pour l'écriture manuelle en Python.
+
+Cela évite d'avoir à écrire
+```python
+Var(name="MyIntArray", indices=[10], type=TyScalar(Scalar.i64)
+```
+
+mais plutôt
+```python
+Var("MyIntArray", [10], "i64"
+```
+
 """
 
 from __future__ import annotations
@@ -13,7 +22,7 @@ from jsonmlir.operations.op_alloc import AllocOp
 from jsonmlir.operations.op_alloca import AllocaOp
 from jsonmlir.operations.op_binary import BinaryOp
 from jsonmlir.operations.op_call import CallOp
-from jsonmlir.operations.op_cond import CondOp
+from jsonmlir.operations.op_cond import IfOp
 from jsonmlir.operations.op_constant import ConstOp
 from jsonmlir.operations.op_define_function import DefineFunctionOp
 from jsonmlir.operations.op_define_struct import DefineStructOp
@@ -153,12 +162,12 @@ def While(
     return WhileOp(cond=cond, thenBlock=thenBlock)
 
 
-def Cond(
+def If(
     cond: BaseValue,
     thenBlock: Sequence[BaseValue],
     elseBlock: Sequence[BaseValue] | None = None,
-) -> CondOp:
-    return CondOp(cond=cond, thenBlock=thenBlock, elseBlock=elseBlock)
+) -> IfOp:
+    return IfOp(cond=cond, thenBlock=thenBlock, elseBlock=elseBlock)
 
 
 def Call(

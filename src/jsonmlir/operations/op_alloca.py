@@ -18,6 +18,7 @@ from jsonmlir.variables.val.val import ValNodeAny
 
 
 class AllocaOp(OpNode):
+    """Représente une allocation (memref.AllocaOp)"""
 
     op: Literal["alloca"] = "alloca"
     name: str

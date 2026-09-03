@@ -11,13 +11,15 @@ from jsonmlir.variables.val.val import ValNodeAny
 if TYPE_CHECKING:
     from jsonmlir.operations.base import BaseValue
 
-# TODO: On renvoie automatiquement la dernière valeur,
-# mais utiliser plutôt yield
 @trace_step("CodegenBlock", display_entry=True)
 def codegenBlock(
     content: Sequence[BaseValue] | None,
     block: Block,
 ) -> tuple[Block, Sequence[ValNodeAny]]:
+    """ Represent a list of instruction. For example, used in if bloc or function.
+    content = None is equivalent to empty instruction bloc.
+    """
+
 
     # Gen block
     if content is None:

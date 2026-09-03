@@ -15,13 +15,14 @@ if TYPE_CHECKING:
     from jsonmlir.operations.base import BaseValue
 
 
-class CondOp(OpNode):
+class IfOp(OpNode):
+    """Represente a conditionnal bloc"""
     op: Literal["if"] = "if"
     cond: BaseValue
     thenBlock: Sequence[BaseValue]
     elseBlock: Sequence[BaseValue] | None = None
 
-    @trace_step("CondOp")
+    @trace_step("IfOp")
     def codegen(self) -> Sequence[ValNodeAny]:
         # Check condition
         conds_ssa = self.cond.codegen()

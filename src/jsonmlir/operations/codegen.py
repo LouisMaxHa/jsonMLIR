@@ -13,6 +13,9 @@ from jsonmlir.variables.val.val import ValNodeAny
 
 # ABC : Abstract Base Class
 class OpNode(BaseModel, ABC):
+    """ Abstract class that have a codegen() methode?
+    """
+
     # Nécessaire pour autoriser des types non-Pydantic dans les sous-classes
     model_config = ConfigDict(
         arbitrary_types_allowed=True,
@@ -43,7 +46,7 @@ class OpNode(BaseModel, ABC):
     # @abstractmethod force les sous-classes à implémenter cette méthode abstraite
     @abstractmethod
     def codegen(self) -> Sequence[ValNodeAny]:
-        """Génère l'opération MLIR au point d'insertion courant et retourne la SSA produite."""
+        """Génère l'opération MLIR au point d'insertion courant et retourne une liste de noeuds contenant les résultats."""
         raise NotImplementedError
 
 class ABCEnumMeta(EnumMeta, ABCMeta):

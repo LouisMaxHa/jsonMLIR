@@ -8,7 +8,7 @@ from jsonmlir.operations.op_alloc import AllocOp
 from jsonmlir.operations.op_alloca import AllocaOp
 from jsonmlir.operations.op_binary import BinaryOp
 from jsonmlir.operations.op_call import CallOp
-from jsonmlir.operations.op_cond import CondOp
+from jsonmlir.operations.op_cond import IfOp
 from jsonmlir.operations.op_constant import ConstOp
 from jsonmlir.operations.op_define_struct import DefineStructOp
 from jsonmlir.operations.op_math import MathOp
@@ -22,7 +22,7 @@ from jsonmlir.variables.var import Var
 
 # Union discriminé de toutes les opérations connues.
 BaseValue = Annotated[
-    BinaryOp | CallOp | ConstOp | CondOp | VarOp | WhileOp
+    BinaryOp | CallOp | ConstOp | IfOp | VarOp | WhileOp
     | PrintOp | SetOp | AllocOp | AllocaOp | MathOp | UnaryOp,
     Field(discriminator="op"),
 ]
@@ -31,7 +31,7 @@ _types_namespace = {
     "BaseValue": BaseValue,
     "BinaryOp": BinaryOp,
     "CallOp": CallOp,
-    "CondOp": CondOp,
+    "IfOp": IfOp,
     "ConstOp": ConstOp,
     "DefineStructOp": DefineStructOp,
     "PrintOp": PrintOp,

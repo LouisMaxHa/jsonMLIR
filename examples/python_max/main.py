@@ -1,15 +1,7 @@
 import sys
 
-from jsonmlir.operations.dsl import (
-    Binary,
-    Call,
-    Cond,
-    DefineFunction,
-    Function,
-    Module,
-    Set,
-    Var,
-)
+from jsonmlir.operations.dsl import (Binary, Call, DefineFunction, Function,
+                                     If, Module, Set, Var)
 from jsonmlir.pipeline.compiler import compiler
 from jsonmlir.utils.enum_scalars import Scalar
 from jsonmlir.variables.ty.ty_scalar import TyScalar
@@ -28,7 +20,7 @@ module = Module([
         [("a", TyScalar(Scalar.i64)), ("b", TyScalar(Scalar.i64))],
         [
             Set(Var(name="result", type="i64"), Var("a")),
-            Cond(
+            If(
                 cond=Binary(">", Var("b"), Var("a")),
                 thenBlock=[Set(Var("result"), Var("b"))],
             ),

@@ -1,0 +1,37 @@
+// Generated from Pydantic AST models — DO NOT EDIT.
+
+// Types
+{% for name, values in enums.items() %}
+export type {{ name }} = {% for v in values %}{{ '"' ~ v ~ '"' }}{% if not loop.last %} | {% endif %}{% endfor %};
+{% endfor %}
+
+// Types union
+{% for name, body in unions.items() %}
+export type {{ name }} = {{ body }};
+{% endfor %}
+
+// Tuples
+{% for name, body in tuples.items() %}
+export type {{ name }} = {{ body }};
+{% endfor %}
+
+// Class
+{% for c in classes %}
+export class {{ c.name }} {
+  {% for f in c.fields %}
+  {{ f.name }}: {{ f.type }}{% if not f.required %} = {{ f.default }}{% endif %};
+  {% endfor %}
+  
+  constructor(
+    {% for p in filterNotNoneAttribut(c.fields, "argName") %}
+      {{ p.argName }}: {{ p.type -}}
+        {% if p.default %} = {{ p.default }}{% endif -%}
+        {%- if not loop.last %},{% endif %}
+      {% endfor %}
+    ) {
+    {% for p in filterNotNoneAttribut(c.fields, "argName") %}
+      this.{{ p.field }} = {{ p.argName }};
+    {% endfor %}
+  }
+}
+{% endfor %}
