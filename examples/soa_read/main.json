@@ -53,6 +53,7 @@
             }
           },
           "val": {
+            "op": "var",
             "name": "buffer"
           }
         },

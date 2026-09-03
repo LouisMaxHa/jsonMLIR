@@ -99,34 +99,47 @@ def unwrap(ann: Any) -> Any:
         ann = get_args(ann)[0]
     return ann
 
+def union_parts(models: list[Any]) -> list[str]:
+    """replace list of models by unions type if possible"""
+    for enum_name, enum_models in ENUMS.items():
+        if set(models) == enum_models:
+            return [enum_name]
+    return [ts_type(m) for m in models]
 
-def is_union(ann: Any) -> bool:
-    return get_origin(ann) in (Union, types.UnionType)
+
+def array_of(t: str) -> str:
+    """Add parenthesis arround union if necessary"""
+    return f"({t})[]" if " | " in t else f"{t}[]"
+
 
 def ts_type(ann: Any) -> str:
     """Annote Python -> type TypeScript."""
     ann = unwrap(ann)
 
+    # Primitive
     if ann in PRIMITIVES:
         return PRIMITIVES[ann]
 
-    if isinstance(ann, type) and issubclass(ann, Enum):
-        return ENUM_TS_NAMES[ann]
-
+    # TyNode
     if isinstance(ann, type) and issubclass(ann, TyNodeBase):
-        return "TyNode"
-
-    if isinstance(ann, type) and issubclass(ann, BaseModel):
+        if ann.__name__ == "TyNodeBase":
+            return "TyNode"
         return ann.__name__
 
-    origin = get_origin(ann)
+    # JsonOp
+    if isinstance(ann, type) and issubclass(ann, BaseModel):
+        print(f"JsonOp  : {repr(ann)}")
+        return ann.__name__
 
+    if "ValNode" in str(ann):
+        print(f"Valnode : {repr(ann)}")
+        return "JsonOp"
+
+
+    origin = get_origin(ann)
     if origin is Literal:
         return " | ".join(json.dumps(v) for v in get_args(ann))
 
-    # ValNode[Any] (valeurs déjà générées) -> JsonOp
-    if "ValNode" in str(ann):
-        return "JsonOp"
 
     if origin in (list, Sequence, tuple):
         args = get_args(ann)
@@ -149,19 +162,6 @@ def ts_type(ann: Any) -> str:
     return "unknown"
 
 
-def union_parts(members: list[Any]) -> list[str]:
-    models = [m for m in members if isinstance(m, type) and issubclass(m, BaseModel)]
-
-    for enum_name, enum_models in ENUMS.items():
-        if set(models) == enum_models:
-            return [enum_name]
-
-    return [ts_type(m) for m in members]
-
-
-def array_of(t: str) -> str:
-    return f"({t})[]" if " | " in t else f"{t}[]"
-
 def ts_default(ann: Any, value: Any) -> str | PydanticUndefinedType:
     """Valeur par défaut python -> expression TypeScript."""
     if value is PydanticUndefined:
@@ -171,7 +171,7 @@ def ts_default(ann: Any, value: Any) -> str | PydanticUndefinedType:
     if isinstance(value, str):
         return json.dumps(value)
     if isinstance(value, Sequence):
-        return "[]"
+        return json.dumps(value)
     if isinstance(value, Enum):
         return json.dumps(value.value)
     return str(value)
@@ -206,6 +206,7 @@ def collect() -> dict[str, Any]:
     # Classes
     classes: list[dict[str, Any]] = []
     for model in MODELS:
+        print(f"========= Model {model.__name__}")
         fields: list[dict[str, Any]] = []
         for fname, field in model.model_fields.items():
 
@@ -213,11 +214,12 @@ def collect() -> dict[str, Any]:
             name = field.alias or fname
 
             # Type of the field
-            ftype = FIELD_OVERRIDES.get((model.__name__, name)) or ts_type(
-                field.annotation
+            ftype = FIELD_OVERRIDES.get(
+                (model.__name__, name),
+                ts_type(field.annotation)
             )
 
-            # Default value
+            # Default value of the field
             required = field.is_required()
             default = ts_default(field.annotation, field.default)
 

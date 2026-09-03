@@ -7,8 +7,8 @@ export type UnaryOperator = "-" | "!" ;
 export type MathOperator = "sqrt" ;
 
 // Types union
-export type TyNode = TyBuffer | TyScalar | TyPtr | TyMemref | TyStruct | TySOA | TySSA;
-export type JsonOp = ConstOp | AllocaOp | BinaryOp | WhileOp | IfOp | SetOp | VarOp | AllocOp | MathOp | UnaryOp | CallOp | PrintOp;
+export type TyNode = TyMemref | TyBuffer | TyStruct | TyScalar | TyPtr | TySOA | TySSA;
+export type JsonOp = PrintOp | UnaryOp | VarOp | SetOp | CallOp | AllocaOp | MathOp | ConstOp | AllocOp | WhileOp | IfOp | BinaryOp;
 export type ModuleStatement = FunctionOp | DefineFunctionOp | DefineStructOp;
 export type ReturnTypes = TyNode[];
 
@@ -53,12 +53,12 @@ export class BinaryOp {
 	op: "binary" = "binary";
 	lhs: JsonOp;
 	rhs: JsonOp;
-	ope: OperatorOp;
+	ope: unknown;
 
 	constructor(
 		lhs: JsonOp,
 		rhs: JsonOp,
-		ope: OperatorOp,
+		ope: unknown,
 	) {
 		this.lhs = lhs;
 		this.rhs = rhs;
@@ -81,7 +81,7 @@ export class CallOp {
 export class ConstOp {
 	op: "const" = "const";
 	val: number;
-	type: Scalar = "i64";
+	type: unknown = "i64";
 
 	constructor(
 		val: number,
@@ -155,11 +155,11 @@ export class IfOp {
 }
 export class MathOp {
 	op: "math" = "math";
-	ope: MathOperator;
+	ope: unknown;
 	value: JsonOp;
 
 	constructor(
-		ope: MathOperator,
+		ope: unknown,
 		value: JsonOp,
 	) {
 		this.ope = ope;
@@ -189,11 +189,11 @@ export class PrintOp {
 export class SetOp {
 	op: "set" = "set";
 	var: VarOp;
-	val: BinaryOp | ConstOp | VarOp | CallOp | UnaryOp;
+	val: JsonOp;
 
 	constructor(
 		var_: VarOp,
-		val: BinaryOp | ConstOp | VarOp | CallOp | UnaryOp,
+		val: JsonOp,
 	) {
 		this.var = var_;
 		this.val = val;
@@ -257,10 +257,10 @@ export class TySSA {
 }
 export class TyScalar {
 	type: "scalar" = "scalar";
-	name: Scalar;
+	name: unknown;
 
 	constructor(
-		name: Scalar,
+		name: unknown,
 	) {
 		this.name = name;
 	}
@@ -277,11 +277,11 @@ export class TyStruct {
 }
 export class UnaryOp {
 	op: "unary" = "unary";
-	ope: UnaryOperator;
+	ope: unknown;
 	value: JsonOp;
 
 	constructor(
-		ope: UnaryOperator,
+		ope: unknown,
 		value: JsonOp,
 	) {
 		this.ope = ope;
