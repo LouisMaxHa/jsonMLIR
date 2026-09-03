@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from mlir.ir import Block, InsertionPoint
 
 from jsonmlir.utils.trace import trace_step
+from jsonmlir.variables.val.val import ValNode
 
 if TYPE_CHECKING:
     from jsonmlir.operations.base import BaseValue

@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from mlir.dialects.func import CallOp
 
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.utils.trace import trace_step
+from jsonmlir.variables.val.val import ValNode
 
 if TYPE_CHECKING:
     from jsonmlir.operations.base import BaseValue

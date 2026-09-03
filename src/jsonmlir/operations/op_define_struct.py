@@ -9,6 +9,7 @@ from jsonmlir.operations.codegen import OpNode
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.memory import StructDescriptor, structs_type
 from jsonmlir.variables.struct_field import StructField
+from jsonmlir.variables.val.val import ValNode
 
 
 class DefineStructOp(OpNode):

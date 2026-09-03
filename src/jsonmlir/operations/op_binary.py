@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from mlir.dialects.arith import (
     AddFOp,
@@ -24,6 +24,7 @@ from jsonmlir.operations.codegen import OpNode
 from jsonmlir.operations.op_operator import OperatorOp
 from jsonmlir.utils.same_types import assert_same_types
 from jsonmlir.utils.trace import trace_step
+from jsonmlir.variables.val.val import ValNode
 from jsonmlir.variables.val.val_SSA import ValSSA
 
 if TYPE_CHECKING:

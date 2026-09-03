@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from enum import Enum
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.operations.op_binary import BinaryOp
@@ -10,6 +10,7 @@ from jsonmlir.operations.op_constant import ConstOp
 from jsonmlir.operations.op_operator import OperatorOp
 from jsonmlir.utils.enum_scalars import Scalar, ScalarFamily
 from jsonmlir.utils.trace import trace_step
+from jsonmlir.variables.val.val import ValNode
 
 if TYPE_CHECKING:
     from jsonmlir.operations.base import BaseValue

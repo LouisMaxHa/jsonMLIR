@@ -8,6 +8,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict
 
 from jsonmlir.utils.schema_shape import ast_schema_extra
+from jsonmlir.variables.val.val import ValNode
 
 
 # ABC : Abstract Base Class
@@ -45,7 +46,8 @@ class OpNode(BaseModel, ABC):
     # @abstractmethod force les sous-classes à implémenter cette méthode abstraite
     @abstractmethod
     def codegen(self) -> Sequence[ValNode[Any]]:
-        """Génère l'opération MLIR au point d'insertion courant et retourne une liste de noeuds contenant les résultats."""
+        """Génère l'opération MLIR au point d'insertion courant et retourne
+        une liste de noeuds contenant les résultats."""
         raise NotImplementedError
 
 class ABCEnumMeta(EnumMeta, ABCMeta):

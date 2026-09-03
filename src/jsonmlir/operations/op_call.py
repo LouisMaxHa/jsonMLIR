@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from mlir.dialects.func import CallOp as MLIRCallOp
 from mlir.ir import Value
@@ -9,6 +9,7 @@ from mlir.ir import Value
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.memory import functions_registry
+from jsonmlir.variables.val.val import ValNode
 from jsonmlir.variables.val.val_SSA import ValSSA
 
 if TYPE_CHECKING:

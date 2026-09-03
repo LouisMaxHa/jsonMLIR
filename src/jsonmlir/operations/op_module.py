@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import Field
 
@@ -11,6 +11,7 @@ from jsonmlir.operations.op_define_struct import DefineStructOp
 from jsonmlir.operations.op_function import FunctionOp
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.memory import functions_registry, structs_type
+from jsonmlir.variables.val.val import ValNode
 
 # Déclaration de struct, de signature de fonction, ou de corps de fonction
 ModuleStatement = Annotated[
