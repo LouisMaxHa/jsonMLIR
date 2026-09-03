@@ -8,7 +8,7 @@ from mlir.ir import MemRefType, Value
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_scalar import TyScalar
-from jsonmlir.variables.val.val import ValNode, ValNodeAny
+from jsonmlir.variables.val.val import ValNode
 from jsonmlir.variables.val.val_SSA import ValSSA
 
 
@@ -30,7 +30,7 @@ class ValScalar(ValNode[TyScalar]):
     @staticmethod
     @trace_step("ValScalar.init_from", display_entry=True)
     def init_from(
-        type: TyNode, source: ValNodeAny
+        type: TyNode, source: ValNode[Any]
     ) -> ValScalar:
         assert isinstance(type, TyScalar)
         assert isinstance(source, (ValSSA, ValScalar))
@@ -60,7 +60,7 @@ class ValScalar(ValNode[TyScalar]):
     def _load(
         self,
         index: Sequence[str | Value],
-    ) -> ValNodeAny:
+    ) -> ValNode[Any]:
         assert index == []
         return ValSSA(self.get_SSA(index))
 
@@ -69,7 +69,7 @@ class ValScalar(ValNode[TyScalar]):
     def _store(
         self,
         index: Sequence[str | Value],
-        source: ValNodeAny,
+        source: ValNode[Any],
     ):
         assert index == []
         assert isinstance(source, (ValSSA, ValScalar))

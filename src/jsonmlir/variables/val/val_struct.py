@@ -10,7 +10,7 @@ from jsonmlir.utils.enum_scalars import Scalar
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_struct import TyStruct
-from jsonmlir.variables.val.val import ValNode, ValNodeAny
+from jsonmlir.variables.val.val import ValNode
 from jsonmlir.variables.val.val_SSA import ValSSA
 
 
@@ -30,7 +30,7 @@ class ValStruct(ValNode[TyStruct]):
     @staticmethod
     @trace_step("ValStruct.init_from", display_entry=True)
     def init_from(
-        type: TyNode, source: ValNodeAny
+        type: TyNode, source: ValNode[Any]
     ) -> ValStruct:
         assert isinstance(type, TyStruct)
         return ValStruct(
@@ -50,7 +50,7 @@ class ValStruct(ValNode[TyStruct]):
     def _load(
         self,
         index: Sequence[str | Value],
-    ) -> ValNodeAny:
+    ) -> ValNode[Any]:
         from jsonmlir.variables.factory import Factory
 
         if len(index) == 0:
@@ -78,7 +78,7 @@ class ValStruct(ValNode[TyStruct]):
     def _store(
         self,
         index: Sequence[str | Value],
-        source: ValNodeAny,
+        source: ValNode[Any],
     ) -> None:
         assert len(index) > 0
         assert isinstance(index[0], str)

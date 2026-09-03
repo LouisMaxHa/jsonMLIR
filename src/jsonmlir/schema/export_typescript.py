@@ -154,7 +154,7 @@ def ts_type(ann: Any) -> str:
     members = list(get_args(ann))
     if members:
         parts = union_parts(members)
-        # Collapse T[] alongside T (lhs: BaseValue | Sequence[ValNodeAny] -> JsonOp)
+        # Collapse T[] alongside T (lhs: BaseValue | Sequence[ValNode[Any]] -> JsonOp)
         collapsed = [p for p in parts if not any(f"{p}[]" == q for q in parts)]
         parts = collapsed or parts
         return " | ".join(dict.fromkeys(parts))

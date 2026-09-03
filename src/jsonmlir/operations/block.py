@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 from mlir.ir import Block, InsertionPoint
 
 from jsonmlir.utils.trace import trace_step
-from jsonmlir.variables.val.val import ValNodeAny
 
 if TYPE_CHECKING:
     from jsonmlir.operations.base import BaseValue
@@ -15,7 +14,7 @@ if TYPE_CHECKING:
 def codegenBlock(
     content: Sequence[BaseValue] | None,
     block: Block,
-) -> tuple[Block, Sequence[ValNodeAny]]:
+) -> tuple[Block, Sequence[ValNode[Any]]]:
     """ Represent a list of instruction. For example, used in if bloc or function.
     content = None is equivalent to empty instruction bloc.
     """
@@ -26,7 +25,7 @@ def codegenBlock(
         return block, []
 
     # Populate block
-    last_value: Sequence[ValNodeAny] = []
+    last_value: Sequence[ValNode[Any]] = []
     with InsertionPoint(block):
         for element in content:
             last_value = element.codegen()

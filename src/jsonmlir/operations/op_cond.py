@@ -9,7 +9,6 @@ from mlir.ir import InsertionPoint
 from jsonmlir.operations.block import codegenBlock
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.utils.trace import trace_step
-from jsonmlir.variables.val.val import ValNodeAny
 
 if TYPE_CHECKING:
     from jsonmlir.operations.base import BaseValue
@@ -23,7 +22,7 @@ class IfOp(OpNode):
     elseBlock: Sequence[BaseValue] | None = None
 
     @trace_step("IfOp")
-    def codegen(self) -> Sequence[ValNodeAny]:
+    def codegen(self) -> Sequence[ValNode[Any]]:
         # Check condition
         conds_ssa = self.cond.codegen()
         assert len(conds_ssa) == 1

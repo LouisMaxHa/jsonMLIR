@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Literal
+from typing import Any, Literal
 
+from jsonmlir.variables.val.val import ValNode
 from mlir.dialects import func
 from mlir.ir import FunctionType, InsertionPoint, TypeAttr, UnitAttr
 
@@ -14,7 +15,6 @@ from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.factory import Factory
 from jsonmlir.variables.memory import variables_heap
 from jsonmlir.variables.ty.ty import TyNode
-from jsonmlir.variables.val.val import ValNodeAny
 from jsonmlir.variables.val.val_SSA import ValSSA
 
 availables_functions = {}
@@ -25,7 +25,7 @@ class FunctionOp(OpNode):
     body: Sequence[BaseValue] = ()
 
     @trace_step("FunctionOp: {self.name}")
-    def codegen(self) -> Sequence[ValNodeAny]:
+    def codegen(self) -> Sequence[ValNode[Any]]:
         variables_heap.clear()
         const_heap.clear()
 

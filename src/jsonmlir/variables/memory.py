@@ -8,7 +8,7 @@ from jsonmlir.variables.struct_field import StructField
 
 if TYPE_CHECKING:
     from jsonmlir.variables.ty.ty import TyNode
-    from jsonmlir.variables.val.val import ValNodeAny
+    
 
 
 class StructDescriptor(NamedTuple):
@@ -24,5 +24,5 @@ class FunctionSignature(NamedTuple):
 
 
 structs_type: dict[str, StructDescriptor] = {}
-variables_heap: dict[str, ValNodeAny] = {}
+variables_heap: dict[str, ValNode[Any]] = {}
 functions_registry: dict[str, FunctionSignature] = {}

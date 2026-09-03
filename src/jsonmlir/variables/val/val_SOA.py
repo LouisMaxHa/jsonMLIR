@@ -9,7 +9,7 @@ from jsonmlir.variables.memory import StructDescriptor
 from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_buffer import TyBuffer
 from jsonmlir.variables.ty.ty_SOA import TySOA
-from jsonmlir.variables.val.val import ValNode, ValNodeAny
+from jsonmlir.variables.val.val import ValNode
 from jsonmlir.variables.val.val_buffer import ValBuffer
 from jsonmlir.variables.val.val_memref import ValMemref
 
@@ -64,7 +64,7 @@ class ValSOA(ValNode[TySOA]):
     def _load(
         self,
         index: Sequence[str | Value],
-    ) -> ValNodeAny:
+    ) -> ValNode[Any]:
 
         assert len(index) >= 1
         assert isinstance(index[0], str)
@@ -79,7 +79,7 @@ class ValSOA(ValNode[TySOA]):
     def _store(
         self,
         index: Sequence[str | Value],
-        source: ValNodeAny,
+        source: ValNode[Any],
     ):
         assert len(index) >= 1
         assert isinstance(index[0], str)
@@ -94,7 +94,7 @@ class ValSOA(ValNode[TySOA]):
 
     @staticmethod
     @trace_step("ValSOA.init_from", display_entry=True)
-    def init_from(type: TyNode, source: ValNodeAny) -> ValSOA:
+    def init_from(type: TyNode, source: ValNode[Any]) -> ValSOA:
         from jsonmlir.variables.ty.ty_SOA import TySOA
 
         assert isinstance(type, TySOA)

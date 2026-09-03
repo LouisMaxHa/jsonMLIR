@@ -10,7 +10,6 @@ from jsonmlir.utils.discard_builder import discard_builder
 from jsonmlir.utils.enum_scalars import Scalar
 from jsonmlir.variables.memory import variables_heap
 from jsonmlir.variables.ty.ty import TyNode
-from jsonmlir.variables.val.val import ValNodeAny
 
 if TYPE_CHECKING:
     from jsonmlir.operations.op_var import VarOp
@@ -52,7 +51,7 @@ class Var:
                 assert type(saved_type) is type(given_type)
                 return saved_type
 
-    def get_val(self) -> ValNodeAny:
+    def get_val(self) -> ValNode[Any]:
         if self.get_name() not in variables_heap.keys():
             raise ValueError(f"Variable {self.get_name()} not allocated, can't load.")
 
@@ -76,14 +75,14 @@ class Var:
         return index_ssa
 
     # ──────────── Overload ────────────
-    def load(self) -> ValNodeAny:
+    def load(self) -> ValNode[Any]:
         return self.get_val().load(self.get_indices())
 
-    def store(self, value: ValNodeAny) -> None:
+    def store(self, value: ValNode[Any]) -> None:
         return self.get_val().store(self.get_indices(), value)
 
     def get_SSA(self) -> Value:
         return self.get_val().get_SSA(self.get_indices())
 
-    def init_from(self, type: TyNode, source: ValNodeAny) -> ValNodeAny:
+    def init_from(self, type: TyNode, source: ValNode[Any]) -> ValNode[Any]:
         return self.get_val().init_from(type, source)

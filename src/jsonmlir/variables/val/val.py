@@ -26,7 +26,7 @@ class ValNode(ABC, Generic[T]):
     # ──────────── Init ────────────
     @staticmethod
     @abstractmethod
-    def init_from(type: TyNode, source: ValNodeAny) -> ValNodeAny:
+    def init_from(type: TyNode, source: ValNode[Any]) -> ValNode[Any]:
         raise NotImplementedError
 
     # Plutôt content de celui-la :)
@@ -81,7 +81,7 @@ class ValNode(ABC, Generic[T]):
     def load(
         self,
         index: Sequence[str | Value | int],
-    ) -> ValNodeAny:
+    ) -> ValNode[Any]:
         return self._load(index_to_ssa(index))
 
     @auto_log("_load({index})")
@@ -89,14 +89,14 @@ class ValNode(ABC, Generic[T]):
     def _load(
         self,
         index: Sequence[str | Value],
-    ) -> ValNodeAny:
+    ) -> ValNode[Any]:
         raise NotImplementedError
 
     # ──────────── Store ────────────
     def store(
         self,
         index: Sequence[str | Value | int],
-        source: ValNodeAny,
+        source: ValNode[Any],
     ) -> None:
         return self._store(index_to_ssa(index), source)
 
@@ -105,7 +105,7 @@ class ValNode(ABC, Generic[T]):
     def _store(
         self,
         index: Sequence[str | Value],
-        source: ValNodeAny,
+        source: ValNode[Any],
     ) -> None:
         raise NotImplementedError
 
@@ -114,4 +114,3 @@ class ValNode(ABC, Generic[T]):
 # résultats de codegen, etc.). ``ValNode`` est invariant en ``T`` (attribut
 # ``ty`` mutable) : ``Any`` est le seul paramètre acceptant tous les
 # ``ValNode[TyX]`` concrets.
-ValNodeAny = ValNode[Any]

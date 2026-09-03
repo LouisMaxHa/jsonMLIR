@@ -11,7 +11,7 @@ from jsonmlir.utils.ssa_dim import dimensions_to_ssa
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_buffer import TyBuffer
-from jsonmlir.variables.val.val import ValNode, ValNodeAny
+from jsonmlir.variables.val.val import ValNode
 from jsonmlir.variables.val.val_memref import ValMemref
 from jsonmlir.variables.val.val_SSA import ValSSA
 
@@ -35,7 +35,7 @@ class ValBuffer(ValNode[TyBuffer]):
     @staticmethod
     @trace_step("ValBuffer.init_from", display_entry=True)
     def init_from(
-        type: TyNode, source: ValNodeAny
+        type: TyNode, source: ValNode[Any]
     ) -> ValBuffer:
         assert isinstance(type, TyBuffer)
         assert isinstance(source, (ValMemref, ValSSA))
@@ -59,7 +59,7 @@ class ValBuffer(ValNode[TyBuffer]):
     def _load(
         self,
         index: Sequence[str | Value],
-    ) -> ValNodeAny:
+    ) -> ValNode[Any]:
         assert index == []
         return self
 
@@ -68,7 +68,7 @@ class ValBuffer(ValNode[TyBuffer]):
     def _store(
         self,
         index: Sequence[str | Value],
-        source: ValNodeAny,
+        source: ValNode[Any],
     ) -> None:
         raise NotImplementedError
 

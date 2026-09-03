@@ -10,7 +10,7 @@ from jsonmlir.utils.bare_ptr import bare_ptr_to_memref
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_ptr import TyPtr
-from jsonmlir.variables.val.val import ValNode, ValNodeAny
+from jsonmlir.variables.val.val import ValNode
 from jsonmlir.variables.val.val_scalar import ValScalar
 from jsonmlir.variables.val.val_SSA import ValSSA
 
@@ -33,7 +33,7 @@ class ValPtr(ValNode[TyPtr]):
     @staticmethod
     @trace_step("ValPtr.init_from", display_entry=True)
     def init_from(
-        type: TyNode, source: ValNodeAny
+        type: TyNode, source: ValNode[Any]
     ) -> ValPtr:
         assert isinstance(type, TyPtr)
         assert isinstance(source, (ValSSA, ValScalar, ValPtr))
@@ -63,7 +63,7 @@ class ValPtr(ValNode[TyPtr]):
     def _load(
         self,
         index: Sequence[str | Value],
-    ) -> ValNodeAny:
+    ) -> ValNode[Any]:
         from jsonmlir.variables.factory import Factory
 
         # Return ptr
@@ -102,7 +102,7 @@ class ValPtr(ValNode[TyPtr]):
     def _store(
         self,
         index: Sequence[str | Value],
-        source: ValNodeAny,
+        source: ValNode[Any],
     ):
         assert index == []
         assert isinstance(source, (ValSSA, ValPtr, ValScalar))

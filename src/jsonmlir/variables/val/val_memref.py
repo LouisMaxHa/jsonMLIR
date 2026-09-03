@@ -13,7 +13,7 @@ from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_memref import TyMemref
 from jsonmlir.variables.ty.ty_SSA import TySSA
 from jsonmlir.variables.ty.ty_struct import TyStruct
-from jsonmlir.variables.val.val import ValNode, ValNodeAny
+from jsonmlir.variables.val.val import ValNode
 
 
 class ValMemref(ValNode[TyMemref]):
@@ -38,7 +38,7 @@ class ValMemref(ValNode[TyMemref]):
 
     @staticmethod
     @trace_step("ValMemref.init_from", display_entry=True)
-    def init_from(type: TyNode, source: ValNodeAny) -> ValMemref:
+    def init_from(type: TyNode, source: ValNode[Any]) -> ValMemref:
         assert isinstance(type, TyMemref)
 
         match source.get_ty():
@@ -65,7 +65,7 @@ class ValMemref(ValNode[TyMemref]):
     def _load(
         self,
         index: Sequence[str | Value],
-    ) -> ValNodeAny:
+    ) -> ValNode[Any]:
         from jsonmlir.variables.factory import Factory
 
         if index == []:
@@ -107,7 +107,7 @@ class ValMemref(ValNode[TyMemref]):
     def _store(
         self,
         index: Sequence[str | Value],
-        source: ValNodeAny,
+        source: ValNode[Any],
     ):
 
         # Split index

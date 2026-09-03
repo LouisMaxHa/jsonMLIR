@@ -3,16 +3,27 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Literal
 
-from mlir.dialects.arith import (AddFOp, AddIOp, AndIOp, CmpIOp, CmpIPredicate,
-                                 DivFOp, DivSIOp, MulFOp, MulIOp, OrIOp,
-                                 SubFOp, SubIOp, XOrIOp)
+from mlir.dialects.arith import (
+    AddFOp,
+    AddIOp,
+    AndIOp,
+    CmpIOp,
+    CmpIPredicate,
+    DivFOp,
+    DivSIOp,
+    MulFOp,
+    MulIOp,
+    OrIOp,
+    SubFOp,
+    SubIOp,
+    XOrIOp,
+)
 from mlir.ir import Value
 
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.operations.op_operator import OperatorOp
 from jsonmlir.utils.same_types import assert_same_types
 from jsonmlir.utils.trace import trace_step
-from jsonmlir.variables.val.val import ValNodeAny
 from jsonmlir.variables.val.val_SSA import ValSSA
 
 if TYPE_CHECKING:
@@ -22,12 +33,12 @@ class BinaryOp(OpNode):
     """Opération binaire composée de deux opérandes."""
 
     op: Literal["binary"] = "binary"
-    lhs: BaseValue | Sequence[ValNodeAny]
-    rhs: BaseValue | Sequence[ValNodeAny]
+    lhs: BaseValue | Sequence[ValNode[Any]]
+    rhs: BaseValue | Sequence[ValNode[Any]]
     ope: OperatorOp
 
     @trace_step("BinaryOp: {self.ope.value}")
-    def codegen(self) -> Sequence[ValNodeAny]:
+    def codegen(self) -> Sequence[ValNode[Any]]:
         """Applique un opérateur binaire sur des opérandes déjà générés."""
         # Recursive codegen (operands already materialized are used as-is)
         lhs = self.lhs.codegen() if not isinstance(self.lhs, Sequence) else self.lhs

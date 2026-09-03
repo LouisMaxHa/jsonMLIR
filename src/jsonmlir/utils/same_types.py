@@ -1,12 +1,13 @@
 import pprint
 from collections.abc import Sequence
+from typing import Any
 
-from jsonmlir.variables.val.val import ValNodeAny
+from jsonmlir.variables.val.val import ValNode
 
 
 def same_types(
-    lhs: Sequence[ValNodeAny],
-    rhs: Sequence[ValNodeAny],
+    lhs: Sequence[ValNode[Any]],
+    rhs: Sequence[ValNode[Any]],
 ) -> bool:
     return (
         len(lhs) == len(rhs)
@@ -17,8 +18,8 @@ def same_types(
     )
 
 def assert_same_types(
-    lhs: Sequence[ValNodeAny],
-    rhs: Sequence[ValNodeAny],
+    lhs: Sequence[ValNode[Any]],
+    rhs: Sequence[ValNode[Any]],
 ) :
     assert len(lhs) == len(rhs), f"Should be same size {len(lhs)} vs {len(rhs)}"
 

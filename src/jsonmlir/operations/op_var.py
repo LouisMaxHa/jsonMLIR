@@ -8,7 +8,6 @@ from pydantic import Field
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.ty.ty import TyNode
-from jsonmlir.variables.val.val import ValNodeAny
 from jsonmlir.variables.var import Var
 
 
@@ -23,5 +22,5 @@ class VarOp(OpNode):
 
     # TODO: rename load to avoid confusion with get_SSA that dont use index
     @trace_step("VarOp: {self.name}, {self.indices}")
-    def codegen(self) -> Sequence[ValNodeAny]:
+    def codegen(self) -> Sequence[ValNode[Any]]:
         return [self.as_var().load()]

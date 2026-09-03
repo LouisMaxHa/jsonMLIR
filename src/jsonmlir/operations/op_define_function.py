@@ -7,7 +7,6 @@ from jsonmlir.operations.codegen import OpNode
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.memory import FunctionSignature, functions_registry
 from jsonmlir.variables.ty.ty import TyNode
-from jsonmlir.variables.val.val import ValNodeAny
 
 
 class DefineFunctionOp(OpNode):
@@ -23,7 +22,7 @@ class DefineFunctionOp(OpNode):
     return_types: Sequence[TyNode] = ()
 
     @trace_step("DefineFunctionOp: {self.name}")
-    def codegen(self) -> Sequence[ValNodeAny]:
+    def codegen(self) -> Sequence[ValNode[Any]]:
         functions_registry[self.name] = FunctionSignature(
             args=list(self.args),
             return_types=list(self.return_types),
