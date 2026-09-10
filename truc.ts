@@ -1,14 +1,14 @@
 // Generated from Pydantic AST models — DO NOT EDIT.
 
 // Types
-export type Scalar = "i64" | "i32" | "i16" | "i8" | "i1" | "I64" | "I32" | "I16" | "I8" | "I1" | "f16" | "f32" | "f64" | "f80" | "f128" | "index" ;
-export type OperatorOp = "+" | "-" | "*" | "/" | "/f" | "+f" | "-f" | "*f" | "and" | "or" | "xor" | "==" | "!=" | ">" | "<" | ">=" | "<=" ;
-export type UnaryOperator = "-" | "!" ;
-export type MathOperator = "sqrt" ;
+export type Scalar = "i64" | "i32" | "i16" | "i8" | "i1" | "I64" | "I32" | "I16" | "I8" | "I1" | "f16" | "f32" | "f64" | "f80" | "f128" | "index";
+export type OperatorOp = "+" | "-" | "*" | "/" | "/f" | "+f" | "-f" | "*f" | "and" | "or" | "xor" | "==" | "!=" | ">" | "<" | ">=" | "<=";
+export type UnaryOperator = "-" | "!";
+export type MathOperator = "sqrt";
 
 // Types union
-export type TyNode = TyMemref | TyBuffer | TyStruct | TyScalar | TyPtr | TySOA | TySSA;
-export type JsonOp = PrintOp | UnaryOp | VarOp | SetOp | CallOp | AllocaOp | MathOp | ConstOp | AllocOp | WhileOp | IfOp | BinaryOp;
+export type TyNode = TySSA | TySOA | TyMemref | TyPtr | TyStruct | TyScalar | TyBuffer;
+export type JsonOp = CallOp | AllocaOp | SetOp | ConstOp | PrintOp | AllocOp | WhileOp | UnaryOp | MathOp | IfOp | BinaryOp | VarOp;
 export type ModuleStatement = FunctionOp | DefineFunctionOp | DefineStructOp;
 export type ReturnTypes = TyNode[];
 
@@ -21,12 +21,12 @@ export class AllocOp {
 	op: "alloc" = "alloc";
 	name: string;
 	type: TyNode;
-	size: (number | VarOp)[];
+	size: (number | VarOp)[] = [];
 
 	constructor(
 		name: string,
 		type: TyNode,
-		size: (number | VarOp)[],
+		size: (number | VarOp)[] = [],
 	) {
 		this.name = name;
 		this.type = type;
@@ -37,12 +37,12 @@ export class AllocaOp {
 	op: "alloca" = "alloca";
 	name: string;
 	type: TyNode;
-	size: (number | VarOp)[];
+	size: (number | VarOp)[] = [];
 
 	constructor(
 		name: string,
 		type: TyNode,
-		size: (number | VarOp)[],
+		size: (number | VarOp)[] = [],
 	) {
 		this.name = name;
 		this.type = type;
@@ -53,12 +53,12 @@ export class BinaryOp {
 	op: "binary" = "binary";
 	lhs: JsonOp;
 	rhs: JsonOp;
-	ope: unknown;
+	ope: OperatorOp;
 
 	constructor(
 		lhs: JsonOp,
 		rhs: JsonOp,
-		ope: unknown,
+		ope: OperatorOp,
 	) {
 		this.lhs = lhs;
 		this.rhs = rhs;
@@ -81,7 +81,7 @@ export class CallOp {
 export class ConstOp {
 	op: "const" = "const";
 	val: number;
-	type: unknown = "i64";
+	type: Scalar = "i64";
 
 	constructor(
 		val: number,
@@ -155,11 +155,11 @@ export class IfOp {
 }
 export class MathOp {
 	op: "math" = "math";
-	ope: unknown;
+	ope: MathOperator;
 	value: JsonOp;
 
 	constructor(
-		ope: unknown,
+		ope: MathOperator,
 		value: JsonOp,
 	) {
 		this.ope = ope;
@@ -257,10 +257,10 @@ export class TySSA {
 }
 export class TyScalar {
 	type: "scalar" = "scalar";
-	name: unknown;
+	name: Scalar;
 
 	constructor(
-		name: unknown,
+		name: Scalar,
 	) {
 		this.name = name;
 	}
@@ -277,11 +277,11 @@ export class TyStruct {
 }
 export class UnaryOp {
 	op: "unary" = "unary";
-	ope: unknown;
+	ope: UnaryOperator;
 	value: JsonOp;
 
 	constructor(
-		ope: unknown,
+		ope: UnaryOperator,
 		value: JsonOp,
 	) {
 		this.ope = ope;
@@ -291,12 +291,12 @@ export class UnaryOp {
 export class VarOp {
 	op: "var" = "var";
 	name: string;
-	indices: (number | string | VarOp)[];
+	indices: (number | string | VarOp)[] = [];
 	type: TyNode | null = null;
 
 	constructor(
 		name: string,
-		indices: (number | string | VarOp)[],
+		indices: (number | string | VarOp)[] = [],
 	) {
 		this.name = name;
 		this.indices = indices;

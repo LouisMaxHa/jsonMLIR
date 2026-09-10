@@ -15,15 +15,12 @@ from __future__ import annotations
 
 import argparse
 import json
-import types
 from collections.abc import Sequence
 from enum import Enum
 from pathlib import Path
-from typing import Annotated, Any, List, Literal, Union, get_args, get_origin
+from typing import Annotated, Any, Literal, get_args, get_origin
 
 from pydantic import BaseModel
-from pydantic.fields import FieldInfo
-from pydantic_core import PydanticUndefined, PydanticUndefinedType
 
 # Import de base.py : enregistre les ops dans le namespace pydantic (model_rebuild)
 from jsonmlir.operations.op_alloc import AllocOp
@@ -65,7 +62,7 @@ ENUMS = {
 }
 
 # List of all class
-MODELS: List[Any] = [ModuleJsonOp]
+MODELS: list[Any] = [ModuleJsonOp]
 for models in ENUMS.values():
     MODELS.extend(list(models))
 MODELS.sort(key = lambda e: e.__name__)
@@ -77,7 +74,13 @@ ENUM_TS_NAMES = {
     MathOperator: "MathOperator",
 }
 
-PRIMITIVES = {str: "string", int: "number", float: "number", bool: "boolean", type(None): "null"}
+PRIMITIVES = {
+    str: "string",
+    int: "number",
+    float: "number",
+    bool: "boolean",
+    type(None): "null",
+}
 
 # Mots réservés TypeScript : autorisés comme propriété, interdits comme paramètre.
 RESERVED = {"var"}
@@ -99,12 +102,16 @@ def unwrap(ann: Any) -> Any:
         ann = get_args(ann)[0]
     return ann
 
-def union_parts(models: list[Any]) -> list[str]:
+
+def union_parts(members: list[Any]) -> list[str]:
     """replace list of models by unions type if possible"""
+    models = [m for m in members if isinstance(m, type) and issubclass(m, BaseModel)]
+
     for enum_name, enum_models in ENUMS.items():
         if set(models) == enum_models:
             return [enum_name]
-    return [ts_type(m) for m in models]
+
+    return [ts_type(m) for m in members]
 
 
 def array_of(t: str) -> str:
@@ -120,37 +127,32 @@ def ts_type(ann: Any) -> str:
     if ann in PRIMITIVES:
         return PRIMITIVES[ann]
 
-    # TyNode
-    if isinstance(ann, type) and issubclass(ann, TyNodeBase):
-        if ann.__name__ == "TyNodeBase":
+    # Classe de modèle (ordre important : Enum < TyNodeBase < BaseModel)
+    if isinstance(ann, type):
+        if issubclass(ann, Enum):
+            return ENUM_TS_NAMES[ann]
+        if issubclass(ann, TyNodeBase):
             return "TyNode"
-        return ann.__name__
-
-    # JsonOp
-    if isinstance(ann, type) and issubclass(ann, BaseModel):
-        print(f"JsonOp  : {repr(ann)}")
-        return ann.__name__
-
-    if "ValNode" in str(ann):
-        print(f"Valnode : {repr(ann)}")
-        return "JsonOp"
-
+        if issubclass(ann, BaseModel):
+            return ann.__name__
 
     origin = get_origin(ann)
+
     if origin is Literal:
         return " | ".join(json.dumps(v) for v in get_args(ann))
 
+    # ValNode[Any] (valeurs déjà générées) -> JsonOp
+    if "ValNode" in str(ann):
+        return "JsonOp"
 
     if origin in (list, Sequence, tuple):
         args = get_args(ann)
-        if not args:
-            return "unknown[]"
-        if origin is tuple and len(args) == 2 and args[1] is Ellipsis:
-            return array_of(ts_type(args[0]))
-        if origin is tuple:
+        if origin is tuple and args and args[-1] is not Ellipsis:
             return "[" + ", ".join(ts_type(a) for a in args) + "]"
-        return array_of(ts_type(args[0]))
+        elem = ts_type(args[0]) if args else "unknown"
+        return array_of(elem)
 
+    # Union (typing.Union / X | Y)
     members = list(get_args(ann))
     if members:
         parts = union_parts(members)
@@ -162,16 +164,14 @@ def ts_type(ann: Any) -> str:
     return "unknown"
 
 
-def ts_default(ann: Any, value: Any) -> str | PydanticUndefinedType:
+def ts_default(ann: Any, value: Any) -> str:
     """Valeur par défaut python -> expression TypeScript."""
-    if value is PydanticUndefined:
-        return PydanticUndefined
     if value is None:
         return "null"
     if isinstance(value, str):
         return json.dumps(value)
     if isinstance(value, Sequence):
-        return json.dumps(value)
+        return "[]"
     if isinstance(value, Enum):
         return json.dumps(value.value)
     return str(value)
@@ -206,7 +206,6 @@ def collect() -> dict[str, Any]:
     # Classes
     classes: list[dict[str, Any]] = []
     for model in MODELS:
-        print(f"========= Model {model.__name__}")
         fields: list[dict[str, Any]] = []
         for fname, field in model.model_fields.items():
 
@@ -221,7 +220,13 @@ def collect() -> dict[str, Any]:
 
             # Default value of the field
             required = field.is_required()
-            default = ts_default(field.annotation, field.default)
+            default = None
+            if not required:
+                # default factory are used by list, return default empty list
+                if field.default_factory is not None:
+                    default = "[]"
+                else:
+                    default = ts_default(field.annotation, field.default)
 
             # arg name for the constructor
             argName = name
@@ -253,7 +258,7 @@ def collect() -> dict[str, Any]:
     =================================================== """
 
 def gen_default(f: Any):
-    if f['default'] == PydanticUndefined:
+    if f['default'] is None:
         return ""
     return f" = {f['default']}"
 
@@ -269,7 +274,8 @@ def render() -> str:
     out += EOL
     out += "// Types" + EOL
     for name, values in ctx["enums"].items():
-        out += f"export type {name} = {' | '.join(json.dumps(v) for v in values)} ;" + EOL
+        literal = " | ".join(json.dumps(v) for v in values)
+        out += f"export type {name} = {literal};" + EOL
 
     # Unions
     out += EOL
@@ -294,6 +300,10 @@ def render() -> str:
 
         # Classe constructor
         args = [p for p in c["fields"] if p["argName"] is not None]
+        # Required params before optional ones (TypeScript rule)
+        required = [p for p in args if p["required"]]
+        optional = [p for p in args if not p["required"]]
+        args = required + optional
         out += EOL
         out += "\tconstructor(" + EOL
         for field in args:
@@ -308,7 +318,9 @@ def render() -> str:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Generate TypeScript classes from Pydantic AST models")
+    parser = argparse.ArgumentParser(
+        description="Generate TypeScript classes from Pydantic AST models"
+    )
     parser.add_argument("output", type=Path, help="Path to the .ts file")
     args = parser.parse_args()
     args.output.parent.mkdir(parents=True, exist_ok=True)
