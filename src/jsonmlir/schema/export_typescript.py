@@ -18,6 +18,7 @@ import json
 from collections.abc import Sequence
 from enum import Enum
 from pathlib import Path
+import subprocess
 from typing import Annotated, Any, Literal, get_args, get_origin
 
 from pydantic import BaseModel

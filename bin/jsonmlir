@@ -35,10 +35,11 @@ if $force_build \
 fi
 
 # Mount workspace
-echo "[jsonMLIR] Mount $(pwd) at /workspace" >&2
+echo "[jsonMLIR] Mount  $(pwd) at /workspace" >&2
 run_args=(
+    --userns=keep-id
     --rm
-    -v "$(pwd):/workspace"
+    -v "$(pwd):/workspace:Z"
     -v "${JSONMLIR_ROOT}:/opt/jsonMLIR"
     -w /workspace
 )
