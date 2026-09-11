@@ -18,7 +18,6 @@ import json
 from collections.abc import Sequence
 from enum import Enum
 from pathlib import Path
-import subprocess
 from typing import Annotated, Any, Literal, get_args, get_origin
 
 from pydantic import BaseModel
@@ -53,26 +52,15 @@ from jsonmlir.variables.ty.ty_struct import TyStruct
 
 # ── Registres ──────────────────────────────────────────────────────────────
 
-ENUMS = {
-    "TyNode": set([TyScalar, TyStruct, TyMemref, TyBuffer, TySOA, TyPtr, TySSA]),
-    "JsonOp": set([
+ENUM_STRING = [Scalar, OperatorOp, UnaryOperator, MathOperator]
+
+UNION_CLASS = {
+    "TyNode": [TyScalar, TyStruct, TyMemref, TyBuffer, TySOA, TyPtr, TySSA],
+    "JsonOp": [
         BinaryOp, CallOp, ConstOp, IfOp, VarOp, WhileOp,
         PrintOp, SetOp, AllocOp, AllocaOp, MathOp, UnaryOp,
-    ]),
-    "ModuleStatement": set([DefineStructOp, DefineFunctionOp, FunctionOp])
-}
-
-# List of all class
-MODELS: list[Any] = [ModuleJsonOp]
-for models in ENUMS.values():
-    MODELS.extend(list(models))
-MODELS.sort(key = lambda e: e.__name__)
-
-ENUM_TS_NAMES = {
-    Scalar: "Scalar",
-    OperatorOp: "OperatorOp",
-    UnaryOperator: "UnaryOperator",
-    MathOperator: "MathOperator",
+    ],
+    "ModuleStatement": [DefineStructOp, DefineFunctionOp, FunctionOp]
 }
 
 PRIMITIVES = {
@@ -82,6 +70,12 @@ PRIMITIVES = {
     bool: "boolean",
     type(None): "null",
 }
+
+# List of all class
+MODELS: list[Any] = [ModuleJsonOp]
+for models in UNION_CLASS.values():
+    MODELS.extend(models)
+MODELS.sort(key = lambda e: e.__name__)
 
 # Mots réservés TypeScript : autorisés comme propriété, interdits comme paramètre.
 RESERVED = {"var"}
@@ -108,8 +102,8 @@ def union_parts(members: list[Any]) -> list[str]:
     """replace list of models by unions type if possible"""
     models = [m for m in members if isinstance(m, type) and issubclass(m, BaseModel)]
 
-    for enum_name, enum_models in ENUMS.items():
-        if set(models) == enum_models:
+    for enum_name, enum_models in UNION_CLASS.items():
+        if set(models) == set(enum_models):
             return [enum_name]
 
     return [ts_type(m) for m in members]
@@ -131,7 +125,7 @@ def ts_type(ann: Any) -> str:
     # Classe de modèle (ordre important : Enum < TyNodeBase < BaseModel)
     if isinstance(ann, type):
         if issubclass(ann, Enum):
-            return ENUM_TS_NAMES[ann]
+            return ann.__name__
         if issubclass(ann, TyNodeBase):
             return "TyNode"
         if issubclass(ann, BaseModel):
@@ -185,18 +179,17 @@ def ts_default(ann: Any, value: Any) -> str:
 def collect() -> dict[str, Any]:
     """Construit le contexte de génération."""
     # Enum of string
-    enums = {
-        name: [m.value for m in cls]
-        for cls, name in ENUM_TS_NAMES.items()
+    enum = {
+        cls.__name__: " | ".join(m.value for m in cls)
+        for cls in ENUM_STRING
     }
 
     # Unions (enum of tohers types)
     unions = {
         categorie: " | ".join(m.__name__ for m in models)
-        for categorie, models in ENUMS.items()
+        for categorie, models in UNION_CLASS.items()
     }
     unions["ReturnTypes"] = "TyNode[]"
-
 
     # Tuples
     tuples = {
@@ -247,7 +240,7 @@ def collect() -> dict[str, Any]:
         })
 
     return {
-        "enums": enums,
+        "enum": enum,
         "unions": unions,
         "tuples": tuples,
         "classes": classes,
@@ -265,43 +258,35 @@ def gen_default(f: Any):
 
 
 def render() -> str:
-    """Génère le fichier TypeScript."""
     ctx = collect()
-    out: str = ""
     EOL = "\n"
+    out: str = "// Generated from Pydantic AST models — DO NOT EDIT." + EOL
 
-    # Header + enums
-    out += "// Generated from Pydantic AST models — DO NOT EDIT." + EOL
-    out += EOL
-    out += "// Types" + EOL
-    for name, values in ctx["enums"].items():
-        literal = " | ".join(json.dumps(v) for v in values)
-        out += f"export type {name} = {literal};" + EOL
+    # ── Header ───────────────────────────────────────────────
+    for header in ["enum", "unions", "tuples"]:
 
-    # Unions
-    out += EOL
-    out += "// Types union" + EOL
-    for name, body in ctx["unions"].items():
-        out += f"export type {name} = {body};" + EOL
+        out += f"// {header}" + EOL
+        for name, values in ctx[header].items():
+            literal = " | ".join(json.dumps(v) for v in values)
+            out += f"export type {name} = {literal};" + EOL
 
-    # Tuples
-    out += EOL
-    out += "// Tuples" + EOL
-    for name, body in ctx["tuples"].items():
-        out += f"export type {name} = {body};" + EOL
 
-    # Classes
-    out += EOL
-    out += "// Class" + EOL
+    # ── Classes ───────────────────────────────────────────────
+    out += EOL + "// Class" + EOL
     for c in ctx["classes"]:
-        # Classe attributs
         out += f"export class {c['name']} {{" + EOL
+
+        # 1. Emit static discriminant if 'op' or 'type' exists
+        discriminator_field = next((f for f in c["fields"] if f["name"] in DISCRIMINATORS), None)
+        if discriminator_field and discriminator_field["default"]:
+            out += f"\tstatic readonly {discriminator_field['name']} = {discriminator_field['default']};" + EOL
+
+        # 2. Emit instance fields
         for field in c["fields"]:
             out += f"\t{field['name']}: {field['type']}{gen_default(field)};" + EOL
 
-        # Classe constructor
+        # Constructor emission...
         args = [p for p in c["fields"] if p["argName"] is not None]
-        # Required params before optional ones (TypeScript rule)
         required = [p for p in args if p["required"]]
         optional = [p for p in args if not p["required"]]
         args = required + optional
@@ -314,6 +299,34 @@ def render() -> str:
             out += f"\t\tthis.{field['name']} = {field['argName']};" + EOL
         out += "\t}" + EOL
         out += "}" + EOL
+
+
+    # ── Type Guards ───────────────────────────────────────────────
+    out += EOL + "// Type Guards" + EOL
+
+    for union_name, model_set in UNION_CLASS.items():
+        # Determine discriminant field ("op" or "type") from the first model
+        sample_model = next(iter(model_set))
+        discriminant = "op" if "op" in sample_model.model_fields else "type"
+
+        # Collect and format discriminant values as JSON strings
+        tags = [
+            json.dumps(m.model_fields[discriminant].default)
+            for m in model_set
+        ]
+
+        # Identifier names
+        set_var_name = "".join(f"_{c}" if c.isupper() else c.upper() for c in union_name).lstrip("_") + "_SET"
+        guard_fn_name = f"is{union_name}"
+
+        # Emit TypeScript Set
+        out += f"const {set_var_name} = new Set([{', '.join(tags)}]);" + EOL
+
+        # Emit Type Guard Function
+        out += f"export function {guard_fn_name}(node: any): node is {union_name} {{" + EOL
+        out += f"\treturn typeof node === \"object\" && node !== null && {set_var_name}.has(node.{discriminant});" + EOL
+        out += "}" + EOL
+        out += EOL
 
     return out
 
