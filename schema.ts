@@ -5,15 +5,40 @@
 export type StructField = [string, TyNode, number, number];
 export type FunctionArg = [string, TyNode];
 export type ReturnTypes = TyNode[];
-// enum
+
+// Enum
 export type Scalar = "i64" | "i32" | "i16" | "i8" | "i1" | "I64" | "I32" | "I16" | "I8" | "I1" | "f16" | "f32" | "f64" | "f80" | "f128" | "index";
+
 export type OperatorOp = "+" | "-" | "*" | "/" | "/f" | "+f" | "-f" | "*f" | "and" | "or" | "xor" | "==" | "!=" | ">" | "<" | ">=" | "<=";
+
 export type UnaryOperator = "-" | "!";
+
 export type MathOperator = "sqrt";
-// unions
+
+// Unions
 export type TyNode = "TyScalar" | "TyStruct" | "TyMemref" | "TyBuffer" | "TySOA" | "TyPtr" | "TySSA";
+
 export type JsonOp = "BinaryOp" | "CallOp" | "ConstOp" | "IfOp" | "VarOp" | "WhileOp" | "PrintOp" | "SetOp" | "AllocOp" | "AllocaOp" | "MathOp" | "UnaryOp";
+
 export type ModuleStatement = "DefineStructOp" | "DefineFunctionOp" | "FunctionOp";
+
+
+// Type Guards
+const TY_NODE_SET = new Set(["scalar", "struct", "memref", "buffer", "soa", "ptr", "ssa"]);
+export function isTyNode(node: any): node is TyNode {
+	return typeof node === "object" && node !== null && TY_NODE_SET.has(node.type);
+}
+
+const JSON_OP_SET = new Set(["binary", "call", "const", "if", "var", "while", "print", "set", "alloc", "alloca", "math", "unary"]);
+export function isJsonOp(node: any): node is JsonOp {
+	return typeof node === "object" && node !== null && JSON_OP_SET.has(node.op);
+}
+
+const MODULE_STATEMENT_SET = new Set(["define struct", "define_function", "function"]);
+export function isModuleStatement(node: any): node is ModuleStatement {
+	return typeof node === "object" && node !== null && MODULE_STATEMENT_SET.has(node.op);
+}
+
 
 // Class
 export class AllocOp {
@@ -71,11 +96,11 @@ export class CallOp {
 	static readonly op = "call";
 	op: "call" = "call";
 	name: string;
-	args: JsonOp[] = [];
+	args: (BinaryOp | CallOp | ConstOp | IfOp | VarOp | WhileOp | PrintOp | SetOp | AllocOp | AllocaOp | MathOp | UnaryOp | NotSupportedOp)[] = [];
 
 	constructor(
 		name: string,
-		args: JsonOp[] = [],
+		args: (BinaryOp | CallOp | ConstOp | IfOp | VarOp | WhileOp | PrintOp | SetOp | AllocOp | AllocaOp | MathOp | UnaryOp | NotSupportedOp)[] = [],
 	) {
 		this.name = name;
 		this.args = args;
@@ -132,12 +157,12 @@ export class FunctionOp {
 	op: "function" = "function";
 	name: string;
 	args: [string, TyNode][] = [];
-	body: JsonOp[] = [];
+	body: (BinaryOp | CallOp | ConstOp | IfOp | VarOp | WhileOp | PrintOp | SetOp | AllocOp | AllocaOp | MathOp | UnaryOp | NotSupportedOp)[] = [];
 
 	constructor(
 		name: string,
 		args: [string, TyNode][] = [],
-		body: JsonOp[] = [],
+		body: (BinaryOp | CallOp | ConstOp | IfOp | VarOp | WhileOp | PrintOp | SetOp | AllocOp | AllocaOp | MathOp | UnaryOp | NotSupportedOp)[] = [],
 	) {
 		this.name = name;
 		this.args = args;
@@ -147,14 +172,14 @@ export class FunctionOp {
 export class IfOp {
 	static readonly op = "if";
 	op: "if" = "if";
-	cond: JsonOp;
-	thenBlock: JsonOp[];
-	elseBlock: JsonOp[] | null = null;
+	cond: BinaryOp | CallOp | ConstOp | IfOp | VarOp | WhileOp | PrintOp | SetOp | AllocOp | AllocaOp | MathOp | UnaryOp | NotSupportedOp;
+	thenBlock: (BinaryOp | CallOp | ConstOp | IfOp | VarOp | WhileOp | PrintOp | SetOp | AllocOp | AllocaOp | MathOp | UnaryOp | NotSupportedOp)[];
+	elseBlock: (BinaryOp | CallOp | ConstOp | IfOp | VarOp | WhileOp | PrintOp | SetOp | AllocOp | AllocaOp | MathOp | UnaryOp | NotSupportedOp)[] | null = null;
 
 	constructor(
-		cond: JsonOp,
-		thenBlock: JsonOp[],
-		elseBlock: JsonOp[] | null = null,
+		cond: BinaryOp | CallOp | ConstOp | IfOp | VarOp | WhileOp | PrintOp | SetOp | AllocOp | AllocaOp | MathOp | UnaryOp | NotSupportedOp,
+		thenBlock: (BinaryOp | CallOp | ConstOp | IfOp | VarOp | WhileOp | PrintOp | SetOp | AllocOp | AllocaOp | MathOp | UnaryOp | NotSupportedOp)[],
+		elseBlock: (BinaryOp | CallOp | ConstOp | IfOp | VarOp | WhileOp | PrintOp | SetOp | AllocOp | AllocaOp | MathOp | UnaryOp | NotSupportedOp)[] | null = null,
 	) {
 		this.cond = cond;
 		this.thenBlock = thenBlock;
@@ -165,11 +190,11 @@ export class MathOp {
 	static readonly op = "math";
 	op: "math" = "math";
 	ope: MathOperator;
-	value: JsonOp;
+	value: BinaryOp | CallOp | ConstOp | IfOp | VarOp | WhileOp | PrintOp | SetOp | AllocOp | AllocaOp | MathOp | UnaryOp | NotSupportedOp;
 
 	constructor(
 		ope: MathOperator,
-		value: JsonOp,
+		value: BinaryOp | CallOp | ConstOp | IfOp | VarOp | WhileOp | PrintOp | SetOp | AllocOp | AllocaOp | MathOp | UnaryOp | NotSupportedOp,
 	) {
 		this.ope = ope;
 		this.value = value;
@@ -189,10 +214,10 @@ export class ModuleJsonOp {
 export class PrintOp {
 	static readonly op = "print";
 	op: "print" = "print";
-	value: JsonOp;
+	value: BinaryOp | CallOp | ConstOp | IfOp | VarOp | WhileOp | PrintOp | SetOp | AllocOp | AllocaOp | MathOp | UnaryOp | NotSupportedOp;
 
 	constructor(
-		value: JsonOp,
+		value: BinaryOp | CallOp | ConstOp | IfOp | VarOp | WhileOp | PrintOp | SetOp | AllocOp | AllocaOp | MathOp | UnaryOp | NotSupportedOp,
 	) {
 		this.value = value;
 	}
@@ -201,11 +226,11 @@ export class SetOp {
 	static readonly op = "set";
 	op: "set" = "set";
 	var: VarOp;
-	val: JsonOp;
+	val: BinaryOp | CallOp | ConstOp | IfOp | VarOp | WhileOp | PrintOp | SetOp | AllocOp | AllocaOp | MathOp | UnaryOp | NotSupportedOp;
 
 	constructor(
 		var_: VarOp,
-		val: JsonOp,
+		val: BinaryOp | CallOp | ConstOp | IfOp | VarOp | WhileOp | PrintOp | SetOp | AllocOp | AllocaOp | MathOp | UnaryOp | NotSupportedOp,
 	) {
 		this.var = var_;
 		this.val = val;
@@ -298,11 +323,11 @@ export class UnaryOp {
 	static readonly op = "unary";
 	op: "unary" = "unary";
 	ope: UnaryOperator;
-	value: JsonOp;
+	value: BinaryOp | CallOp | ConstOp | IfOp | VarOp | WhileOp | PrintOp | SetOp | AllocOp | AllocaOp | MathOp | UnaryOp | NotSupportedOp;
 
 	constructor(
 		ope: UnaryOperator,
-		value: JsonOp,
+		value: BinaryOp | CallOp | ConstOp | IfOp | VarOp | WhileOp | PrintOp | SetOp | AllocOp | AllocaOp | MathOp | UnaryOp | NotSupportedOp,
 	) {
 		this.ope = ope;
 		this.value = value;
@@ -326,31 +351,14 @@ export class VarOp {
 export class WhileOp {
 	static readonly op = "while";
 	op: "while" = "while";
-	cond: JsonOp;
-	thenBlock: JsonOp[] = [];
+	cond: BinaryOp | CallOp | ConstOp | IfOp | VarOp | WhileOp | PrintOp | SetOp | AllocOp | AllocaOp | MathOp | UnaryOp | NotSupportedOp;
+	thenBlock: (BinaryOp | CallOp | ConstOp | IfOp | VarOp | WhileOp | PrintOp | SetOp | AllocOp | AllocaOp | MathOp | UnaryOp | NotSupportedOp)[] = [];
 
 	constructor(
-		cond: JsonOp,
-		thenBlock: JsonOp[] = [],
+		cond: BinaryOp | CallOp | ConstOp | IfOp | VarOp | WhileOp | PrintOp | SetOp | AllocOp | AllocaOp | MathOp | UnaryOp | NotSupportedOp,
+		thenBlock: (BinaryOp | CallOp | ConstOp | IfOp | VarOp | WhileOp | PrintOp | SetOp | AllocOp | AllocaOp | MathOp | UnaryOp | NotSupportedOp)[] = [],
 	) {
 		this.cond = cond;
 		this.thenBlock = thenBlock;
 	}
 }
-
-// Type Guards
-const TY_NODE_SET = new Set(["scalar", "struct", "memref", "buffer", "soa", "ptr", "ssa"]);
-export function isTyNode(node: any): node is TyNode {
-	return typeof node === "object" && node !== null && TY_NODE_SET.has(node.type);
-}
-
-const JSON_OP_SET = new Set(["binary", "call", "const", "if", "var", "while", "print", "set", "alloc", "alloca", "math", "unary"]);
-export function isJsonOp(node: any): node is JsonOp {
-	return typeof node === "object" && node !== null && JSON_OP_SET.has(node.op);
-}
-
-const MODULE_STATEMENT_SET = new Set(["define struct", "define_function", "function"]);
-export function isModuleStatement(node: any): node is ModuleStatement {
-	return typeof node === "object" && node !== null && MODULE_STATEMENT_SET.has(node.op);
-}
-

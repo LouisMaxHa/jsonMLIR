@@ -14,12 +14,14 @@ T = TypeVar("T", bound=TyNodeBase)
 _F = TypeVar("_F", bound=Callable[..., Any])
 
 
+# Decorateur pour indiquer que cette méthode doit être affichée dans la trace disponible avec -T
 def auto_log(log_format: str) -> Callable[[_F], _F]:
     def wrapper(func: _F) -> _F:
         setattr(func, "_log_format", log_format)
         return func
     return wrapper
 
+# Valeur = Type + autres informations (addr mémoire, ...)
 class ValNode(ABC, Generic[T]):
     ty: T
 
@@ -50,19 +52,26 @@ class ValNode(ABC, Generic[T]):
             setattr(cls, name, wrapped)
 
     # ──────────── Getter ────────────
+    """Return the Json type of the value"""
     def get_ty(self) -> T:
         return self.ty
+
+    """Return the MLIR type of the value"""
+    def get_type(self) -> Type:
+        return self.ty.get_type()
 
     def __repr__(self) -> str:
         return f"Val{self.get_ty()!r}"
 
-    def get_type(self) -> Type:
-        return self.ty.get_type()
-
+    """Get value dimension, ([] for index, [1] for ptr, [x, y, ...] for array)"""
     @abstractmethod
     def get_dim(self) -> Sequence[Value]:
         raise NotImplementedError
 
+    # ──────────── Get SSA ────────────
+    """Return SSA value to pass to other other functions.
+    This function can take index and will resolve the corresponding SSA value
+    of the pointed elements."""
     def get_SSA(
         self, index: Sequence[str | Value | int]
     ) -> Value:
@@ -71,6 +80,7 @@ class ValNode(ABC, Generic[T]):
             return self._get_SSA()
         return self.load(index)._get_SSA()
 
+    """Internat version for get_SSA, called when index array is empty (base case of the recursive call on index)."""
     @abstractmethod
     def _get_SSA(
         self,
@@ -78,6 +88,7 @@ class ValNode(ABC, Generic[T]):
         raise NotImplementedError
 
     # ──────────── Load ────────────
+    # Same that get_ssa, but return Valnode
     def load(
         self,
         index: Sequence[str | Value | int],
@@ -93,6 +104,7 @@ class ValNode(ABC, Generic[T]):
         raise NotImplementedError
 
     # ──────────── Store ────────────
+    # Same that load but to set element
     def store(
         self,
         index: Sequence[str | Value | int],
@@ -108,9 +120,3 @@ class ValNode(ABC, Generic[T]):
         source: ValNode[Any],
     ) -> None:
         raise NotImplementedError
-
-
-# Un nœud dont le type statique est inconnu (collections hétérogènes,
-# résultats de codegen, etc.). ``ValNode`` est invariant en ``T`` (attribut
-# ``ty`` mutable) : ``Any`` est le seul paramètre acceptant tous les
-# ``ValNode[TyX]`` concrets.

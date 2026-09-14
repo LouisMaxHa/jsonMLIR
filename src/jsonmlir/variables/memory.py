@@ -5,10 +5,10 @@ from typing import TYPE_CHECKING, Any, NamedTuple
 from mlir.ir import Type
 
 from jsonmlir.variables.struct_field import StructField
-from jsonmlir.variables.val.val import ValNode
 
 if TYPE_CHECKING:
     from jsonmlir.variables.ty.ty import TyNode
+    from jsonmlir.variables.val.val import ValNode
 
 
 

@@ -271,6 +271,32 @@ def render() -> str:
             literal = " | ".join(json.dumps(v) for v in values)
             out += f"export type {name} = {literal};" + EOL + EOL
 
+    # ── Type Guards ───────────────────────────────────────────────
+    out += EOL + "// Type Guards" + EOL
+
+    for union_name, model_set in UNION_CLASS.items():
+        # Determine discriminant field ("op" or "type") from the first model
+        sample_model = next(iter(model_set))
+        discriminant = "op" if "op" in sample_model.model_fields else "type"
+
+        # Collect and format discriminant values as JSON strings
+        tags = [
+            json.dumps(m.model_fields[discriminant].default)
+            for m in model_set
+        ]
+
+        # Identifier names
+        set_var_name = "".join(f"_{c}" if c.isupper() else c.upper() for c in union_name).lstrip("_") + "_SET"
+        guard_fn_name = f"is{union_name}"
+
+        # Emit TypeScript Set
+        out += f"const {set_var_name} = new Set([{', '.join(tags)}]);" + EOL
+
+        # Emit Type Guard Function
+        out += f"export function {guard_fn_name}(node: any): node is {union_name} {{" + EOL
+        out += f"\treturn typeof node === \"object\" && node !== null && {set_var_name}.has(node.{discriminant});" + EOL
+        out += "}" + EOL
+        out += EOL
 
     # ── Classes ───────────────────────────────────────────────
     out += EOL + "// Class" + EOL
@@ -301,33 +327,6 @@ def render() -> str:
         out += "\t}" + EOL
         out += "}" + EOL
 
-
-    # ── Type Guards ───────────────────────────────────────────────
-    out += EOL + "// Type Guards" + EOL
-
-    for union_name, model_set in UNION_CLASS.items():
-        # Determine discriminant field ("op" or "type") from the first model
-        sample_model = next(iter(model_set))
-        discriminant = "op" if "op" in sample_model.model_fields else "type"
-
-        # Collect and format discriminant values as JSON strings
-        tags = [
-            json.dumps(m.model_fields[discriminant].default)
-            for m in model_set
-        ]
-
-        # Identifier names
-        set_var_name = "".join(f"_{c}" if c.isupper() else c.upper() for c in union_name).lstrip("_") + "_SET"
-        guard_fn_name = f"is{union_name}"
-
-        # Emit TypeScript Set
-        out += f"const {set_var_name} = new Set([{', '.join(tags)}]);" + EOL
-
-        # Emit Type Guard Function
-        out += f"export function {guard_fn_name}(node: any): node is {union_name} {{" + EOL
-        out += f"\treturn typeof node === \"object\" && node !== null && {set_var_name}.has(node.{discriminant});" + EOL
-        out += "}" + EOL
-        out += EOL
 
     return out
 
