@@ -276,8 +276,8 @@ def print_summary(results: list[ResultInfo]) -> None:
     console.print(
         f"\n[bold]Benchmark[/bold]: "
         f"[{summary_style}]{passed}/{len(results)} passed[/] "
-        f"— total [magenta]{_format_duration(total_time)}[/] "
-        f"— slowest [yellow]{slowest.name}[/] "
+        f"- total [magenta]{_format_duration(total_time)}[/] "
+        f"- slowest [yellow]{slowest.name}[/] "
         f"([magenta]{_format_duration(slowest.elapsed_s)}[/])"
     )
 

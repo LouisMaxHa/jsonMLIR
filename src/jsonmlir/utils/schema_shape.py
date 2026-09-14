@@ -3,7 +3,7 @@
 Appliqué via ``ConfigDict(json_schema_extra=...)`` sur les bases ``OpNode`` et
 ``TyNodeBase`` : le schéma généré par Pydantic expose alors des objets stricts
 (``additionalProperties: false``) et des discriminants ``op`` / ``type``
-obligatoires sans défaut — sans changer le comportement de validation Python.
+obligatoires sans défaut - sans changer le comportement de validation Python.
 """
 
 from __future__ import annotations

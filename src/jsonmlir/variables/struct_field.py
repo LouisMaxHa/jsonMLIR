@@ -11,9 +11,11 @@ class StructField(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     name: str
-    type: Any  # TyNode union — résolu à l'exécution pour éviter les imports circulaires
+    type: Any  # TyNode union - résolu à l'exécution pour éviter les imports circulaires
     offset: int
     size: int
+
+    # Theses functions are for pydantic parsing / encoding
 
     @model_validator(mode="before")
     @classmethod

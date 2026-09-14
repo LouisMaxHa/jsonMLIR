@@ -4,7 +4,7 @@ This project lets you generate specialized shared libraries using MLIR, based on
 The generated libraries can then be called from your codebase without having to write a complex front-end for your solution.
 
 Unlike working directly with MLIR, the JSON description provides an extra level of abstraction allowing you to manipulate array, ptr, struct and array of pointer to struct !
-This solution is designed to be generic, modular, and accessible — make sure you have a good understanding of each operation before using it.
+This solution is designed to be generic, modular, and accessible - make sure you have a good understanding of each operation before using it.
 
 
 ## Installation

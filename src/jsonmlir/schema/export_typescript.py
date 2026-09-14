@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""PoC 1 — Génération de classes TypeScript directement depuis les modèles Pydantic.
+"""PoC 1 - Génération de classes TypeScript directement depuis les modèles Pydantic.
 
 Remplace le pipeline ``json_schema.json + json-schema-to-typescript`` :
   - plus besoin de ``clean_ast_schema_for_ts`` (export_typescript.py),
@@ -18,7 +18,7 @@ import json
 from collections.abc import Sequence
 from enum import Enum
 from pathlib import Path
-from typing import Annotated, Any, Literal, get_args, get_origin
+from typing import Annotated, Any, Literal, cast, get_args, get_origin
 
 from pydantic import BaseModel
 
@@ -53,7 +53,7 @@ from jsonmlir.variables.ty.ty_struct import TyStruct
 # ── Registres ──────────────────────────────────────────────────────────────
 
 CONST_HEADER = """
-// Generated from Pydantic AST models — DO NOT EDIT.
+// Generated from Pydantic AST models - DO NOT EDIT.
 
 // Manual alias
 export type StructField = [string, TyNode, number, number];
@@ -147,7 +147,7 @@ def ts_type(ann: Any) -> str:
         return " | ".join(json.dumps(v) for v in get_args(ann))
 
     # ValNode[Any] (valeurs déjà générées) -> JsonOp
-    if "ValNode" in str(ann):
+    if "ValNode" in str(cast(Any, ann)):
         return "JsonOp"
 
     if origin in (list, Sequence, tuple):

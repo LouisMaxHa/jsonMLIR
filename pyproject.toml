@@ -42,6 +42,7 @@ dev = [
 [tool.pyright]
 venvPath = "."
 venv = ".venv"
+pythonVersion = "3.13"
 enableExperimentalFeatures = true
 reportAssertAlwaysTrue = true
 reportUnnecessaryCast = true

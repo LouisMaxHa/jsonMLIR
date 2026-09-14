@@ -13,7 +13,7 @@ from jsonmlir.variables.val.val import ValNode
 class DefineFunctionOp(OpNode):
     """Déclare la signature d'une fonction (nom, types d'entrée, types de sortie).
 
-    Ne génère aucun IR — alimente uniquement le registre global utilisé par
+    Ne génère aucun IR - alimente uniquement le registre global utilisé par
     CallOp pour résoudre les types de retour et vérifier les types des arguments.
     """
 

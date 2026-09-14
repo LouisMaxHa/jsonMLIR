@@ -1,4 +1,4 @@
-"""jsonMLIR — a JSON/YAML → MLIR → LLVM compiler.
+"""jsonMLIR - a JSON/YAML → MLIR → LLVM compiler.
 
 The package version is derived from the repository by ``hatch-vcs`` and recorded
 in the installed distribution metadata. When the package is imported from an

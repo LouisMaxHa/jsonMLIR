@@ -10,9 +10,8 @@ from jsonmlir.utils.schema_shape import ast_schema_extra
 
 """ABC commune aux types valeur (scalaires, struct, array).
 
-Les types concrets forment une union discriminée ``TyNode`` sur le champ
-``type``. Les formes historiques restent acceptées via :func:`parse_ty`
-à la frontière JSON.
+Les types concrets forment une union discriminée ``TyNode`` sur le champ ``type``.
+Les formes historiques restent acceptées via `parse_ty` à la frontière JSON.
 """
 
 class TyNodeBase(BaseModel, ABC):
@@ -25,12 +24,17 @@ class TyNodeBase(BaseModel, ABC):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         if args:
+            # We allow passing instance params with unamed or named argument.
+
+            # Start by checking if we have the correct number of arguments
             names = [f for f in type(self).model_fields if f != "type"]
             if len(args) > len(names):
                 raise TypeError(
                     f"{type(self).__name__} accepte au plus {len(names)} "
                     f"arguments positionnels, {len(args)} reçus"
                 )
+
+            # Writtes args (unamed arguments) into named arguments
             for name, value in zip(names, args):
                 if name in kwargs:
                     raise TypeError(
@@ -38,12 +42,17 @@ class TyNodeBase(BaseModel, ABC):
                         "positionnel et en mot-clé"
                     )
                 kwargs[name] = value
+
+        # Instanciate
         super().__init__(**kwargs)
 
+    """Return the MLIR type (Arith.const, Memref)"""
     @abstractmethod
     def get_type(self) -> Type:
         raise NotImplementedError
 
+    """Return the memref version of the value.
+    Ex: Const are in fact memref<f64> rather than f64 to allow mutability"""
     @abstractmethod
     def get_memref_type(self) -> MemRefType:
         raise NotImplementedError
