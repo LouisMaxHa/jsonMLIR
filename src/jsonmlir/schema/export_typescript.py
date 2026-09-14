@@ -52,6 +52,16 @@ from jsonmlir.variables.ty.ty_struct import TyStruct
 
 # ── Registres ──────────────────────────────────────────────────────────────
 
+CONST_HEADER = """
+// Generated from Pydantic AST models — DO NOT EDIT.
+
+// Manual alias
+export type StructField = [string, TyNode, number, number];
+export type FunctionArg = [string, TyNode];
+export type ReturnTypes = TyNode[];
+
+"""
+
 ENUM_STRING = [Scalar, OperatorOp, UnaryOperator, MathOperator]
 
 UNION_CLASS = {
@@ -180,21 +190,14 @@ def collect() -> dict[str, Any]:
     """Construit le contexte de génération."""
     # Enum of string
     enum = {
-        cls.__name__: " | ".join(m.value for m in cls)
+        cls.__name__: [m.value for m in cls]
         for cls in ENUM_STRING
     }
 
-    # Unions (enum of tohers types)
+    # Unions (enum of class)
     unions = {
-        categorie: " | ".join(m.__name__ for m in models)
+        categorie: [m.__name__ for m in models]
         for categorie, models in UNION_CLASS.items()
-    }
-    unions["ReturnTypes"] = "TyNode[]"
-
-    # Tuples
-    tuples = {
-        "StructField": "[string, TyNode, number, number]",
-        "FunctionArg": "[string, TyNode]",
     }
 
     # Classes
@@ -242,7 +245,6 @@ def collect() -> dict[str, Any]:
     return {
         "enum": enum,
         "unions": unions,
-        "tuples": tuples,
         "classes": classes,
     }
 
@@ -260,15 +262,14 @@ def gen_default(f: Any):
 def render() -> str:
     ctx = collect()
     EOL = "\n"
-    out: str = "// Generated from Pydantic AST models — DO NOT EDIT." + EOL
+    out: str = CONST_HEADER
 
     # ── Header ───────────────────────────────────────────────
-    for header in ["enum", "unions", "tuples"]:
-
-        out += f"// {header}" + EOL
+    for header in ["enum", "unions"]:
+        out += f"// {header.capitalize()}" + EOL
         for name, values in ctx[header].items():
             literal = " | ".join(json.dumps(v) for v in values)
-            out += f"export type {name} = {literal};" + EOL
+            out += f"export type {name} = {literal};" + EOL + EOL
 
 
     # ── Classes ───────────────────────────────────────────────

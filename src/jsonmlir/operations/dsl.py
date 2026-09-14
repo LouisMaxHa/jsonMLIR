@@ -29,6 +29,7 @@ from jsonmlir.operations.op_define_struct import DefineStructOp
 from jsonmlir.operations.op_function import FunctionOp
 from jsonmlir.operations.op_math import MathOp, MathOperator
 from jsonmlir.operations.op_module import ModuleJsonOp, ModuleStatement
+from jsonmlir.operations.op_not_supported import NotSupportedOp
 from jsonmlir.operations.op_operator import OperatorOp
 from jsonmlir.operations.op_print import PrintOp
 from jsonmlir.operations.op_set import SetOp
@@ -86,7 +87,6 @@ def DefineStruct(
         fields=[_parse_field(field) for field in fields],
     )
 
-
 def DefineFunction(
     name: str,
     args: Sequence[tuple[str, TyNode]] = (),
@@ -115,7 +115,6 @@ def Function(
 ) -> FunctionOp:
     return FunctionOp(name=name, args=args, body=body)
 
-
 def Var(
     name: str,
     indices: Sequence[int | str | VarOp] = (),
@@ -128,13 +127,11 @@ def Var(
         type=_parse_ty(type) if isinstance(type, str) else type,
     )
 
-
 def Const(
     val: float | int,
     type: str | Scalar = Scalar.i64,
 ) -> ConstOp:
     return ConstOp(val=val, type=_parse_scalar(type))
-
 
 def Binary(
     ope: str | OperatorOp,
@@ -143,17 +140,14 @@ def Binary(
 ) -> BinaryOp:
     return BinaryOp(lhs=lhs, rhs=rhs, ope=_parse_ope(ope))
 
-
 def Unary(
     ope: str | UnaryOperator,
     value: BaseValue,
 ) -> UnaryOp:
     return UnaryOp(ope=_parse_ope_unary(ope), value=value)
 
-
 def Set(var: VarOp, val: BinaryOp | ConstOp | VarOp | CallOp | UnaryOp) -> SetOp:
     return SetOp(var=var, val=val)
-
 
 def While(
     cond: BaseValue,
@@ -161,14 +155,12 @@ def While(
 ) -> WhileOp:
     return WhileOp(cond=cond, thenBlock=thenBlock)
 
-
 def If(
     cond: BaseValue,
     thenBlock: Sequence[BaseValue],
     elseBlock: Sequence[BaseValue] | None = None,
 ) -> IfOp:
     return IfOp(cond=cond, thenBlock=thenBlock, elseBlock=elseBlock)
-
 
 def Call(
     name: str,
@@ -182,6 +174,8 @@ def Math(
 ) -> MathOp:
     return MathOp(ope=_parse_ope_math(ope), value=value)
 
-
 def Print(value: BaseValue) -> PrintOp:
     return PrintOp(value=value)
+
+def NotSupported(msg: str) -> NotSupportedOp:
+    return NotSupportedOp(msg=msg)

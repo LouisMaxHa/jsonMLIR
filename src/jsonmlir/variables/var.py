@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from mlir.ir import Type, Value
 
@@ -10,6 +10,7 @@ from jsonmlir.utils.discard_builder import discard_builder
 from jsonmlir.utils.enum_scalars import Scalar
 from jsonmlir.variables.memory import variables_heap
 from jsonmlir.variables.ty.ty import TyNode
+from jsonmlir.variables.val.val import ValNode
 
 if TYPE_CHECKING:
     from jsonmlir.operations.op_var import VarOp

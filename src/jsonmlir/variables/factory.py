@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import cast
+from typing import Any, cast
 
 from mlir.ir import Value
 
@@ -16,6 +16,7 @@ from jsonmlir.variables.ty.ty_scalar import TyScalar
 from jsonmlir.variables.ty.ty_SOA import TySOA
 from jsonmlir.variables.ty.ty_SSA import TySSA
 from jsonmlir.variables.ty.ty_struct import TyStruct
+from jsonmlir.variables.val.val import ValNode
 from jsonmlir.variables.val.val_buffer import ValBuffer
 from jsonmlir.variables.val.val_memref import ValMemref
 from jsonmlir.variables.val.val_ptr import ValPtr

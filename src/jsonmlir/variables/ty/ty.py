@@ -81,9 +81,11 @@ from jsonmlir.variables.ty.ty_scalar import TyScalar
 from jsonmlir.variables.ty.ty_SOA import TySOA
 from jsonmlir.variables.ty.ty_SSA import TySSA
 from jsonmlir.variables.ty.ty_struct import TyStruct
+from jsonmlir.variables.ty.ty_not_supported import TyNotSupported
+
 
 union = Annotated[
-    TyScalar | TyStruct | TyMemref | TyBuffer | TySOA | TyPtr | TySSA,
+    TyScalar | TyStruct | TyMemref | TyBuffer | TySOA | TyPtr | TySSA | TyNotSupported,
     Field(discriminator="type"),
 ]
 
@@ -105,7 +107,7 @@ else:
     TyNode = Annotated[union, BeforeValidator(_coerce_ty_node)]
 
 
-"""Construit le type correspondant à une description JSON (y compris legacy)."""
+"""Construit le type correspondant à une description JSON"""
 def parse_ty(value: Any | TyNode) -> TyNode:
 
     # Si notre type implémente TyNodeBase, on peut le cast parmis l'union des
@@ -135,6 +137,6 @@ def parse_ty(value: Any | TyNode) -> TyNode:
                 if key in value_dict:
                     return {"type": "struct", "name": value_dict[key]}
 
-        return {"legacy": value}
+        return {"type": "notSupported", "msg":value}
 
     return _get_ty_union_adapter().validate_python(convert_to_dict(value))

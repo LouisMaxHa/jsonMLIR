@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import Any
 
 from mlir.dialects import memref
 from mlir.ir import MemRefType, Value
