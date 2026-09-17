@@ -1,0 +1,166 @@
+{
+  "op": "module",
+  "body": [
+    {
+      "op": "define struct",
+      "name": "mdspan",
+      "size": 16,
+      "fields": [
+        [
+          "data",
+          {
+            "type": "ptr",
+            "base": {
+              "type": "memref",
+              "dims": [
+                null
+              ],
+              "base": "i64"
+            }
+          },
+          0,
+          8
+        ],
+        [
+          "size",
+          "i32",
+          12,
+          4
+        ]
+      ]
+    },
+    {
+      "op": "function",
+      "name": "lib_main",
+      "args": [
+        [
+          "span",
+          {
+            "type": "ptr",
+            "base": {
+              "type": "struct",
+              "name": "mdspan"
+            }
+          }
+        ]
+      ],
+      "body": [
+        {
+          "op": "set",
+          "var": {
+            "op": "var",
+            "name": "buffer",
+            "type": {
+              "type": "memref",
+              "dims": [
+                null
+              ],
+              "base": "i64"
+            }
+          },
+          "val": {
+            "op": "var",
+            "name": "span",
+            "indices": [
+              "*",
+              "data",
+              "*"
+            ]
+          }
+        },
+        {
+          "op": "set",
+          "var": {
+            "op": "var",
+            "name": "i",
+            "type": "i32"
+          },
+          "val": {
+            "op": "const",
+            "val": 0,
+            "type": "i32"
+          }
+        },
+        {
+          "op": "while",
+          "cond": {
+            "op": "binary",
+            "ope": "<",
+            "lhs": {
+              "op": "var",
+              "name": "i"
+            },
+            "rhs": {
+              "op": "var",
+              "name": "span",
+              "indices": [
+                "*",
+                "size"
+              ]
+            }
+          },
+          "thenBlock": [
+            {
+              "op": "set",
+              "var": {
+                "op": "var",
+                "name": "buffer",
+                "indices": [
+                  {
+                    "name": "i"
+                  }
+                ]
+              },
+              "val": {
+                "op": "binary",
+                "ope": "+",
+                "lhs": {
+                  "op": "var",
+                  "name": "buffer",
+                  "indices": [
+                    {
+                      "name": "i"
+                    }
+                  ]
+                },
+                "rhs": {
+                  "op": "const",
+                  "val": 1,
+                  "type": "i64"
+                }
+              }
+            },
+            {
+              "op": "set",
+              "var": {
+                "op": "var",
+                "name": "i"
+              },
+              "val": {
+                "op": "binary",
+                "ope": "+",
+                "lhs": {
+                  "op": "var",
+                  "name": "i"
+                },
+                "rhs": {
+                  "op": "const",
+                  "val": 1,
+                  "type": "i32"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "op": "var",
+          "name": "span",
+          "indices": [
+            "*",
+            "size"
+          ]
+        }
+      ]
+    }
+  ]
+}
