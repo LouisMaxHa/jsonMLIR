@@ -1,14 +1,14 @@
-"""Factory centralisée : création et enregistrement des ValNodes dans le heap."""
+"""Factory centralisée : création des valeurs"""
 
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Any, cast
+from typing import Any
 
 from mlir.ir import Value
 
 from jsonmlir.utils.trace import trace_step
-from jsonmlir.variables.ty.ty import TyNode, TyNodeBase
+from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_buffer import TyBuffer
 from jsonmlir.variables.ty.ty_memref import TyMemref
 from jsonmlir.variables.ty.ty_ptr import TyPtr
@@ -30,23 +30,21 @@ class Factory:
     @staticmethod
     @trace_step("Factory.from_val", display_entry=True)
     def from_val(type: TyNode, value: ValNode[Any]) -> ValNode[Any]:
-        # cast vers TyNodeBase : le match sur l'union fermée TyNode est
-        # exhaustif, mais on garde le cas défensif pour les entrées invalides.
-        match cast(TyNodeBase, type):
+        match type:
             case TyPtr():
                 return ValPtr.init_from(type, value)
             case TySSA():
                 return ValSSA.init_from(type, value)
             case TyScalar():
                 return ValScalar.init_from(type, value)
-            case TyMemref() | TyBuffer():
-                return Factory.generic_memref(type.dimensions, type.base, value)
             case TySOA():
                 return ValSOA.init_from(type, value)
             case TyStruct():
                 return ValStruct.init_from(type, value)
+            case TyMemref() | TyBuffer():
+                return Factory.generic_memref(type.dimensions, type.base, value)
             case _:
-                raise ValueError("From val: Type not handled")
+                raise ValueError(f"From val: {type} not handled")
 
     @staticmethod
     @trace_step("Factory.from_SSA", display_entry=True)

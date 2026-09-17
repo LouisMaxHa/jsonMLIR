@@ -45,7 +45,7 @@ class ValSOA(ValNode[TySOA]):
         raise NotImplementedError
 
     def get_SSA(
-        self, index: Sequence[str | Value | int]
+        self, index: Sequence[str | Value | int] = []
     ) -> Value:
         assert len(index) >= 1
         assert isinstance(index[0], str)
@@ -59,7 +59,7 @@ class ValSOA(ValNode[TySOA]):
         self,
     ) -> Value:
         raise ValueError(
-            "ValScalar don't have SSA equivalent.Use get_SSA with attribut str"
+            "ValScalar don't have SSA equivalent. Use get_SSA with at least one index"
         )
 
     # ──────────── Load ────────────

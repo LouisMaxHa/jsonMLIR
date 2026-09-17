@@ -24,7 +24,7 @@ class ValBuffer(ValNode[TyBuffer]):
     def __init__(
         self, ty: TyBuffer, addr: Value
     ):
-        assert len(self.ty.dimensions) >= 1
+        assert len(ty.dimensions) >= 1
         assert_same_type(addr.type, ty.get_type())
         self.addr = addr
         self.ty = ty
@@ -210,5 +210,5 @@ class ValBuffer(ValNode[TyBuffer]):
         return Factory.generic_memref(
             [dimension],
             field_info.type,
-            cast_op.result
+            ValSSA(cast_op.result)
         )

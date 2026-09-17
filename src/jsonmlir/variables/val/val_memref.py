@@ -15,6 +15,7 @@ from jsonmlir.variables.ty.ty_memref import TyMemref
 from jsonmlir.variables.ty.ty_SSA import TySSA
 from jsonmlir.variables.ty.ty_struct import TyStruct
 from jsonmlir.variables.val.val import ValNode
+from jsonmlir.variables.val.val_SSA import ValSSA
 
 
 class ValMemref(ValNode[TyMemref]):
@@ -31,13 +32,13 @@ class ValMemref(ValNode[TyMemref]):
     def init_from(ty: TyMemref, source: ValNode[Any]) -> ValMemref:
         assert not isinstance(ty.base, TyStruct), "Memref of struct should use buffer"
 
-        match source.get_ty():
-            case TyMemref():
+        match source:
+            case ValMemref():
                 return ValMemref(ty, source.get_SSA([]))
-            case TySSA():
+            case ValSSA():
                 return ValMemref(ty, source.get_SSA([]))
             case _:
-                raise ValueError("Not supported")
+                raise ValueError(f"Source {source} not supported")
 
     def __repr__(self) -> str:
         return f"ValMemref(addr, {self.ty!r})"
