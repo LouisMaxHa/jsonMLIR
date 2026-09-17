@@ -8,6 +8,8 @@ from mlir.ir import MemRefType, ShapedType, StridedLayoutAttr, Value
 
 from jsonmlir.utils import ssa_val
 from jsonmlir.utils.enum_scalars import Scalar
+from jsonmlir.utils.same_types import assert_same_type
+from jsonmlir.utils.ssa_check import all_ssavalues
 from jsonmlir.utils.ssa_dim import dimensions_to_ssa
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.ty.ty import TyNode
@@ -22,13 +24,10 @@ class ValBuffer(ValNode[TyBuffer]):
     def __init__(
         self, ty: TyBuffer, addr: Value
     ):
-        assert addr.type == ty.get_type(), f"addr SSAValue type {addr.type} \
-            does not match expected {ty.get_type()}"
-
+        assert len(self.ty.dimensions) >= 1
+        assert_same_type(addr.type, ty.get_type())
         self.addr = addr
         self.ty = ty
-
-        assert len(self.ty.dimensions) >= 1
 
     def __repr__(self) -> str:
         return f"ValBuffer(addr, {self.ty!r})"
@@ -36,11 +35,9 @@ class ValBuffer(ValNode[TyBuffer]):
     @staticmethod
     @trace_step("ValBuffer.init_from", display_entry=True)
     def init_from(
-        type: TyNode, source: ValNode[Any]
-    ) -> ValBuffer:
-        assert isinstance(type, TyBuffer)
-        assert isinstance(source, (ValMemref, ValSSA))
-        return ValBuffer(type, source.get_SSA([]))
+        ty: TyBuffer, source: ValMemref | ValSSA
+    ) -> ValBuffer: 
+        return ValBuffer(ty, source.get_SSA())
 
     # ──────────── Getter ────────────
     def get_base(self) -> TyNode:
@@ -61,8 +58,37 @@ class ValBuffer(ValNode[TyBuffer]):
         self,
         index: Sequence[str | Value],
     ) -> ValNode[Any]:
-        assert index == []
-        return self
+        from jsonmlir.variables.factory import Factory
+        assert len(self.ty.dimensions) == 1, "Buffer supported for only 1D"
+
+        if index == []:
+            return self
+
+        # Split index
+        consuming = index[: len(self.ty.dimensions)]
+        remaining = index[len(self.ty.dimensions) :]
+        assert all_ssavalues(consuming)
+
+        # ViewOp (pas subview) : conserve un layout identité, requis ensuite
+        # par les memref.view de champs de struct.
+        struct_size = self.ty.base.struct.size
+        offset = arith.MulIOp(
+            ssa_val.idx_to_ssavalues(consuming[0]),
+            ssa_val.idx_to_ssavalues(struct_size),
+        ).result
+
+        result_ssa = memref.ViewOp(
+            self.ty.base.get_type(),
+            self.addr,
+            offset,
+            [],
+        ).result
+        result_node = Factory.from_SSA(self.ty.base, result_ssa)
+
+        # Recurse
+        if remaining:
+            return result_node.load(remaining)
+        return result_node
 
     # ──────────── Store ────────────
     @trace_step("{repr(self)}.store")
@@ -71,7 +97,18 @@ class ValBuffer(ValNode[TyBuffer]):
         index: Sequence[str | Value],
         source: ValNode[Any],
     ) -> None:
-        raise NotImplementedError
+        # Split index
+        assert len(index) >= len(self.ty.dimensions)
+        consuming = index[: len(self.ty.dimensions)]
+        remaining = index[len(self.ty.dimensions) :]
+        assert all_ssavalues(consuming)
+
+        # Recursive
+        if remaining:
+            return self.load(consuming).store(remaining, source)
+
+        # Not recursive
+        raise NotImplementedError("Copying entire struct into buffer is not yet supported")
 
 
     # ──────────── n_elements ────────────
@@ -87,11 +124,8 @@ class ValBuffer(ValNode[TyBuffer]):
             n_elements =  n_bytes // struct_size
             return n_elements
 
-
-        # TODO: multiples dim
-        assert len(self.ty.dimensions) == 1, "TODO: Only supported for one element"
-
-        # Size (bytes)
+        # Dynamic size (byte)
+        assert len(self.ty.dimensions) == 1, "TODO: Only supported for one dimension"
         n_bytes_ssa = memref.DimOp(
             self.get_SSA([]),
             ssa_val.val_to_SSAValue(0, Scalar.idx),

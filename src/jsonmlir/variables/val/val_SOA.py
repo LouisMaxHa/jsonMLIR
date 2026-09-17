@@ -23,11 +23,12 @@ class ValSOA(ValNode[TySOA]):
     # ──────────── Init ────────────
     def __init__(self, ty: TySOA, addrs: dict[str, ValMemref | ValBuffer]):
         # Résolution différée : le struct doit exister à l'exécution
-        # assert ty.base in structs_type.keys()
+        # assert ty.base in structs_registry.keys()
 
         # Each array should have correct number of elements
         for addr in addrs.values():
-            assert addr.get_ty().get_n_elements() == list(ty.n_elements), f"Got {addr.get_ty().get_n_elements()}, expected {ty.n_elements}"
+            assert addr.get_ty().get_n_elements() == list(ty.n_elements), \
+            f"Got {addr.get_ty().get_n_elements()}, expected {ty.n_elements}"
 
         self.addrs = addrs
         self.ty = ty

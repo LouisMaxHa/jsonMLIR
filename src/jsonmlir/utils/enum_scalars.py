@@ -77,6 +77,8 @@ class Scalar(StrEnum):
     def _is_alias(self) -> bool:
         return self.name[:1].isupper()
 
+    # TODO: Modifier pour renvoyer une erreur ou Scalar.notSupported
+    # Permet d'éviter d'avoir un possible none qui traine
     @staticmethod
     def from_type(attr: Type) -> Scalar | None:
         if isinstance(attr, IntegerType):

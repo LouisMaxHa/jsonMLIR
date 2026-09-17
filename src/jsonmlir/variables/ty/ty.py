@@ -23,27 +23,34 @@ class TyNodeBase(BaseModel, ABC):
     )
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        if args:
-            # We allow passing instance params with unamed or named argument.
+        """Allow instantiation using positionnal argument.
+        Keep pydantic keyword only instantiation"""
 
-            # Start by checking if we have the correct number of arguments
-            names = [f for f in type(self).model_fields if f != "type"]
-            if len(args) > len(names):
+        # No positionnal arguments
+        if not args:
+            super().__init__(**kwargs)
+            return
+
+
+        # Start by checking if we have the correct number of arguments
+        # Type argument is constant, ignoring it.
+        names = [f for f in type(self).model_fields if f != "type"]
+        if len(args) > len(names):
+            raise TypeError(
+                f"{type(self).__name__} accepte au plus {len(names)} "
+                f"arguments positionnels, {len(args)} reçus"
+            )
+
+        # Writtes args (unamed arguments) into named arguments
+        for value, name  in zip(args, names):
+            if name in kwargs:
                 raise TypeError(
-                    f"{type(self).__name__} accepte au plus {len(names)} "
-                    f"arguments positionnels, {len(args)} reçus"
+                    f"{type(self).__name__}: '{name}' fourni à la fois en "
+                    "positionnel et en mot-clé"
                 )
+            kwargs[name] = value
 
-            # Writtes args (unamed arguments) into named arguments
-            for name, value in zip(names, args):
-                if name in kwargs:
-                    raise TypeError(
-                        f"{type(self).__name__}: '{name}' fourni à la fois en "
-                        "positionnel et en mot-clé"
-                    )
-                kwargs[name] = value
-
-        # Instanciate
+        # Instanciate pydantic
         super().__init__(**kwargs)
 
     """Return the MLIR type (Arith.const, Memref)"""
@@ -57,11 +64,9 @@ class TyNodeBase(BaseModel, ABC):
     def get_memref_type(self) -> MemRefType:
         raise NotImplementedError
 
-# LMX Vraiment nécéssaire ?
 def dump_ty(value: TyNodeBase) -> Any:
     """Sérialise un type dans sa forme JSON canonique."""
     return value.model_dump(mode="json", by_alias=True)
-# LMX fin
 
 def _coerce_ty_node(value: Any) -> Any:
     """Accepte raccourcis (``"i64"``) et formes legacy en entrée de champ ``TyNode``."""

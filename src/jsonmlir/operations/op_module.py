@@ -6,16 +6,17 @@ from typing import Annotated, Any, Literal
 from pydantic import Field
 
 from jsonmlir.operations.codegen import OpNode
+from jsonmlir.operations.op_comment import CommentOp
 from jsonmlir.operations.op_define_function import DefineFunctionOp
 from jsonmlir.operations.op_define_struct import DefineStructOp
 from jsonmlir.operations.op_function import FunctionOp
 from jsonmlir.utils.trace import trace_step
-from jsonmlir.variables.memory import functions_registry, structs_type
+from jsonmlir.variables.memory import functions_registry, structs_registry
 from jsonmlir.variables.val.val import ValNode
 
 # Déclaration de struct, de signature de fonction, ou de corps de fonction
 ModuleStatement = Annotated[
-    DefineStructOp | DefineFunctionOp | FunctionOp,
+    DefineStructOp | DefineFunctionOp | FunctionOp | CommentOp,
     Field(discriminator="op"),
 ]
 
@@ -28,7 +29,7 @@ class ModuleJsonOp(OpNode):
 
     @trace_step("ModuleJsonOp")
     def codegen(self) -> Sequence[ValNode[Any]]:
-        structs_type.clear()
+        structs_registry.clear()
         functions_registry.clear()
 
         # Pré-pass : enregistrer toutes les déclarations de fonction

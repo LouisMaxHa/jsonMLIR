@@ -39,10 +39,8 @@ class Factory:
                 return ValSSA.init_from(type, value)
             case TyScalar():
                 return ValScalar.init_from(type, value)
-            case TyMemref():
-                return ValMemref.init_from(type, value)
-            case TyBuffer():
-                return ValBuffer.init_from(type, value)
+            case TyMemref() | TyBuffer():
+                return Factory.generic_memref(type.dimensions, type.base, value)
             case TySOA():
                 return ValSOA.init_from(type, value)
             case TyStruct():
@@ -58,12 +56,12 @@ class Factory:
     @staticmethod
     @trace_step("Factory.generic_memref", display_entry=True)
     def generic_memref(
-        dimensions: Sequence[int | None], base: TyNode, addr: Value
+        dimensions: Sequence[int | None], base: TyNode, value: ValNode[Any]
     ) -> ValBuffer | ValMemref:
-        assert len(dimensions) > 0
+        assert len(dimensions) > 0, "Use scalar for no dimension memref"
 
         if isinstance(base, TyStruct):
-            return ValBuffer(TyBuffer(dimensions, base), addr)
+            return ValBuffer.init_from(TyBuffer(dimensions, base), value)
         if isinstance(base, TyBuffer):
-            return ValBuffer(base, addr)
-        return ValMemref(TyMemref(dimensions, base), addr)
+            return ValBuffer.init_from(TyBuffer(dimensions, base), value)
+        return ValMemref.init_from(TyMemref(dimensions, base), value)

@@ -73,7 +73,7 @@ class ValNode(ABC, Generic[T]):
     This function can take index and will resolve the corresponding SSA value
     of the pointed elements."""
     def get_SSA(
-        self, index: Sequence[str | Value | int]
+        self, index: Sequence[str | Value | int] = []
     ) -> Value:
 
         if len(index) == 0:

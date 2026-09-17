@@ -8,6 +8,7 @@ from jsonmlir.operations.op_alloc import AllocOp
 from jsonmlir.operations.op_alloca import AllocaOp
 from jsonmlir.operations.op_binary import BinaryOp
 from jsonmlir.operations.op_call import CallOp
+from jsonmlir.operations.op_comment import CommentOp
 from jsonmlir.operations.op_cond import IfOp
 from jsonmlir.operations.op_constant import ConstOp
 from jsonmlir.operations.op_define_struct import DefineStructOp
@@ -24,7 +25,7 @@ from jsonmlir.variables.var import Var
 # Union discriminé de toutes les opérations connues.
 BaseValue = Annotated[
     BinaryOp | CallOp | ConstOp | IfOp | VarOp | WhileOp
-    | PrintOp | SetOp | AllocOp | AllocaOp | MathOp | UnaryOp | NotSupportedOp,
+    | PrintOp | SetOp | AllocOp | AllocaOp | MathOp | UnaryOp | NotSupportedOp | CommentOp,
     Field(discriminator="op"),
 ]
 
@@ -46,6 +47,7 @@ _types_namespace = {
     "MathOp": MathOp,
     "UnaryOp": UnaryOp,
     "NotSupportedOp": NotSupportedOp,
+    "CommentOp": CommentOp,
 }
 
 # Rebuild pydantic model because of recursive definitions

@@ -6,7 +6,7 @@ from mlir.ir import MemRefType
 from pydantic import BeforeValidator, PlainSerializer, PrivateAttr
 
 from jsonmlir.utils.enum_scalars import Scalar
-from jsonmlir.variables.memory import StructDescriptor, structs_type
+from jsonmlir.variables.memory import StructDescriptor, structs_registry
 from jsonmlir.variables.ty.ty import TyNodeBase
 
 
@@ -18,24 +18,40 @@ class TyStruct(TyNodeBase):
     _resolved: StructDescriptor | None = PrivateAttr(default=None)
 
     def __init__(self, base: str | StructDescriptor | None = None, /, **kwargs: Any) -> None:
-        resolved: StructDescriptor | None = None
-        if base is not None:
-            if isinstance(base, str):
-                kwargs["name"] = base
-            else:
-                kwargs["name"] = base.name
-                resolved = base
+        """Represent a structure.
+        Struture are lazy evaluated, you can reference them by name and define them after.
+
+        Arguments are:
+        - base is StructDescriptor: Pass anonymous structures
+        - base is String: Check struct registry for definition
+        - base is None: If name is passed thru Pydantic kwargs
+        - kargs["name"]: Name of the struct, equivalent to base is String.
+        """
+        # Set name
+        if isinstance(base, str):
+            kwargs["name"] = base
+        if isinstance(base, StructDescriptor):
+            kwargs["name"] = base.name
         super().__init__(**kwargs)
-        self._resolved = resolved if resolved is not None else structs_type.get(self.name)
+
+        # Resolve
+        if isinstance(base, StructDescriptor):
+            self._resolved = base
+        else:
+            self._resolved = structs_registry.get(self.name, None)
 
     @property
     def struct(self) -> StructDescriptor:
+        # Try to resolve
+        if self._resolved is None:
+            self._resolved = structs_registry.get(self.name, None)
+
+        # Return
         if self._resolved is not None:
             return self._resolved
-        if self.name not in structs_type:
-            raise ValueError(f"Struct {self.name!r} is not defined")
-        self._resolved = structs_type[self.name]
-        return self._resolved
+
+        # Or fail
+        raise ValueError(f"Struct {self.name!r} is not defined")
 
     def get_type(self) -> MemRefType:
         return MemRefType.get([self.struct.size], Scalar.i8.get_type())
@@ -46,7 +62,7 @@ class TyStruct(TyNodeBase):
     def __repr__(self) -> str:
         return f"Struct({self.name!r})"
 
-
+# TODO: Pourquoi ?
 def _struct_from_name(value: Any) -> Any:
     return TyStruct(value) if isinstance(value, str) else value
 

@@ -10,7 +10,7 @@ _discard_modules: list[Module] = []
 
 
 def discard_builder() -> InsertionPoint:
-    """Bloc jetable : les opérations y sont insérées, pas dans le module utilisateur."""
+    """Bloc jetable, les opérations ne sont pas rajoutées à la génération"""
     module = Module.create()
     _discard_modules.append(module)
     return InsertionPoint(module.body)

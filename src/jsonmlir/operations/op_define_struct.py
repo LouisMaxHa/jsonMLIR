@@ -7,7 +7,7 @@ from mlir.dialects import llvm
 
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.utils.trace import trace_step
-from jsonmlir.variables.memory import StructDescriptor, structs_type
+from jsonmlir.variables.memory import StructDescriptor, structs_registry
 from jsonmlir.variables.struct_field import StructField
 from jsonmlir.variables.val.val import ValNode
 
@@ -23,7 +23,7 @@ class DefineStructOp(OpNode):
     def codegen(self) -> Sequence[ValNode[Any]]:
 
         # Not already defined
-        assert self.name not in structs_type.keys()
+        assert self.name not in structs_registry.keys()
 
         # OpNode attribute of ValNodes
         types = [
@@ -33,7 +33,7 @@ class DefineStructOp(OpNode):
 
         llvmType = cast(Any, llvm.StructType).get_identified(self.name)  # type: ignore[reportAttributeAccessIssue]
         llvmType.set_body(types, packed=False)
-        structs_type[self.name] = StructDescriptor(
+        structs_registry[self.name] = StructDescriptor(
             self.name,
             llvmType,
             self.size,

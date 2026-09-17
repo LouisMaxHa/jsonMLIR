@@ -22,6 +22,7 @@ from jsonmlir.operations.op_alloc import AllocOp
 from jsonmlir.operations.op_alloca import AllocaOp
 from jsonmlir.operations.op_binary import BinaryOp
 from jsonmlir.operations.op_call import CallOp
+from jsonmlir.operations.op_comment import CommentOp
 from jsonmlir.operations.op_cond import IfOp
 from jsonmlir.operations.op_constant import ConstOp
 from jsonmlir.operations.op_define_function import DefineFunctionOp
@@ -173,6 +174,11 @@ def Math(
     value: BaseValue,
 ) -> MathOp:
     return MathOp(ope=_parse_ope_math(ope), value=value)
+
+def Comment(
+    msg: str
+) -> CommentOp:
+    return CommentOp(msg=msg)
 
 def Print(value: BaseValue) -> PrintOp:
     return PrintOp(value=value)

@@ -16,7 +16,7 @@ from jsonmlir.variables.ty.ty_struct import StructRef
 class TyBuffer(TyNodeBase):
     type: Literal["buffer"] = "buffer"
     dimensions: tuple[int | None, ...] = Field(alias="dims")
-    base: StructRef
+    base: StructRef # Pydantic equivalent for TyStruct
 
     # Les constructeurs (``TyBuffer(dims, base)``) sont
     # gérés par ``TyNodeBase.__init__`` ; on les déclare ici pour pyright

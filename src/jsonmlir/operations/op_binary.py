@@ -22,7 +22,7 @@ from mlir.ir import Value
 
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.operations.op_operator import OperatorOp
-from jsonmlir.utils.same_types import assert_same_types
+from jsonmlir.utils.same_types import assert_same_vals
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.val.val import ValNode
 from jsonmlir.variables.val.val_SSA import ValSSA
@@ -47,7 +47,7 @@ class BinaryOp(OpNode):
 
 
         # Check same format
-        assert_same_types(lhs, rhs)
+        assert_same_vals(lhs, rhs)
 
         # On applique terme à terme
         results: list[Value] = []

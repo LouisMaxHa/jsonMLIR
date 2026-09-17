@@ -14,6 +14,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 from collections.abc import Sequence
 from enum import Enum
@@ -22,35 +23,21 @@ from typing import Annotated, Any, Literal, cast, get_args, get_origin
 
 from pydantic import BaseModel
 
-# Import de base.py : enregistre les ops dans le namespace pydantic (model_rebuild)
-from jsonmlir.operations.op_alloc import AllocOp
-from jsonmlir.operations.op_alloca import AllocaOp
-from jsonmlir.operations.op_binary import BinaryOp
-from jsonmlir.operations.op_call import CallOp
-from jsonmlir.operations.op_cond import IfOp
-from jsonmlir.operations.op_constant import ConstOp
+# L'import de base.py enregistre les ops (model_rebuild) ; les unions
+# ``BaseValue`` / ``TyNode`` sont la source unique de vérité des registres.
+from jsonmlir.operations.base import BaseValue
+from jsonmlir.operations.op_comment import CommentOp
 from jsonmlir.operations.op_define_function import DefineFunctionOp
 from jsonmlir.operations.op_define_struct import DefineStructOp
 from jsonmlir.operations.op_function import FunctionOp
-from jsonmlir.operations.op_math import MathOp, MathOperator
+from jsonmlir.operations.op_math import MathOperator
 from jsonmlir.operations.op_module import ModuleJsonOp
 from jsonmlir.operations.op_operator import OperatorOp
-from jsonmlir.operations.op_print import PrintOp
-from jsonmlir.operations.op_set import SetOp
-from jsonmlir.operations.op_unary import UnaryOp, UnaryOperator
-from jsonmlir.operations.op_var import VarOp
-from jsonmlir.operations.op_while import WhileOp
+from jsonmlir.operations.op_unary import UnaryOperator
 from jsonmlir.utils.enum_scalars import Scalar
-from jsonmlir.variables.ty.ty import TyNodeBase
+from jsonmlir.variables.ty.ty import TyNode, TyNodeBase
 from jsonmlir.variables.ty.ty_buffer import TyBuffer
-from jsonmlir.variables.ty.ty_memref import TyMemref
-from jsonmlir.variables.ty.ty_ptr import TyPtr
-from jsonmlir.variables.ty.ty_scalar import TyScalar
 from jsonmlir.variables.ty.ty_SOA import TySOA
-from jsonmlir.variables.ty.ty_SSA import TySSA
-from jsonmlir.variables.ty.ty_struct import TyStruct
-
-# ── Registres ──────────────────────────────────────────────────────────────
 
 CONST_HEADER = """
 // Generated from Pydantic AST models - DO NOT EDIT.
@@ -62,17 +49,31 @@ export type ReturnTypes = TyNode[];
 
 """
 
-ENUM_STRING = [Scalar, OperatorOp, UnaryOperator, MathOperator]
+# ── Types Utils ──────────────────────────────────────────────────────────────
 
-UNION_CLASS = {
-    "TyNode": [TyScalar, TyStruct, TyMemref, TyBuffer, TySOA, TyPtr, TySSA],
-    "JsonOp": [
-        BinaryOp, CallOp, ConstOp, IfOp, VarOp, WhileOp,
-        PrintOp, SetOp, AllocOp, AllocaOp, MathOp, UnaryOp,
-    ],
-    "ModuleStatement": [DefineStructOp, DefineFunctionOp, FunctionOp]
-}
+def unwrap(ann: Any) -> Any:
+    """
+    Return the top level type.
+    Ex: unwrap(Annotated[Annotated[int, "meta1"], "meta2"]) = int
+    """
+    while get_origin(ann) is Annotated:
+        ann = get_args(ann)[0]
+    return ann
 
+def members_of(ann: Any) -> set[type[BaseModel]]:
+    """
+    Return members of a type
+    members_of(Union[VarOp, WhileOp, ]) = [VarOp, WhileOp, ...]
+    """
+    ann = unwrap(ann)
+    return set([
+        m for m in get_args(ann)
+        if isinstance(m, type) and issubclass(m, BaseModel)
+    ])
+
+# ── Registres ──────────────────────────────────────────────────────────────
+
+# Type conversion
 PRIMITIVES = {
     str: "string",
     int: "number",
@@ -81,33 +82,35 @@ PRIMITIVES = {
     type(None): "null",
 }
 
+# List of enum of string 
+ENUM_STRING: list[type[Enum]] = [Scalar, OperatorOp, UnaryOperator, MathOperator]
+
+# List of class union
+UNION_CLASS: dict[str, set[type[BaseModel]]] = {
+    "TyNode": members_of(TyNode),
+    "JsonOp": members_of(BaseValue),
+    "ModuleStatement": {DefineStructOp, DefineFunctionOp, FunctionOp, CommentOp},
+    "other": {ModuleJsonOp}
+}
+
 # List of all class
-MODELS: list[Any] = [ModuleJsonOp]
+MODELS_SET: set[type[BaseModel]] = set()
 for models in UNION_CLASS.values():
-    MODELS.extend(models)
-MODELS.sort(key = lambda e: e.__name__)
+    MODELS_SET.update(models)
+MODELS = sorted(list(MODELS_SET), key=lambda e: e.__name__)
 
-# Mots réservés TypeScript : autorisés comme propriété, interdits comme paramètre.
-RESERVED = {"var"}
-DISCRIMINATORS = ("type", "op")
+# Typescript reserved keyword
+RESERVED = {"var", "type"}
+# type keyword can be used as attributs but not in fct args name
+DISCRIMINATORS = {"type", "op"}
 
-# Champs dont la forme JSON diffère de l'annotation Python
-# (StructRef sérialisé en nom de struct, cf. PlainSerializer de ty_struct).
+# Overwritte field type
 FIELD_OVERRIDES = {
     (TyBuffer.__name__, "base"): "string",
     (TySOA.__name__, "base"): "string",
 }
 
-""" ===================================================
-    == Utils for type
-    =================================================== """
-
-def unwrap(ann: Any) -> Any:
-    while get_origin(ann) is Annotated:
-        ann = get_args(ann)[0]
-    return ann
-
-
+# ── Export utils ──────────────────────────────────────────────────────────────
 def union_parts(members: list[Any]) -> list[str]:
     """replace list of models by unions type if possible"""
     models = [m for m in members if isinstance(m, type) and issubclass(m, BaseModel)]
@@ -181,16 +184,16 @@ def ts_default(ann: Any, value: Any) -> str:
         return json.dumps(value.value)
     return str(value)
 
+# ── Generate ──────────────────────────────────────────────────────────────
 """ ===================================================
     == Generate
     =================================================== """
-
 
 def collect() -> dict[str, Any]:
     """Construit le contexte de génération."""
     # Enum of string
     enum = {
-        cls.__name__: [m.value for m in cls]
+        cls.__name__: ['"' + str(m.value) + '"' for m in cls]
         for cls in ENUM_STRING
     }
 
@@ -227,10 +230,14 @@ def collect() -> dict[str, Any]:
 
             # arg name for the constructor
             argName = name
-            if name in DISCRIMINATORS and not required:
-                argName = None
-            elif name in RESERVED:
+            if name in RESERVED:
                 argName = f"{name}_"
+            if name in DISCRIMINATORS:
+                # Op node can have a type attr
+                if name == "type" and "op" in model.model_fields.keys():
+                    pass
+                else:
+                    argName = None
 
             fields.append({
                 "name": name, "argName": argName, "type": ftype,
@@ -249,11 +256,13 @@ def collect() -> dict[str, Any]:
     }
 
 
+# ── Cli ──────────────────────────────────────────────────────────────
 """ ===================================================
     == Cli
     =================================================== """
 
 def gen_default(f: Any):
+    """Return string for default value, empty string if default value is None"""
     if f['default'] is None:
         return ""
     return f" = {f['default']}"
@@ -268,7 +277,7 @@ def render() -> str:
     for header in ["enum", "unions"]:
         out += f"// {header.capitalize()}" + EOL
         for name, values in ctx[header].items():
-            literal = " | ".join(json.dumps(v) for v in values)
+            literal = " | ".join(v for v in values)
             out += f"export type {name} = {literal};" + EOL + EOL
 
     # ── Type Guards ───────────────────────────────────────────────
@@ -326,11 +335,10 @@ def render() -> str:
             out += f"\t\tthis.{field['name']} = {field['argName']};" + EOL
         out += "\t}" + EOL
         out += "}" + EOL
-
-
     return out
 
 
+# ── Main ──────────────────────────────────────────────────────────────
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Generate TypeScript classes from Pydantic AST models"

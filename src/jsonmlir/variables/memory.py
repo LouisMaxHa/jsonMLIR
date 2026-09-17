@@ -24,6 +24,6 @@ class FunctionSignature(NamedTuple):
     return_types: list[TyNode]
 
 
-structs_type: dict[str, StructDescriptor] = {}
 variables_heap: dict[str, ValNode[Any]] = {}
+structs_registry: dict[str, StructDescriptor] = {}
 functions_registry: dict[str, FunctionSignature] = {}
