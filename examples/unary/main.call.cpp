@@ -1,28 +1,46 @@
-#include "../memref_bridge.h"
-
 #include <cstdint>
 #include <iostream>
 
+// Unary operators described by examples/unary/main.py :
+//   -f x  ->  x *f -1.0
+//   -  x  ->  x  * -1
+//   !x    ->  x xor true
 extern "C" {
-int64_t _mlir_ciface_lib_main(int64_t x, int64_t y);
+  double _mlir_ciface_test_neg_float(double x);
+  int64_t _mlir_ciface_test_neg_int(int64_t x);
+  bool _mlir_ciface_test_neg_bool(bool x);
+}
+
+static void check_neg_float(double x) {
+  const double expected = -x;
+  const double got = _mlir_ciface_test_neg_float(x);
+  std::cout << "test_neg_float(" << x << ") = " << got << std::endl;
+  std::cout << "EXPECT '" << expected << "' got '" << got << "'" << std::endl;
+}
+
+static void check_neg_int(int64_t x) {
+  const int64_t expected = -x;
+  const int64_t got = _mlir_ciface_test_neg_int(x);
+  std::cout << "test_neg_int(" << x << ") = " << got << std::endl;
+  std::cout << "EXPECT '" << expected << "' got '" << got << "'" << std::endl;
+}
+
+static void check_neg_bool(bool x) {
+  const bool expected = !x;
+  const bool got = _mlir_ciface_test_neg_bool(x);
+  std::cout << "test_neg_bool(" << x << ") = " << got << std::endl;
+  std::cout << "EXPECT '" << expected << "' got '" << got << "'" << std::endl;
 }
 
 int main() {
-  // _mlir_ciface_lib_main(x, y) = -x + !y
-  // x = 7, y = 0 -> -7
-  const int64_t r1 = _mlir_ciface_lib_main(7, 0);
-  std::cout << "lib_main(7, 0) = " << r1 << std::endl;
-  std::cout << "EXPECT '-6', got '" << r1 << "'" << std::endl;
+  check_neg_float(3.5);
+  check_neg_float(-2.0);
 
-  // x = 3, y = !1 = 0 -> 3 + 0
-  const int64_t r2 = _mlir_ciface_lib_main(-3, 1);
-  std::cout << "lib_main(-3, 1) = " << r2 << std::endl;
-  std::cout << "EXPECT '3', got '" << r2 << "'" << std::endl;
+  check_neg_int(7);
+  check_neg_int(-42);
 
-  // x = -10, y = !4 = 5 -> 10 + 5
-  const int64_t r3 = _mlir_ciface_lib_main(-10, 4);
-  std::cout << "lib_main(-10, 4) = " << r3 << std::endl;
-  std::cout << "EXPECT '15', got '" << r3 << "'" << std::endl;
+  check_neg_bool(true);
+  check_neg_bool(false);
 
   return 0;
 }

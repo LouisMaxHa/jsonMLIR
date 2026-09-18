@@ -22,7 +22,7 @@ from mlir.ir import Value
 
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.operations.op_operator import OperatorOp
-from jsonmlir.utils.same_types import assert_same_vals
+from jsonmlir.utils.same_types import assert_same_val
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.val.val import ValNode
 from jsonmlir.variables.val.val_SSA import ValSSA
@@ -34,27 +34,27 @@ class BinaryOp(OpNode):
     """Opération binaire composée de deux opérandes."""
 
     op: Literal["binary"] = "binary"
-    lhs: BaseValue | Sequence[ValNode[Any]]
-    rhs: BaseValue | Sequence[ValNode[Any]]
+    lhs: BaseValue
+    rhs: BaseValue
     ope: OperatorOp
 
     @trace_step("BinaryOp: {self.ope.value}")
     def codegen(self) -> Sequence[ValNode[Any]]:
-        """Applique un opérateur binaire sur des opérandes déjà générés."""
-        # Recursive codegen (operands already materialized are used as-is)
-        lhs = self.lhs.codegen() if not isinstance(self.lhs, Sequence) else self.lhs
-        rhs = self.rhs.codegen() if not isinstance(self.rhs, Sequence) else self.rhs
+        """Applique un opérateur"""
+        # Recursive codegen
+        lhs = self.lhs.codegen()
+        rhs = self.rhs.codegen()
 
-
-        # Check same format
-        assert_same_vals(lhs, rhs)
 
         # On applique terme à terme
         results: list[Value] = []
-        for l_elem, r_elem in zip(lhs, rhs):
-            l_ssa = l_elem.get_SSA([])
-            r_ssa = r_elem.get_SSA([])
+        for l_val, r_val in zip(lhs, rhs):
+            # Structs : TODO
 
+            # Scalars
+            assert_same_val(l_val, r_val)
+            l_ssa = l_val.get_SSA([])
+            r_ssa = r_val.get_SSA([])
             match self.ope.value:
                 case "+":
                     op = AddIOp(l_ssa, r_ssa)
