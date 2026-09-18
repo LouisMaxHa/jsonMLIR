@@ -29,7 +29,7 @@ class WhileOp(OpNode):
         with InsertionPoint(before_block):
             conds_ssa = self.cond.codegen()
             assert len(conds_ssa) == 1
-            scf.ConditionOp(conds_ssa[0].get_SSA([]), [])
+            scf.ConditionOp(conds_ssa[0].get_SSA(), [])
 
         # After region: body + scf.yield to loop back to the before region.
         after_block = while_op.after.blocks.append()  # type: ignore[reportUnknownMemberType]

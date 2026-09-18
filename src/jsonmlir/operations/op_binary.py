@@ -67,8 +67,8 @@ class BinaryOp(OpNode):
 def generate_bin_op(ope: OperatorOp, lhs: ValNode[Any], rhs: ValNode[Any]
 ) -> ValNode[Any]:
     assert_same_val(lhs, rhs)
-    l_ssa = lhs.get_SSA([])
-    r_ssa = rhs.get_SSA([])
+    l_ssa = lhs.get_SSA()
+    r_ssa = rhs.get_SSA()
     match ope.value:
         case "+":
             op = AddIOp(l_ssa, r_ssa)

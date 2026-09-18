@@ -28,7 +28,7 @@ class ValMdspan(ValNode[TyMdspan]):
     @trace_step("ValMdspan.init_from", display_entry=True)
     def init_from(ty: TyMdspan, source: ValNode[Any]) -> ValMdspan:
         assert isinstance(source, (ValSSA, ValMdspan)), f"Got {source}"
-        return ValMdspan(ty, source.get_SSA([]))
+        return ValMdspan(ty, source.get_SSA())
 
     def __repr__(self) -> str:
         return f"ValMdspan(addr, {self.ty!r})"

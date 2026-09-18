@@ -34,7 +34,7 @@ class AllocaOp(OpNode):
         dyn_size: list[Value] = [
             idx_to_ssavalues(s)
             if isinstance(s, int)
-            else s.codegen()[0].get_SSA([])
+            else s.codegen()[0].get_SSA()
             for s in self.size
         ]
 

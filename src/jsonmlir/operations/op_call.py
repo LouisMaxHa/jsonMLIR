@@ -43,7 +43,7 @@ class CallOp(OpNode):
             vals = arg.codegen()
             arg_vals.extend(vals)
             for val in vals:
-                arg_ssas.append(val.get_SSA([]))
+                arg_ssas.append(val.get_SSA())
 
         # Vérification du nombre d'arguments
         if len(arg_ssas) != len(sig.args):

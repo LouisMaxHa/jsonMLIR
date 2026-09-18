@@ -73,7 +73,7 @@ class ValScalar(ValNode[TyScalar]):
     ):
         assert index == []
         assert isinstance(source, (ValSSA, ValScalar))
-        ssa = source.get_SSA([])
+        ssa = source.get_SSA()
 
         # Extract ssa value from memref<ssa value>
         if isinstance(ssa.type, MemRefType):

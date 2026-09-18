@@ -27,7 +27,7 @@ class IfOp(OpNode):
         # Check condition
         conds_ssa = self.cond.codegen()
         assert len(conds_ssa) == 1
-        cond_ssa = conds_ssa[0].get_SSA([])
+        cond_ssa = conds_ssa[0].get_SSA()
 
         # Create IfOp (les blocs then/else appartiennent à ses régions)
         has_else = self.elseBlock is not None

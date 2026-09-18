@@ -42,6 +42,6 @@ class PrintOp(OpNode):
         CallOp(
             [],
             PRINT_INT_SYMBOL,
-            [value_ssa[0].get_SSA([])],
+            [value_ssa[0].get_SSA()],
         )
         return []

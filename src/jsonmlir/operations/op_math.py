@@ -28,7 +28,7 @@ class MathOp(OpNode):
     @trace_step("MathOp: {self.ope.value}")
     def codegen(self) -> Sequence[ValNode[Any]]:
         value = self.value.codegen()
-        value_ssa = value[0].get_SSA([])
+        value_ssa = value[0].get_SSA()
 
         match self.ope.value:
             case "sqrt":

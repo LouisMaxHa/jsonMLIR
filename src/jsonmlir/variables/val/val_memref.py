@@ -33,9 +33,9 @@ class ValMemref(ValNode[TyMemref]):
 
         match source:
             case ValMemref():
-                return ValMemref(ty, source.get_SSA([]))
+                return ValMemref(ty, source.get_SSA())
             case ValSSA():
-                return ValMemref(ty, source.get_SSA([]))
+                return ValMemref(ty, source.get_SSA())
             case _:
                 raise ValueError(f"Source {source} not supported")
 
@@ -93,5 +93,5 @@ class ValMemref(ValNode[TyMemref]):
         # Recursive
         if remaining:
             return self.load(consuming).store(remaining, source)
-        memref.StoreOp(source.get_SSA([]), self.addr, consuming)
+        memref.StoreOp(source.get_SSA(), self.addr, consuming)
 

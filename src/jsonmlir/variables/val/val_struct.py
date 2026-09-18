@@ -37,7 +37,7 @@ class ValStruct(ValNode[TyStruct]):
         assert isinstance(type, TyStruct)
         return ValStruct(
             type,
-            source.get_SSA([])
+            source.get_SSA()
         )
 
 
@@ -92,7 +92,7 @@ class ValStruct(ValNode[TyStruct]):
 
         # Store
         memref.StoreOp(
-            source.get_SSA([]),
+            source.get_SSA(),
             self._get_field(consuming),
             [],
         )
@@ -124,7 +124,7 @@ class ValStruct(ValNode[TyStruct]):
         # Flatten
         view_op = memref.ViewOp(
             MemRefType.get([], field_ty.get_type()),
-            self.get_SSA([]),
+            self.get_SSA(),
             offset_ssa,
             [],
         )

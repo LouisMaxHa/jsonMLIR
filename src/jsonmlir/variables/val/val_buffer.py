@@ -127,7 +127,7 @@ class ValBuffer(ValNode[TyBuffer]):
         # Dynamic size (byte)
         assert len(self.ty.dimensions) == 1, "TODO: Only supported for one dimension"
         n_bytes_ssa = memref.DimOp(
-            self.get_SSA([]),
+            self.get_SSA(),
             ssa_val.val_to_SSAValue(0, Scalar.idx),
         ).result
 
@@ -177,7 +177,7 @@ class ValBuffer(ValNode[TyBuffer]):
 
         view_op = memref.ViewOp(
             MemRefType.get([flat_size], field_type),
-            self.get_SSA([]),
+            self.get_SSA(),
             offset_ssa,
             flat_size_ssa,
         )

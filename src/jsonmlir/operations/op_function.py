@@ -55,7 +55,7 @@ class FunctionOp(OpNode):
 
         # Block return
         with InsertionPoint(body_block):
-            return_ssas = [a.get_SSA([]) for a in return_values]
+            return_ssas = [a.get_SSA() for a in return_values]
             func.ReturnOp(return_ssas)
 
         # Update function type with the inferred return types

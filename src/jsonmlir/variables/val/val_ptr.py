@@ -108,7 +108,7 @@ class ValPtr(ValNode[TyPtr]):
 
         # Return ptr
         if index == []:
-            ssa = source.get_SSA([])
+            ssa = source.get_SSA()
             #TODO: Why this case ? Shoulw be already good format ?
             # Extract ssa value from memref<ssa value>
             if isinstance(ssa.type, MemRefType):

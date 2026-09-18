@@ -26,7 +26,12 @@ def assert_same_ty_strict(lhs: TyNode, rhs: TyNode):
     assert lhs == rhs, f"type {lhs} does not match expected {rhs}"
 
 def assert_same_type(lhs: Type, rhs: Type):
-    assert lhs != rhs, f"type {lhs} does not match expected {rhs}"
+    """Compare if two data behave the same.
+    Two memref with differente stride but with same type and same number of elements
+    will pass this test, (thus, the repr)
+    """
+
+    assert repr(lhs) == repr(rhs), f"type {lhs} does not match expected {rhs}"
 
 def assert_same_val(
     lhs: ValNode[Any],
