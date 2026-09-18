@@ -43,7 +43,7 @@ CONST_HEADER = """
 // Generated from Pydantic AST models - DO NOT EDIT.
 
 // Manual alias
-export type StructField = [string, TyNode, number, number];
+export type StructAttribut = [string, TyNode, number, number];
 export type FunctionArg = [string, TyNode];
 export type ReturnTypes = TyNode[];
 

@@ -38,10 +38,10 @@ from jsonmlir.operations.op_unary import UnaryOp, UnaryOperator
 from jsonmlir.operations.op_var import VarOp
 from jsonmlir.operations.op_while import WhileOp
 from jsonmlir.utils.enum_scalars import Scalar
-from jsonmlir.variables.struct_field import StructField
+from jsonmlir.variables.struct_field import StructAttribut
 from jsonmlir.variables.ty.ty import TyNode, parse_ty
 
-FieldSpec = tuple[str, str | TyNode, int, int] | StructField
+FieldSpec = tuple[str, str | TyNode, int, int] | StructAttribut
 
 
 def _parse_ty(value: str | TyNode) -> TyNode:
@@ -56,11 +56,11 @@ def _parse_scalar(value: str | Scalar) -> Scalar:
     return Scalar(value)
 
 
-def _parse_field(field: FieldSpec) -> StructField:
-    if isinstance(field, StructField):
+def _parse_field(field: FieldSpec) -> StructAttribut:
+    if isinstance(field, StructAttribut):
         return field
     name, ty, offset, size = field
-    return StructField(name=name, type=_parse_ty(ty), offset=offset, size=size)
+    return StructAttribut(name=name, type=_parse_ty(ty), offset=offset, size=size)
 
 
 def _parse_ope(ope: str | OperatorOp) -> OperatorOp:

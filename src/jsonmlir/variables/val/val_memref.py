@@ -12,7 +12,6 @@ from jsonmlir.utils.ssa_dim import dimensions_to_ssa
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_memref import TyMemref
-from jsonmlir.variables.ty.ty_SSA import TySSA
 from jsonmlir.variables.ty.ty_struct import TyStruct
 from jsonmlir.variables.val.val import ValNode
 from jsonmlir.variables.val.val_SSA import ValSSA

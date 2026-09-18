@@ -729,7 +729,7 @@
         },
         "fields": {
           "items": {
-            "$ref": "#/$defs/StructField"
+            "$ref": "#/$defs/StructAttribut"
           },
           "title": "Fields",
           "type": "array"
@@ -1122,7 +1122,7 @@
       "title": "SetOp",
       "type": "object"
     },
-    "StructField": {
+    "StructAttribut": {
       "items": {},
       "type": "array"
     },

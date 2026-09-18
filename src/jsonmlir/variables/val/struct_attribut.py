@@ -5,8 +5,8 @@ from typing import Any, cast
 from pydantic import BaseModel, ConfigDict, model_serializer, model_validator
 
 
-class StructField(BaseModel):
-    """Champ d'un ``define struct`` : sérialisé en JSON ``[name, type, offset, size]``."""
+class StructAttribut(BaseModel):
+    """Pydantic class that represent struct attribut: ``[name, type, offset, size]``"""
 
     model_config = ConfigDict(frozen=True)
 
@@ -22,7 +22,7 @@ class StructField(BaseModel):
     def _from_json_array(cls, data: Any) -> Any:
         from jsonmlir.variables.ty.ty import parse_ty
 
-        if isinstance(data, StructField):
+        if isinstance(data, StructAttribut):
             return data
         if isinstance(data, (list, tuple)):
             parts = cast(list[Any], data)

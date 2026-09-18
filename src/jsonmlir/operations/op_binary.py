@@ -21,9 +21,9 @@ from mlir.dialects.arith import (
 
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.operations.op_operator import OperatorOp
-from jsonmlir.operations.struct_method import call_operator_method
 from jsonmlir.utils.same_types import assert_same_val
 from jsonmlir.utils.trace import trace_step
+from jsonmlir.variables.val.struct_method import call_structure_method
 from jsonmlir.variables.val.val import ValNode
 from jsonmlir.variables.val.val_SSA import ValSSA
 from jsonmlir.variables.val.val_struct import ValStruct
@@ -50,17 +50,17 @@ class BinaryOp(OpNode):
         results: list[ValNode[Any]] = []
         for l_val, r_val in zip(l_vals, r_vals):
 
-            # Structs
-            if isinstance(l_val, ValStruct) or isinstance(r_val, ValStruct) :
+            # Structs : délégué au handler enregistré pour la structure
+            if isinstance(l_val, ValStruct) or isinstance(r_val, ValStruct):
+                struct_val = l_val if isinstance(l_val, ValStruct) else r_val
+                assert isinstance(struct_val, ValStruct)
                 results.append(
-                    call_operator_method(l_val.ty.name, self.ope, l_val, r_val)
+                    call_structure_method(struct_val.ty.name, self.ope, l_val, r_val)
                 )
                 continue
 
             # Scalars
             results.append(generate_bin_op(self.ope, l_val, r_val))
-
-
         return results
 
 

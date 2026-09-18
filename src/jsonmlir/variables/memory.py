@@ -2,9 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, NamedTuple
 
-from mlir.ir import Type
-
-from jsonmlir.variables.struct_field import StructField
+from jsonmlir.variables.val.struct_attribut import StructAttribut
 
 if TYPE_CHECKING:
     from jsonmlir.variables.ty.ty import TyNode
@@ -12,9 +10,8 @@ if TYPE_CHECKING:
 
 class StructDescriptor(NamedTuple):
     name: str
-    llvmType: Type
     size: int
-    fields: dict[str, StructField]
+    fields: dict[str, StructAttribut]
 
 
 class FunctionSignature(NamedTuple):
