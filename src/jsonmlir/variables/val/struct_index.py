@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from jsonmlir.variables.val.val import ValNode
-from jsonmlir.variables.val.val_struct import ValStruct
+
+if TYPE_CHECKING:
+    from jsonmlir.variables.val.val_struct import ValStruct
 
 # Indexing handler : (struct, index) -> ValNode
-StructIndexing = Callable[[ValStruct, str | int], ValNode[Any]]
+StructIndexing = Callable[[Any, str | int], ValNode[Any]]
 
 REGISTER_INDEXING: dict[str, StructIndexing] = {}
 

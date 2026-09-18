@@ -9,7 +9,6 @@ from mlir.ir import MemRefType, Value
 from jsonmlir.utils import ssa_val
 from jsonmlir.utils.enum_scalars import Scalar
 from jsonmlir.utils.trace import trace_step
-from jsonmlir.variables.factory import Factory
 from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_struct import TyStruct
 from jsonmlir.variables.val.struct_index import call_structure_index
@@ -94,7 +93,7 @@ class ValStruct(ValNode[TyStruct]):
         # Store
         memref.StoreOp(
             source.get_SSA([]),
-            self.get_field(consuming),
+            self._get_field(consuming),
             [],
         )
 
@@ -103,18 +102,20 @@ class ValStruct(ValNode[TyStruct]):
         return self.ty.struct.size
 
 
-    def get_field(
+    def _get_field(
         self,
         field_name: str,
-    ) -> ValNode[Any]:
-        # Check exist 
+    ) -> Value:
+        # Check exist
         struct = self.ty.struct
         assert field_name in struct.fields.keys()
 
         # Load infos
         field = struct.fields[field_name]
         field_ty = struct.fields[field_name].type
-        assert struct.size % field.size == 0, f"{struct.size} % {field.size} == {struct.size % field.size}"
+        assert struct.size % field.size == 0, (
+            f"{struct.size} % {field.size} == {struct.size % field.size}"
+        )
 
 
         # Get dimensions
@@ -128,7 +129,16 @@ class ValStruct(ValNode[TyStruct]):
             [],
         )
 
+        return view_op.result
+
+
+    def get_field(
+        self,
+        field_name: str,
+    ) -> ValNode[Any]:
+        from jsonmlir.variables.factory import Factory
+
         return Factory.from_val(
             self.ty.struct.fields[field_name].type,
-            ValSSA(view_op.result),
+            ValSSA(self._get_field(field_name)),
         )

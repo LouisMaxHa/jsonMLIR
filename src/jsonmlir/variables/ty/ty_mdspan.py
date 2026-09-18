@@ -9,11 +9,14 @@ from pydantic import Field
 from jsonmlir.utils.enum_scalars import Scalar
 from jsonmlir.variables.memory import StructDescriptor
 from jsonmlir.variables.ty.ty import TyNested, TyNodeBase
+from jsonmlir.variables.ty.ty_memref import TyMemref
 from jsonmlir.variables.ty.ty_ptr import TyPtr
 from jsonmlir.variables.ty.ty_scalar import TyScalar
 from jsonmlir.variables.ty.ty_struct import TyStruct
 from jsonmlir.variables.val.struct_attribut import StructAttribut
-from jsonmlir.variables.val.val_struct import ValStruct
+
+# Ptr (8 bytes) + padding (4 bytes) + size (4 bytes)
+MDSPAN_SIZE = 8 + 4 + 4
 
 
 class TyMdspan(TyNodeBase):
@@ -28,22 +31,29 @@ class TyMdspan(TyNodeBase):
         return [self.dimension]
 
     def get_type(self) -> MemRefType:
-        # Ptr (8 bytes) + padding (4 bytes) + size (4 bytes)
-        return MemRefType.get([8 + 4 + 4], Scalar.i8.get_type())
+        return MemRefType.get([MDSPAN_SIZE], Scalar.i8.get_type())
 
     def get_memref_type(self) -> MemRefType:
         return self.get_type()
 
     def get_struct(self) -> TyStruct:
         return TyStruct(StructDescriptor(
-            "None", 8 + 4 + 4, {
+            "mdspan",
+            MDSPAN_SIZE,
+            {
                 "data": StructAttribut(
-                    name = "data", type=TyPtr(), offset=0, size=8
+                    name="data",
+                    type=TyPtr(TyMemref((self.dimension,), self.base)),
+                    offset=0,
+                    size=8,
                 ),
                 "size": StructAttribut(
-                    name = "size", type=TyScalar(Scalar.i32), offset=12, size=16
+                    name="size",
+                    type=TyScalar(Scalar.i32),
+                    offset=12,
+                    size=4,
                 ),
-            }
+            },
         ))
 
     def __repr__(self) -> str:

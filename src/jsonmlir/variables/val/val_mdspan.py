@@ -3,17 +3,15 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
-from mlir.dialects import memref
 from mlir.ir import MemRefType, Value
 
 from jsonmlir.utils.same_types import assert_same_shape
-from jsonmlir.utils.ssa_check import all_ssavalues
 from jsonmlir.utils.ssa_dim import dimensions_to_ssa
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_mdspan import TyMdspan
-from jsonmlir.variables.ty.ty_SSA import TySSA
 from jsonmlir.variables.val.val import ValNode
+from jsonmlir.variables.val.val_SSA import ValSSA
 from jsonmlir.variables.val.val_struct import ValStruct
 
 
@@ -29,7 +27,7 @@ class ValMdspan(ValNode[TyMdspan]):
     @staticmethod
     @trace_step("ValMdspan.init_from", display_entry=True)
     def init_from(ty: TyMdspan, source: ValNode[Any]) -> ValMdspan:
-        assert isinstance(source, TySSA)
+        assert isinstance(source, (ValSSA, ValMdspan)), f"Got {source}"
         return ValMdspan(ty, source.get_SSA([]))
 
     def __repr__(self) -> str:
@@ -57,13 +55,12 @@ class ValMdspan(ValNode[TyMdspan]):
         if index == []:
             return self
 
-        # int -> load data and apply
-        # str -> consider struct
-        match index[0]:
-            case int():
-                return self.get_struct().load(["data"] + list(index))
-            case str():
-                return self.get_struct().load(index)
+        # str   -> consider struct
+        # Value -> load data and apply
+        if isinstance(index[0], Value):
+            return self.get_struct().load(["data", "*"] + list(index))
+        return self.get_struct().load(index)
+
 
 
     # ──────────── Store ────────────
@@ -77,7 +74,7 @@ class ValMdspan(ValNode[TyMdspan]):
         # str -> consider struct
         match index[0]:
             case int():
-                return self.get_struct().store(["data"] + list(index), source)
+                return self.get_struct().store(["data", "*"] + list(index), source)
             case str():
                 return self.get_struct().store(index, source)
 

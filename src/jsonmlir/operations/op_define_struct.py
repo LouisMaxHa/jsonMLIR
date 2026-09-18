@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Any, Literal, cast
-
-from mlir.dialects import llvm
+from typing import Any, Literal
 
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.utils.trace import trace_step
@@ -18,7 +16,6 @@ class DefineStructOp(OpNode):
     size: int
     fields: Sequence[StructAttribut]  # name, type, offset, size
 
-    # TODO: Need to insert it with builder ?
     @trace_step("DefineStructOp")
     def codegen(self) -> Sequence[ValNode[Any]]:
 

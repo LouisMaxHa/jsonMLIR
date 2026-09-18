@@ -5,6 +5,8 @@
 #   jsonmlir myCode/myLib.py -TC                    # from your project
 #   jsonmlir examples/somme/main.json -A            # jsonMLIR CLI (JSON/YAML)
 #   jsonmlir tests/run_tests.py -j 8                # from the clone
+#   jsonmlir tests/run_tests.py mdspan              # only matching tests
+#   jsonmlir jsonmlir examples/somme/main.json -A   # explicit in-container CLI
 #   jsonmlir bash                                   # shell in the container
 #   jsonmlir build-image                            # rebuild the image
 set -euo pipefail
@@ -48,6 +50,13 @@ run_args=(
 # (avoids breaking pipelines and redirections).
 [[ -t 0 ]] && run_args+=(-i)
 [[ -t 1 ]] && run_args+=(-t)
+
+# Drop a redundant leading "jsonmlir" so that both
+#   jsonmlir run_tests.py ...  and  jsonmlir jsonmlir run_tests.py ...
+# behave the same way.
+if [[ "${1:-}" == jsonmlir ]]; then
+    shift
+fi
 
 # Run
 if [[ $# -eq 0 ]]; then

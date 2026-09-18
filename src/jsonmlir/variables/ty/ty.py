@@ -89,17 +89,25 @@ TyNested = Annotated[TyNodeBase, BeforeValidator(_coerce_ty_node)]
 # import circulaire (``ty`` <-> ``ty_*``).
 
 from jsonmlir.variables.ty.ty_buffer import TyBuffer
+from jsonmlir.variables.ty.ty_mdspan import TyMdspan
 from jsonmlir.variables.ty.ty_memref import TyMemref
+from jsonmlir.variables.ty.ty_not_supported import TyNotSupported
 from jsonmlir.variables.ty.ty_ptr import TyPtr
 from jsonmlir.variables.ty.ty_scalar import TyScalar
 from jsonmlir.variables.ty.ty_SOA import TySOA
 from jsonmlir.variables.ty.ty_SSA import TySSA
 from jsonmlir.variables.ty.ty_struct import TyStruct
-from jsonmlir.variables.ty.ty_not_supported import TyNotSupported
-
 
 union = Annotated[
-    TyScalar | TyStruct | TyMemref | TyBuffer | TySOA | TyPtr | TySSA | TyNotSupported,
+    TyScalar
+    | TyStruct
+    | TyMemref
+    | TyBuffer
+    | TySOA
+    | TyPtr
+    | TySSA
+    | TyMdspan
+    | TyNotSupported,
     Field(discriminator="type"),
 ]
 

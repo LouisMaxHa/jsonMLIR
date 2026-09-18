@@ -10,6 +10,7 @@ from mlir.ir import Value
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_buffer import TyBuffer
+from jsonmlir.variables.ty.ty_mdspan import TyMdspan
 from jsonmlir.variables.ty.ty_memref import TyMemref
 from jsonmlir.variables.ty.ty_ptr import TyPtr
 from jsonmlir.variables.ty.ty_scalar import TyScalar
@@ -18,6 +19,7 @@ from jsonmlir.variables.ty.ty_SSA import TySSA
 from jsonmlir.variables.ty.ty_struct import TyStruct
 from jsonmlir.variables.val.val import ValNode
 from jsonmlir.variables.val.val_buffer import ValBuffer
+from jsonmlir.variables.val.val_mdspan import ValMdspan
 from jsonmlir.variables.val.val_memref import ValMemref
 from jsonmlir.variables.val.val_ptr import ValPtr
 from jsonmlir.variables.val.val_scalar import ValScalar
@@ -41,6 +43,8 @@ class Factory:
                 return ValSOA.init_from(type, value)
             case TyStruct():
                 return ValStruct.init_from(type, value)
+            case TyMdspan():
+                return ValMdspan.init_from(type, value)
             case TyMemref() | TyBuffer():
                 return Factory.generic_memref(type.dimensions, type.base, value)
             case _:

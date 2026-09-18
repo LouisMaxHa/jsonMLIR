@@ -14,7 +14,6 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import copy
 import json
 from collections.abc import Sequence
 from enum import Enum

@@ -8,6 +8,7 @@ from jsonmlir.operations.op_var import VarOp
 from jsonmlir.utils.trace import trace_note, trace_step
 from jsonmlir.variables.factory import Factory
 from jsonmlir.variables.memory import variables_heap
+from jsonmlir.variables.ty.ty_not_supported import TyNotSupported
 from jsonmlir.variables.val.val import ValNode
 
 if TYPE_CHECKING:
@@ -24,17 +25,22 @@ class SetOp(OpNode):
     @trace_step("SetOp: {self.var.name}")
     def codegen(self) -> Sequence[ValNode[Any]]:
         var = self.var.as_var()
-        trace_note(f"Var: {var.get_ty()}")
+        trace_note(f"Var: {var.get_ty(permissive=True)}")
 
         # Instantiate
         if var.get_name() not in variables_heap.keys():
             assert len(self.var.indices) == 0
 
+            # Generate value
             vals = self.val.codegen()
             assert len(vals) == 1
             val = vals[0]
 
-            type = var.get_ty()
+            # Get type from given value if no type is precised
+            type = var.get_ty(permissive=True)
+            if isinstance(type, TyNotSupported):
+                type = val.get_ty()
+
             variables_heap[var.get_name()] = Factory.from_val(type, val)
             return []
 

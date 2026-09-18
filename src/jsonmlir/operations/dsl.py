@@ -38,8 +38,8 @@ from jsonmlir.operations.op_unary import UnaryOp, UnaryOperator
 from jsonmlir.operations.op_var import VarOp
 from jsonmlir.operations.op_while import WhileOp
 from jsonmlir.utils.enum_scalars import Scalar
-from jsonmlir.variables.struct_field import StructAttribut
 from jsonmlir.variables.ty.ty import TyNode, parse_ty
+from jsonmlir.variables.val.struct_attribut import StructAttribut
 
 FieldSpec = tuple[str, str | TyNode, int, int] | StructAttribut
 

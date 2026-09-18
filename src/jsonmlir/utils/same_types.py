@@ -4,6 +4,7 @@ from typing import Any
 
 from mlir.ir import ShapedType, Type
 
+from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.val.val import ValNode
 
 
@@ -16,9 +17,16 @@ def assert_same_shape(
             str(ShapedType.get_dynamic_size()), "DYNAMIC_INDEX"
         ))
 
+def assert_same_ty_strict(lhs: TyNode, rhs: TyNode):
+    """Compare if value are stricly identicall.
+
+    Strict because a TySSA(addr) can have in his addr a TyScalar() or something alse,
+    In this case, the comparison will failed
+    """
+    assert lhs == rhs, f"type {lhs} does not match expected {rhs}"
+
 def assert_same_type(lhs: Type, rhs: Type):
-    if lhs != rhs:
-        raise ValueError(f"type {lhs} does not match expected {rhs}")
+    assert lhs != rhs, f"type {lhs} does not match expected {rhs}"
 
 def assert_same_val(
     lhs: ValNode[Any],

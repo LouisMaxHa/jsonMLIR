@@ -10,6 +10,7 @@ from jsonmlir.utils.discard_builder import discard_builder
 from jsonmlir.utils.enum_scalars import Scalar
 from jsonmlir.variables.memory import variables_heap
 from jsonmlir.variables.ty.ty import TyNode
+from jsonmlir.variables.ty.ty_not_supported import TyNotSupported
 from jsonmlir.variables.val.val import ValNode
 
 if TYPE_CHECKING:
@@ -31,26 +32,30 @@ class Var:
     def get_name(self) -> str:
         return self.name
 
-    def get_ty(self) -> TyNode:
-        given_type = self.type
+    def get_ty(self, permissive: bool = False) -> TyNode:
+        """Get type of variable.
+        Can be found in 'type' attribut or in register if variable already allocated """
         saved_type: TyNode | None = None
         if self.get_name() in variables_heap.keys():
             saved_type = variables_heap[self.get_name()].get_ty()
 
-        match (given_type is None, saved_type is None):
-            case (True, True):
+        match (self.type, saved_type):
+            case (None, None):
+                if permissive:
+                    return TyNotSupported("Unknow")
                 raise Exception(f"Can't find type for {repr(self.name)}")
-            case (True, False):
-                assert saved_type is not None
-                return saved_type
-            case (False, True):
-                assert given_type is not None
-                return given_type
-            case (False, False):
-                assert given_type is not None
-                assert saved_type is not None
-                assert type(saved_type) is type(given_type)
-                return saved_type
+
+            case (None, rhs):
+                assert rhs is not None
+                return rhs
+            case (lhs, None):
+                assert lhs is not None
+                return lhs
+            case (lhs, rhs):
+                assert lhs is not None
+                assert rhs is not None
+                assert type(rhs) is type(lhs)
+                return rhs
 
     def get_val(self) -> ValNode[Any]:
         if self.get_name() not in variables_heap.keys():

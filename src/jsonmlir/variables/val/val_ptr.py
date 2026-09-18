@@ -73,7 +73,7 @@ class ValPtr(ValNode[TyPtr]):
         # Consume index
         consuming = index[0]
         remaining = index[1::]
-        assert consuming == "*"
+        assert consuming == "*", f"Got {consuming}"
 
         # i64 -> llvm.ptr
         ssa_i64 = self._get_SSA()

@@ -294,15 +294,32 @@ def _print_progress(infos: ResultInfo) -> None:
             console.print("")
 
 
+def _matches_filter(path: Path, filters: list[str]) -> bool:
+    """Return True if *path* matches any filter (substring of the example name)."""
+    if not filters:
+        return True
+    name = path.parent.name
+    return any(f in name for f in filters)
+
+
 def run_all_examples(
     project_root: Path | None = None,
     *,
     jobs: int | None = None,
+    filters: list[str] | None = None,
 ) -> list[ResultInfo]:
-    """Run all examples and print the summary."""
+    """Run examples (optionally filtered by name) and print the summary."""
     root = (project_root or Path(__file__).resolve().parents[1]).resolve()
-    paths = discover_examples(root)
+    filters = filters or []
+    paths = [path for path in discover_examples(root) if _matches_filter(path, filters)]
     workers = jobs if jobs is not None else (os.cpu_count() or 4)
+
+    if not paths:
+        console.print(
+            f"[bold red]No example matched[/] {filters} in "
+            f"[cyan]{root / 'examples'}[/]"
+        )
+        return []
 
     console.print(
         f"[bold]Running {len(paths)} examples[/] from [cyan]{root / 'examples'}[/] "
@@ -342,11 +359,19 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         metavar="N",
         help=f"number of parallel workers (default: {default_jobs})",
     )
+    parser.add_argument(
+        "names",
+        nargs="*",
+        metavar="NAME",
+        help="only run examples whose name contains one of these substrings",
+    )
     return parser.parse_args(argv)
 
 
 if __name__ == "__main__":
     args = _parse_args()
-    results = run_all_examples(jobs=args.jobs)
+    results = run_all_examples(jobs=args.jobs, filters=args.names)
+    if args.names and not results:
+        sys.exit(1)
     failed = [r for r in results if r.status != ResultStats.OK]
     sys.exit(1 if failed else 0)

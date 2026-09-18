@@ -20,7 +20,8 @@ export PATH="$(pwd)/bin:$PATH"
 # Run
 jsonmlir examples/somme/main.json -A         # Generate a shared librairie from JSON
 jsonmlir examples/python_max/main.py         # Generate a shared librairie from python project
-jsonmlir jsonmlir python tests/run_tests.py  # run tests
+jsonmlir tests/run_tests.py                  # Run all tests
+jsonmlir tests/run_tests.py mdspan           # Run only the tests matching "mdspan"
 ```
 
 The `jsonmlir` wrapper will:
@@ -51,6 +52,22 @@ jsonmlir python scripts/generate_ts_ast.py output_json_schema.json
 - `--mlir-bin-dir` : Directory containing the `mlir-opt` executable
 - `--project-root` : Change the current directory (used for `./build`)
 - `--output-name`  : Name of the generated librairie
+
+## Running tests
+
+`tests/run_tests.py` compiles and runs every directory in `examples/` and checks
+the `EXPECT` lines printed by each program.
+
+```bash
+jsonmlir tests/run_tests.py              # Run every example
+jsonmlir tests/run_tests.py mdspan       # Run only examples whose name contains "mdspan"
+jsonmlir tests/run_tests.py struct array # Run examples matching "struct" OR "array"
+jsonmlir tests/run_tests.py -j 1 mdspan  # Single worker (useful for readable logs)
+```
+
+Each positional argument is a substring matched against the example directory
+name. With no argument, all examples are run. If nothing matches, the runner
+prints a warning and exits with code `1`.
 
 ## Execution trace example
 
