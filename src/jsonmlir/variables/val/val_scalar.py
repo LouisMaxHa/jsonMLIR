@@ -54,8 +54,7 @@ class ValScalar(ValNode[TyScalar]):
         return []
 
     def _get_SSA(self) -> Value:
-        op = memref.LoadOp(self.addr, [])
-        return op.result
+        return memref.LoadOp(self.addr, []).result
 
     # ──────────── Load ────────────
     def _load(

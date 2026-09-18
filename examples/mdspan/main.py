@@ -12,7 +12,6 @@ from jsonmlir.operations.dsl import (
 from jsonmlir.pipeline.compiler import compiler
 from jsonmlir.utils.enum_scalars import Scalar
 from jsonmlir.variables.ty.ty_mdspan import TyMdspan
-from jsonmlir.variables.ty.ty_memref import TyMemref
 from jsonmlir.variables.ty.ty_ptr import TyPtr
 from jsonmlir.variables.ty.ty_scalar import TyScalar
 

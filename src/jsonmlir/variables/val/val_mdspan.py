@@ -70,11 +70,9 @@ class ValMdspan(ValNode[TyMdspan]):
         source: ValNode[Any],
     ):
         assert(len(index) > 0)
-        # int -> load data and apply
-        # str -> consider struct
-        match index[0]:
-            case int():
-                return self.get_struct().store(["data", "*"] + list(index), source)
-            case str():
-                return self.get_struct().store(index, source)
+        # int   -> load data and apply
+        # Value -> consider struct
+        if isinstance(index[0], Value):
+            return self.get_struct().store(["data", "*"] + list(index), source)
+        return self.get_struct().store(index, source)
 

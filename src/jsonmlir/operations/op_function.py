@@ -38,18 +38,16 @@ class FunctionOp(OpNode):
         function.attributes["llvm.emit_c_interface"] = UnitAttr.get()
         entry_block = function.add_entry_block()
 
-        # Init variable
+        # Register entry block variable into variable heap
         with InsertionPoint(entry_block):
             with trace_step("Init args"):
                 for arg_ssa, (arg_name, arg_type) in zip(
                     entry_block.arguments,
                     self.args
                 ):
-                    val_arg = ValSSA(arg_ssa)
-
                     variables_heap[arg_name] = Factory.from_val(
                         arg_type,
-                        val_arg,
+                        ValSSA(arg_ssa)
                     )
 
         # Block codegen

@@ -104,14 +104,40 @@ class ValPtr(ValNode[TyPtr]):
         index: Sequence[str | Value],
         source: ValNode[Any],
     ):
-        assert index == []
-        assert isinstance(source, (ValSSA, ValPtr, ValScalar))
-        ssa = source.get_SSA([])
+        from jsonmlir.variables.factory import Factory
 
-        # Extract ssa value from memref<ssa value>
-        if isinstance(ssa.type, MemRefType):
-            op = memref.LoadOp(ssa, [])
-            ssa = op.result
+        # Return ptr
+        if index == []:
+            ssa = source.get_SSA([])
+            #TODO: Why this case ? Shoulw be already good format ?
+            # Extract ssa value from memref<ssa value>
+            if isinstance(ssa.type, MemRefType):
+                ssa = memref.LoadOp(ssa, []).result
+            memref.StoreOp(ssa, self.addr, [])
+            return
 
-        # Store
-        memref.StoreOp(ssa, self.addr, [])
+        # Consume index
+        consuming = index[0]
+        remaining = index[1::]
+        assert consuming == "*", f"Got {consuming}"
+
+        # i64 -> llvm.ptr
+        ssa_i64 = self._get_SSA()
+        ssa_ptr_llvm = llvm.IntToPtrOp(
+            cast(Any, llvm.PointerType).get(),  # type: ignore[reportAttributeAccessIssue]
+            ssa_i64,
+        ).result
+
+        # llvm.ptr -> memref (descripteur LLVM explicite)
+        ssa_derefed = ValSSA(
+            bare_ptr_to_memref(
+                ssa_ptr_llvm,
+                self.ty.base.get_memref_type(),
+            )
+        )
+
+        # Go recursive
+        return Factory.from_val(
+            self.ty.base,
+            ssa_derefed,
+        ).store(remaining, source)
