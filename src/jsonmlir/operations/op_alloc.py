@@ -18,10 +18,20 @@ from jsonmlir.variables.val.val import ValNode
 
 
 class AllocOp(OpNode):
-    """Allocate a heap-backed memref and register it under ``name``.
+    """Allocate a heap-backed memref and register it under ``name`` on the variable register.
 
-    The allocation is intentionally not scoped automatically; generated code
-    must arrange for the corresponding deallocation when required.
+    Deallocation have to be done manually.
+
+    Example:
+
+    .. code-block:: python
+
+        # Allocate memref<30x30xf64>
+        Alloca("values", TyMemref((30, 30), TyScalar(Scalar.f64)))
+
+        # Allocate memref<?xf64>
+        # Use shorthand for f64 type
+        Alloca("values", TyMemref((Var("n")), "f64")
     """
 
     op: Literal["alloc"] = "alloc"

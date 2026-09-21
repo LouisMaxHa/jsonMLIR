@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""PoC 1 - Génération de classes TypeScript directement depuis les modèles Pydantic.
+"""PoC 1 - Generate TypeScript classes directly from Pydantic models.
 
-Remplace le pipeline ``json_schema.json + json-schema-to-typescript`` :
-  - plus besoin de ``clean_ast_schema_for_ts`` (export_typescript.py),
-  - plus de dépendance npm ``json-schema-to-typescript``,
-  - les classes portent les valeurs par défaut des modèles Pydantic
-    (discriminants ``op``/``type``, ``Scalar.i64``, ``None``, ``()``…).
+Replaces the ``json_schema.json + json-schema-to-typescript`` pipeline:
+  - no need for ``clean_ast_schema_for_ts`` (export_typescript.py),
+  - no npm dependency on ``json-schema-to-typescript``,
+  - classes carry Pydantic model default values
+    (``op``/``type`` discriminators, ``Scalar.i64``, ``None``, ``()``...).
 
 Usage:
     python -m jsonmlir.schema.export_ts_classes schema.ts
@@ -22,8 +22,8 @@ from typing import Annotated, Any, Literal, cast, get_args, get_origin
 
 from pydantic import BaseModel
 
-# L'import de base.py enregistre les ops (model_rebuild) ; les unions
-# ``BaseValue`` / ``TyNode`` sont la source unique de vérité des registres.
+# Importing base.py registers the operations (model_rebuild); the
+# ``BaseValue`` / ``TyNode`` unions are the single source of truth for registries.
 from jsonmlir.operations.base import BaseValue
 from jsonmlir.operations.op_comment import CommentOp
 from jsonmlir.operations.op_define_function import DefineFunctionOp
@@ -70,7 +70,7 @@ def members_of(ann: Any) -> set[type[BaseModel]]:
         if isinstance(m, type) and issubclass(m, BaseModel)
     ])
 
-# ── Registres ──────────────────────────────────────────────────────────────
+# ── Registries ──────────────────────────────────────────────────────────────
 
 # Type conversion
 PRIMITIVES = {
@@ -100,7 +100,7 @@ MODELS = sorted(list(MODELS_SET), key=lambda e: e.__name__)
 
 # Typescript reserved keyword
 RESERVED = {"var", "type"}
-# type keyword can be used as attributs but not in fct args name
+# The type keyword can be used as an attribute but not as a function argument name.
 DISCRIMINATORS = {"type", "op"}
 
 # Overwritte field type
@@ -134,7 +134,7 @@ def ts_type(ann: Any) -> str:
     if ann in PRIMITIVES:
         return PRIMITIVES[ann]
 
-    # Classe de modèle (ordre important : Enum < TyNodeBase < BaseModel)
+    # Model class (order matters: Enum < TyNodeBase < BaseModel).
     if isinstance(ann, type):
         if issubclass(ann, Enum):
             return ann.__name__
@@ -148,7 +148,7 @@ def ts_type(ann: Any) -> str:
     if origin is Literal:
         return " | ".join(json.dumps(v) for v in get_args(ann))
 
-    # ValNode[Any] (valeurs déjà générées) -> JsonOp
+    # ValNode[Any] (already-generated values) -> JsonOp.
     if "ValNode" in str(cast(Any, ann)):
         return "JsonOp"
 
@@ -172,7 +172,7 @@ def ts_type(ann: Any) -> str:
 
 
 def ts_default(ann: Any, value: Any) -> str:
-    """Valeur par défaut python -> expression TypeScript."""
+    """Convert a Python default value to a TypeScript expression."""
     if value is None:
         return "null"
     if isinstance(value, str):
@@ -189,7 +189,7 @@ def ts_default(ann: Any, value: Any) -> str:
     =================================================== """
 
 def collect() -> dict[str, Any]:
-    """Construit le contexte de génération."""
+    """Build the generation context."""
     # Enum of string
     enum = {
         cls.__name__: ['"' + str(m.value) + '"' for m in cls]

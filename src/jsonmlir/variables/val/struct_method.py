@@ -11,7 +11,7 @@ from jsonmlir.variables.val.val import ValNode
 from jsonmlir.variables.val.val_scalar import ValScalar
 from jsonmlir.variables.val.val_struct import ValStruct
 
-# Un handler par struct : (opérateur, lhs, rhs) -> valeur résultat.
+# One handler per struct: (operator, lhs, rhs) -> result value.
 StructMethod = Callable[[OperatorOp, ValNode[Any], ValNode[Any]], ValNode[Any]]
 
 REGISTER_METHODES: dict[str, StructMethod] = {}
@@ -60,7 +60,7 @@ def elementwise(
 def attribut_to_scalar(
     ope: OperatorOp, lhs: ValStruct, rhs: ValScalar
 ) -> ValStruct:
-    """Apply scalar on each attribut of the structure"""
+    """Apply a scalar operation to each structure field."""
     from jsonmlir.operations.op_binary import generate_bin_op
 
     result = alloc_struct(lhs.ty)
@@ -72,7 +72,7 @@ def attribut_to_scalar(
 def attributwise(
     ope: OperatorOp, lhs: ValStruct, rhs: ValStruct
 ) -> ValStruct:
-    """Apply scalar op attribut by attribut"""
+    """Apply a scalar operation field by field."""
     from jsonmlir.operations.op_binary import generate_bin_op
     assert lhs.ty.name == rhs.ty.name, (
         f"cannot combine {lhs.ty.name!r} with {rhs.ty.name!r}"

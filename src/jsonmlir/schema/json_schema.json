@@ -146,7 +146,7 @@
     },
     "BinaryOp": {
       "additionalProperties": false,
-      "description": "Op\u00e9ration binaire compos\u00e9e de deux op\u00e9randes.",
+      "description": "Binary operation composed of two operands.",
       "properties": {
         "op": {
           "const": "binary",
@@ -283,7 +283,7 @@
     },
     "CallOp": {
       "additionalProperties": false,
-      "description": "Appel d'une fonction d\u00e9clar\u00e9e via DefineFunctionOp.\n\nLes types de retour et la v\u00e9rification des types d'arguments sont\nr\u00e9solus automatiquement depuis le registre global des fonctions.",
+      "description": "Call a function declared through DefineFunctionOp.\n\nReturn types and argument type validation are resolved automatically from the global function registry.",
       "properties": {
         "op": {
           "const": "call",
@@ -600,7 +600,7 @@
     },
     "DefineFunctionOp": {
       "additionalProperties": false,
-      "description": "D\u00e9clare la signature d'une fonction (nom, types d'entr\u00e9e, types de sortie).\n\nNe g\u00e9n\u00e8re aucun IR \u2014 alimente uniquement le registre global utilis\u00e9 par\nCallOp pour r\u00e9soudre les types de retour et v\u00e9rifier les types des arguments.",
+      "description": "Declare a function signature (name, input types, and output types).\n\nEmits no IR; it only populates the global registry used by CallOp to resolve return types and validate argument types.",
       "properties": {
         "op": {
           "const": "define_function",
@@ -879,7 +879,7 @@
     },
     "MathOp": {
       "additionalProperties": false,
-      "description": "Op\u00e9ration binaire compos\u00e9e de deux op\u00e9randes.",
+      "description": "Binary operation composed of two operands.",
       "properties": {
         "op": {
           "const": "math",
@@ -987,7 +987,7 @@
     },
     "PrintOp": {
       "additionalProperties": false,
-      "description": "Affiche la valeur d'une expression via la fonction externe ``print_int``.\n\nLa d\u00e9claration ``func.func private @print_int(i64) -> ()`` est ajout\u00e9e\nautomatiquement au module par ``compiler.declare_runtime``. Le symbole\ndoit \u00eatre d\u00e9fini dans le fichier d'appel C++ associ\u00e9 (par exemple\n``examples/main.cpp``) avec un linkage ``extern \"C\"`` ; il est\nr\u00e9solu une fois pour toutes au link statique entre le ``.o`` issu du\npipeline jsonMLIR et l'objet du fichier d'appel.",
+      "description": "Print an expression value through the external ``print_int`` function.\n\nThe declaration ``func.func private @print_int(i64) -> ()`` is added automatically to the module by ``compiler.declare_runtime``. The symbol must be defined in the associated C++ call file (for example ``examples/main.cpp``) with ``extern \"C\"`` linkage; it is resolved once during static linking between the ``.o`` produced by the jsonMLIR pipeline and the call file object.",
       "properties": {
         "op": {
           "const": "print",
@@ -1060,7 +1060,7 @@
       "type": "object"
     },
     "Scalar": {
-      "description": "Scalaire MLIR. La valeur JSON est le nom (``i64``, ``index``, \u2026).",
+      "description": "MLIR scalar. The JSON value is the name (``i64``, ``index``, ...).",
       "enum": [
         "i64",
         "i32",
@@ -1084,7 +1084,7 @@
     },
     "SetOp": {
       "additionalProperties": false,
-      "description": "Affecte une expression \u00e0 une variable.",
+      "description": "Assign an expression to a variable.",
       "properties": {
         "op": {
           "const": "set",
@@ -1302,7 +1302,7 @@
     },
     "UnaryOp": {
       "additionalProperties": false,
-      "description": "Op\u00e9ration unaire, r\u00e9\u00e9crite en op\u00e9ration binaire avec une constante.",
+      "description": "Unary operation rewritten as a binary operation with a constant.",
       "properties": {
         "op": {
           "const": "unary",
@@ -1605,7 +1605,7 @@
     }
   },
   "additionalProperties": false,
-  "description": "Racine JSON de type module : enregistre les structs puis g\u00e9n\u00e8re les fonctions.",
+  "description": "Module-type JSON root: register structs, then generate functions.",
   "properties": {
     "op": {
       "const": "module",

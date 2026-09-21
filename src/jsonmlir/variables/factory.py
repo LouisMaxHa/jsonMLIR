@@ -1,4 +1,4 @@
-"""Factory centralisée : création des valeurs"""
+"""Centralized factory for creating values."""
 
 from __future__ import annotations
 

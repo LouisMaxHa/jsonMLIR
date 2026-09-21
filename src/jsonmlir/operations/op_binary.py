@@ -34,8 +34,18 @@ if TYPE_CHECKING:
 class BinaryOp(OpNode):
     """Apply an operator to two operands element by element.
 
-    Scalar operations are lowered to the matching arithmetic or comparison
-    operation. Struct operands are dispatched to their registered methods.
+    Scalar operations are lowered to the matching arithmetic or comparison operation.
+    Struct operands are dispatched to their registered methods
+    defined in variables/val/struct_method.
+
+    Supported binary operators are listed in `OperatorOp` enum:
+    `+`, `+f`, `-f`, `-`, `*`, `*f`, `/`, `/f`, `<`, `>`, `==`, `<=`, `>=`, `<`, `<=`, `>`, `>=`, `==`, `!=`, `or`, `and`, `xor`
+
+    Example:
+
+    .. code-block:: python
+
+       Binary("+", Var("lhs"), Var("rhs"))
     """
 
     op: Literal["binary"] = "binary"
@@ -45,16 +55,16 @@ class BinaryOp(OpNode):
 
     @trace_step("BinaryOp: {self.ope.value}")
     def codegen(self) -> Sequence[ValNode[Any]]:
-        """Applique un opérateur"""
+        """Apply an operator."""
         # Recursive codegen
         l_vals = self.lhs.codegen()
         r_vals = self.rhs.codegen()
 
-        # On applique terme à terme
+        # Apply element by element.
         results: list[ValNode[Any]] = []
         for l_val, r_val in zip(l_vals, r_vals):
 
-            # Structs : délégué au handler enregistré pour la structure
+            # Structs: delegate to the handler registered for the structure.
             if isinstance(l_val, ValStruct) or isinstance(r_val, ValStruct):
                 struct_val = l_val if isinstance(l_val, ValStruct) else r_val
                 assert isinstance(struct_val, ValStruct)

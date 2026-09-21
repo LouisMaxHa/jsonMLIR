@@ -25,7 +25,7 @@ def _int_type(width: int) -> Callable[[], Type]:
 
 
 class Scalar(StrEnum):
-    """Scalaire MLIR. La valeur JSON est le nom (``i64``, ``index``, …)."""
+    """MLIR scalar. The JSON value is the name (``i64``, ``index``, ...)."""
 
     _family: ScalarFamily
     _byte_size: int
@@ -58,7 +58,7 @@ class Scalar(StrEnum):
     f16 = "f16", ScalarFamily.float, 2, F16Type.get
     f32 = "f32", ScalarFamily.float, 4, F32Type.get
     f64 = "f64", ScalarFamily.float, 8, F64Type.get
-    # Pas de Float80Type/Float128Type dans les bindings Python MLIR.
+    # Python MLIR bindings do not provide Float80Type/Float128Type.
     f80 = "f80", ScalarFamily.float, 10
     f128 = "f128", ScalarFamily.float, 16
     idx = "index", ScalarFamily.idx, 8, IndexType.get
@@ -71,14 +71,14 @@ class Scalar(StrEnum):
 
     def get_type(self) -> Type:
         if self._make_type is None:
-            raise ValueError(f"{self} non supporté par les bindings MLIR")
+            raise ValueError(f"{self} is not supported by the MLIR bindings")
         return self._make_type()
 
     def _is_alias(self) -> bool:
         return self.name[:1].isupper()
 
-    # TODO: Modifier pour renvoyer une erreur ou Scalar.notSupported
-    # Permet d'éviter d'avoir un possible none qui traine
+    # TODO: Change this to raise an error or return Scalar.notSupported.
+    # This avoids leaving a possible None value around.
     @staticmethod
     def from_type(attr: Type) -> Scalar | None:
         if isinstance(attr, IntegerType):

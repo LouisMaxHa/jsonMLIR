@@ -4,9 +4,9 @@ from mlir.ir import Block, Operation
 
 
 def function_entry_block(block: Block | None) -> Block:
-    """Bloc d'entrée de la fonction englobante (pas un bloc imbriqué scf/while/if).
-    Est-utilisé pour rajouter les valeurs constantes en haut du block de la fonction.
-    Permet de les avoirs tous au même endroit et dispo dans toute la fonction.
+    """Entry block of the enclosing function, not a nested scf/while/if block.
+    Used to add constant values at the top of the function block so they are
+    all in one place and available throughout the function.
     """
     if block is None:
         raise ValueError("function_entry_block requires a non-null block")

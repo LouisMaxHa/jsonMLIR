@@ -21,7 +21,14 @@ class MathOperator(Enum):
     sqrtOp = "sqrt"
 
 class MathOp(OpNode):
-    """Apply a supported mathematical operation to one operand."""
+    """Apply a supported mathematical operation to one operand.
+
+    Example:
+
+    .. code-block:: python
+
+       Math("sqrt", Var("value"))
+    """
 
     op: Literal["math"] = "math"
     ope: MathOperator

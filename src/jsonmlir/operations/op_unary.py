@@ -25,7 +25,16 @@ class UnaryOperator(Enum):
 
 
 class UnaryOp(OpNode):
-    """Apply a unary operator, lowered to a binary operation with a constant."""
+    """Apply a unary operator, lowered to a binary operation with a constant.
+
+    Example:
+
+    .. code-block:: python
+
+       Unary("!" , Const(1  , Scalar.i1 ))
+       Unary("-" , Const(5  , Scalar.i64))
+       Unary("-f", Const(5.0, Scalar.f64))
+    """
 
     op: Literal["unary"] = "unary"
     ope: UnaryOperator

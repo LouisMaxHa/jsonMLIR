@@ -9,7 +9,16 @@ from jsonmlir.variables.val.val import ValNode
 
 
 class NotSupportedOp(OpNode):
-    """Represent an operation that has not been implemented yet."""
+    """Represent an operation that has not been implemented yet.
+    Will raise an error if codegen is called.
+
+    Example:
+
+    .. code-block:: python
+
+        unsupported = NotSupported("vendor-specific operation")
+        unsupported.codegen() # Raise ValueError
+    """
 
     op: Literal["notSupported"] = "notSupported"
     msg: str

@@ -39,6 +39,7 @@ dev = [
 ]
 docs = [
     "furo>=2024.8.6",
+    "myst-parser>=4.0",
     "sphinx>=7.4,<9",
 ]
 
@@ -53,7 +54,7 @@ reportUnnecessaryCast = true
 reportUnnecessaryIsInstance = true
 reportUnnecessaryTypeIgnoreComment = true
 typeCheckingMode = "strict"
-# Les bindings Python de MLIR (mlir_core) ne fournissent pas de py.typed.
+# Python MLIR bindings (mlir_core) do not provide py.typed.
 reportMissingTypeStubs = false
 extraPaths = ["src", "tests"]
 "include" = ["docs", "src", "tests"]

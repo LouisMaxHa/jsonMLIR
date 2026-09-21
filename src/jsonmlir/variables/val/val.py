@@ -14,14 +14,14 @@ T = TypeVar("T", bound=TyNodeBase)
 _F = TypeVar("_F", bound=Callable[..., Any])
 
 
-# Decorateur pour indiquer que cette méthode doit être affichée dans la trace disponible avec -T
+# Decorator indicating that a method should be shown in the trace available with -T.
 def auto_log(log_format: str) -> Callable[[_F], _F]:
     def wrapper(func: _F) -> _F:
         setattr(func, "_log_format", log_format)
         return func
     return wrapper
 
-# Valeur = Type + autres informations (addr mémoire, ...)
+# Value = type + additional information (memory address, ...).
 class ValNode(ABC, Generic[T]):
     ty: T
 
@@ -31,23 +31,22 @@ class ValNode(ABC, Generic[T]):
     def init_from(type: TyNode, source: ValNode[Any]) -> ValNode[Any]:
         raise NotImplementedError
 
-    # Plutôt content de celui-la :)
-    # L'idée est d'insérer automatiquement des trace-step sur nos opérateurs
+    # Automatically insert trace steps on our operators.
     def __init_subclass__(cls, **kwargs: Any):
         super().__init_subclass__(**kwargs)
         for name, method in cls.__dict__.items():
             parent_method = getattr(super(cls, cls), name, None)
 
-            # Si c'est une méthode
+            # If it is a method.
             if not callable(method):
                 continue
 
-            # On récupère le log format définis par le parent
+            # Get the log format defined by the parent.
             log_format = getattr(parent_method, "_log_format", None)
             if not isinstance(log_format, str) :
                 continue
 
-            # On wrappe la méthode de la classe enfant en rajoutant non de classe + log_format
+            # Wrap the child method by adding the class name and log format.
             wrapped = trace_step(f"{cls.__name__}." + log_format, display_entry=True)(method)
             setattr(cls, name, wrapped)
 

@@ -9,7 +9,7 @@ from jsonmlir.operations.op_alloca import AllocaOp
 from jsonmlir.operations.op_binary import BinaryOp
 from jsonmlir.operations.op_call import CallOp
 from jsonmlir.operations.op_comment import CommentOp
-from jsonmlir.operations.op_cond import IfOp
+from jsonmlir.operations.op_if import IfOp
 from jsonmlir.operations.op_constant import ConstOp
 from jsonmlir.operations.op_define_struct import DefineStructOp
 from jsonmlir.operations.op_math import MathOp
@@ -22,7 +22,7 @@ from jsonmlir.operations.op_while import WhileOp
 from jsonmlir.utils.enum_scalars import Scalar
 from jsonmlir.variables.var import Var
 
-# Union discriminé de toutes les opérations connues.
+# Discriminated union of all known operations.
 BaseValue = Annotated[
     BinaryOp | CallOp | ConstOp | IfOp | VarOp | WhileOp
     | PrintOp | SetOp | AllocOp | AllocaOp | MathOp | UnaryOp | NotSupportedOp | CommentOp,

@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from jsonmlir.operations.base import BaseValue
 
 
-# Nom de la fonction externe (fournie par le code d'appel C++) qui imprime un entier.
+# Name of the external function (provided by the C++ call wrapper) that prints an integer.
 PRINT_INT_SYMBOL = "print_int"
 
 
@@ -22,6 +22,13 @@ class PrintOp(OpNode):
 
     The generated module expects the symbol to be provided by the associated
     C++ call wrapper with ``extern "C"`` linkage.
+    Legacy function that can serve as example.
+
+    Example:
+
+    .. code-block:: python
+
+       Print(Var("value"))
     """
 
     op: Literal["print"] = "print"
@@ -32,7 +39,7 @@ class PrintOp(OpNode):
         value_ssa = self.value.codegen()
         if len(value_ssa) != 1:
             raise ValueError(
-                f"print attend une seule SSAValue, en a reçu {len(value_ssa)}"
+                f"print expects a single SSAValue, received {len(value_ssa)}"
             )
 
         CallOp(

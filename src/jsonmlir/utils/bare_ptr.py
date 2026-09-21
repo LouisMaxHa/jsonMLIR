@@ -1,9 +1,9 @@
-"""Construction d'un memref à partir d'un pointeur brut (!llvm.ptr).
+"""Build a memref from a raw pointer (!llvm.ptr).
 
-On construit explicitement le descripteur
-memref LLVM (ptr, ptr alignée, offset, tailles, strides) puis on le convertit
-en memref via ``builtin.unrealized_conversion_cast``. Ce cast est résorbé par
-``finalize-memref-to-llvm`` + ``reconcile-unrealized-casts`` dans le pipeline.
+The LLVM memref descriptor (ptr, aligned ptr, offset, sizes, and strides) is
+built explicitly and then converted to a memref through
+``builtin.unrealized_conversion_cast``. This cast is removed by
+``finalize-memref-to-llvm`` + ``reconcile-unrealized-casts`` in the pipeline.
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ def bare_ptr_to_memref(
     ptr: Value,
     memref_type: MemRefType,
 ) -> Value:
-    """``!llvm.ptr`` -> ``memref<...>`` via un descripteur LLVM explicite."""
+    """Convert ``!llvm.ptr`` to ``memref<...>`` through an explicit descriptor."""
     shape = list(memref_type.shape)
     rank = len(shape)
     dyn = ShapedType.get_dynamic_size()
@@ -40,16 +40,16 @@ def bare_ptr_to_memref(
     def c64(value: int) -> Value:
         return llvm.ConstantOp(i64, IntegerAttr.get(i64, value)).result
 
-    # Strides row-major contigus. Une dimension dynamique n'est admise qu'en
-    # position externe : au-delà, les strides seraient incalculables.
+    # Contiguous row-major strides. A dynamic dimension is allowed only in the
+    # outermost position; otherwise the strides could not be calculated.
     strides = [1] * rank
     acc = 1
     for axis in reversed(range(rank)):
         strides[axis] = acc
         if shape[axis] == dyn:
             assert axis == 0, (
-                "bare_ptr_to_memref : seule la dimension la plus externe "
-                f"peut être dynamique ({memref_type})"
+                "bare_ptr_to_memref: only the outermost dimension "
+                f"may be dynamic ({memref_type})"
             )
         else:
             acc *= shape[axis]
@@ -59,8 +59,8 @@ def bare_ptr_to_memref(
     desc = llvm.InsertValueOp(desc, ptr, [1]).result
     desc = llvm.InsertValueOp(desc, c64(0), [2]).result
     for axis in range(rank):
-        # La taille d'une dimension dynamique n'est pas connue ici ; elle n'est
-        # pas utilisée par l'abaissement de load/store (seuls les strides le sont).
+        # The size of a dynamic dimension is unknown here; load/store lowering
+        # does not use it, only the strides.
         size = shape[axis] if shape[axis] != dyn else 0
         desc = llvm.InsertValueOp(desc, c64(size), [3, axis]).result
         desc = llvm.InsertValueOp(desc, c64(strides[axis]), [4, axis]).result

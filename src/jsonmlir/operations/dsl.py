@@ -1,15 +1,24 @@
-"""Constructeurs DSL à arguments positionnels, compatibles basedpyright.
-Ce module expose des fonctions factory typées pour l'écriture manuelle en Python.
+"""Positional-argument DSL constructors compatible with basedpyright.
+This module exposes typed factory functions for writing Python descriptions by hand.
 
-Cela évite d'avoir à écrire
+This avoids writing
 ```python
 Var(name="MyIntArray", indices=[10], type=TyScalar(Scalar.i64)
 ```
 
-mais plutôt
+and instead allows
 ```python
 Var("MyIntArray", [10], "i64"
 ```
+
+Pydantic also normalizes compact input at the JSON boundary. A scalar type can
+be written as ``"i64"`` instead of its explicit object form, and operation
+fields accept enum values such as ``"+"`` directly:
+
+.. code-block:: python
+
+   compact_type = parse_ty("i64")
+   compact_operation = Binary("+", Var("x"), Const(1))
 
 """
 
@@ -23,7 +32,7 @@ from jsonmlir.operations.op_alloca import AllocaOp
 from jsonmlir.operations.op_binary import BinaryOp
 from jsonmlir.operations.op_call import CallOp
 from jsonmlir.operations.op_comment import CommentOp
-from jsonmlir.operations.op_cond import IfOp
+from jsonmlir.operations.op_if import IfOp
 from jsonmlir.operations.op_constant import ConstOp
 from jsonmlir.operations.op_define_function import DefineFunctionOp
 from jsonmlir.operations.op_define_struct import DefineStructOp

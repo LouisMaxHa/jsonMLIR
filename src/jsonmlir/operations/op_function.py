@@ -22,7 +22,24 @@ class FunctionOp(OpNode):
     """Generate a function from typed arguments and a sequence of operations.
 
     The result types are inferred from the values returned by the function
-    body.
+    body. Args are mendatory to get the args name.
+
+    Example:
+
+    .. code-block:: python
+
+        Function(
+            "add",
+            # Arguments
+            [
+                ("lhs", TyScalar(Scalar.i64)),
+                ("rhs", TyScalar(Scalar.i64))
+            ],
+            # Implementation
+            [
+                Binary("+", Var("lhs"), Var("rhs"))
+            ]
+        )
     """
 
     op: Literal["function"] = "function"

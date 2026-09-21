@@ -8,6 +8,14 @@ from jsonmlir.variables.ty.ty import TyNested, TyNodeBase
 
 
 class TyPtr(TyNodeBase):
+    """Represent an address-valued pointer with a described pointee.
+
+    Example:
+
+    .. code-block:: python
+
+       pointer = TyPtr(TyScalar(Scalar.i64))
+    """
     type: Literal["ptr"] = "ptr"
     base: TyNested
 
@@ -15,8 +23,8 @@ class TyPtr(TyNodeBase):
         super().__init__(*args, **kwargs)
 
     def get_type(self) -> IntegerType:
-        # Adresse en i64 à la frontière ABI ; le pointeur LLVM n'apparaît
-        # qu'au déréférencement.
+        # Use i64 at the ABI boundary; the LLVM pointer appears only when
+        # dereferencing.
         return IntegerType.get_signless(64)
 
     def get_memref_type(self) -> MemRefType:

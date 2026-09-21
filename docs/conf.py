@@ -5,6 +5,8 @@ import sys
 from inspect import cleandoc, getdoc
 from typing import Any
 
+from docutils import nodes
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
@@ -25,17 +27,22 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
+    "myst_parser",
 ]
 
 # The MLIR Python bindings are supplied by the LLVM build and are not a PyPI
 # dependency. Mocking them keeps API documentation builds lightweight.
 autodoc_mock_imports = ["mlir"]
 autodoc_default_options = {
+    "exclude-members": "codegen,model_config,get_type,get_memref_type",
     "members": True,
     "member-order": "bysource",
     "show-inheritance": True,
 }
 autodoc_typehints = "description"
+autodoc_type_aliases = {
+    "TyNode": "jsonmlir.variables.ty.ty.TyNode",
+}
 autodoc_inherit_docstrings = True
 autosummary_generate = True
 
@@ -48,6 +55,7 @@ exclude_patterns = ["_build", "slides"]
 
 html_theme = "furo"
 html_title = "jsonMLIR documentation"
+add_module_names = False
 
 
 def _document_dsl_from_operation(
@@ -81,7 +89,21 @@ def _document_dsl_from_operation(
         lines[:] = cleandoc(docstring).splitlines()
 
 
+def _shorten_type_alias_fields(app: Any, doctree: nodes.document, docname: str) -> None:
+    """Keep expanded Pydantic type aliases readable in autodoc parameters."""
+    del app, docname
+    alias = "TypeAliasForwardRef('jsonmlir.variables.ty.ty.TyNode')"
+    for field in doctree.findall(nodes.field):
+        body = field.next_node(nodes.field_body)
+        if body is None or alias not in body.astext():
+            continue
+        text = body.astext().replace(alias, "TyNode")
+        body.clear()
+        body += nodes.paragraph(text=text)
+
+
 def setup(app: Any) -> dict[str, str]:
     """Register the DSL-to-operation documentation bridge."""
     app.connect("autodoc-process-docstring", _document_dsl_from_operation)
+    app.connect("doctree-resolved", _shorten_type_alias_fields)
     return {"version": "1"}

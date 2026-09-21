@@ -14,12 +14,20 @@ from jsonmlir.variables.ty.ty_struct import StructRef
 
 
 class TyBuffer(TyNodeBase):
+    """Represent a byte buffer containing contiguous struct instances.
+
+    Example:
+
+    .. code-block:: python
+
+       points = TyBuffer((128,), TyStruct("Point"))
+    """
     type: Literal["buffer"] = "buffer"
     dimensions: tuple[int | None, ...] = Field(alias="dims")
     base: StructRef # Pydantic equivalent for TyStruct
 
-    # Les constructeurs (``TyBuffer(dims, base)``) sont
-    # gérés par ``TyNodeBase.__init__`` ; on les déclare ici pour pyright
+    # Constructors (``TyBuffer(dims, base)``) are handled by
+    # ``TyNodeBase.__init__``; declare them here for pyright.
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 

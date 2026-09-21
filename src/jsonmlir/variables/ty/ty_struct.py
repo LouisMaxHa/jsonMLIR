@@ -11,22 +11,30 @@ from jsonmlir.variables.ty.ty import TyNodeBase
 
 
 class TyStruct(TyNodeBase):
+    """Represent a named externally-defined struct.
+
+    The layout is resolved from the struct registry when the type is lowered.
+    Struture are lazy evaluated, you can reference them by name and define them after.
+
+    Arguments are:
+    - if `base` is `StructDescriptor`: Pass anonymous structures
+    - if `base` is `String`: Check struct registry for definition
+    - if `base` is `None`: If name is passed thru Pydantic kwargs
+    - `kargs["name"]`: Name of the struct, equivalent to base is String.
+
+    Example:
+
+    .. code-block:: python
+
+       TyStruct("Point")
+    """
     type: Literal["struct"] = "struct"
     name: str
 
-    # Résolution paresseuse : un struct peut être référencé avant sa définition.
+    # Lazy resolution: a struct may be referenced before it is defined.
     _resolved: StructDescriptor | None = PrivateAttr(default=None)
 
     def __init__(self, base: str | StructDescriptor | None = None, /, **kwargs: Any) -> None:
-        """Represent a structure.
-        Struture are lazy evaluated, you can reference them by name and define them after.
-
-        Arguments are:
-        - base is StructDescriptor: Pass anonymous structures
-        - base is String: Check struct registry for definition
-        - base is None: If name is passed thru Pydantic kwargs
-        - kargs["name"]: Name of the struct, equivalent to base is String.
-        """
         # Set name
         if isinstance(base, str):
             kwargs["name"] = base
@@ -62,12 +70,12 @@ class TyStruct(TyNodeBase):
     def __repr__(self) -> str:
         return f"Struct({self.name!r})"
 
-# TODO: Pourquoi ?
+# TODO: Why?
 def _struct_from_name(value: Any) -> Any:
     return TyStruct(value) if isinstance(value, str) else value
 
 
-# Un buffer / SOA porte toujours un struct : le JSON n'en garde que le nom.
+# A buffer / SOA always contains a struct; JSON stores only its name.
 StructRef = Annotated[
     TyStruct,
     BeforeValidator(_struct_from_name),

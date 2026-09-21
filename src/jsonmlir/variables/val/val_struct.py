@@ -60,7 +60,7 @@ class ValStruct(ValNode[TyStruct]):
         consuming = index[0]
         remaining = index[1::]
 
-        # Load attribut
+        # Load field.
         if consuming in self.ty.struct.fields.keys():
             valNode = self.get_field(consuming)
         else:
@@ -84,7 +84,7 @@ class ValStruct(ValNode[TyStruct]):
         consuming = index[0]
         remaining = index[1::]
 
-        # Recursif
+        # Recursive case.
         if remaining:
             self.load([consuming])\
                 .store(remaining, source)

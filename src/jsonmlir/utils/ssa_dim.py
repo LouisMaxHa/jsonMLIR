@@ -1,4 +1,4 @@
-"""Conversion des dimensions statiques/dynamiques en SSA Values."""
+"""Convert static/dynamic dimensions to SSA values."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ def dimensions_to_ssa(
     dimensions: Sequence[int | None],
     ref: Value,
 ) -> Sequence[Value]:
-    """int -> constante index ; None -> memref.dim sur ``ref``."""
+    """int -> index constant; None -> memref.dim on ``ref``."""
     result: list[Value] = []
     for axis, dim in enumerate(dimensions):
         match dim:

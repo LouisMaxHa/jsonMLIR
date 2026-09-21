@@ -1,23 +1,23 @@
-"""Configuration du schéma JSON des modèles AST pour une génération TS propre.
+"""Configure the JSON schema of AST models for clean TypeScript generation.
 
-Appliqué via ``ConfigDict(json_schema_extra=...)`` sur les bases ``OpNode`` et
-``TyNodeBase`` : le schéma généré par Pydantic expose alors des objets stricts
-(``additionalProperties: false``) et des discriminants ``op`` / ``type``
-obligatoires sans défaut - sans changer le comportement de validation Python.
+Applied through ``ConfigDict(json_schema_extra=...)`` on the ``OpNode`` and
+``TyNodeBase`` bases, the Pydantic schema exposes strict objects
+(``additionalProperties: false``) and required ``op`` / ``type`` discriminators
+without defaults, without changing Python validation behavior.
 """
 
 from __future__ import annotations
 
 from typing import Any, cast
 
-# Champs discriminants des unions : ``op`` pour les opérations, ``type`` pour
-# les types. Voir ``Field(discriminator=...)`` dans ``op_module.py`` / ``ty.py``.
+# Discriminator fields for unions: ``op`` for operations and ``type`` for types.
+# See ``Field(discriminator=...)`` in ``op_module.py`` / ``ty.py``.
 _DISCRIMINANT_FIELDS = ("op", "type")
 
 
 def ast_schema_extra(schema: dict[str, Any], _model_class: type) -> None:
-    """Retourne un schéma objet avec ``additionalProperties: false`` et les
-    discriminants requis sans ``default`` (évite les alias json2ts inutiles)."""
+    """Return an object schema with ``additionalProperties: false`` and
+    required discriminators without ``default`` (avoiding useless json2ts aliases)."""
     if schema.get("type") != "object":
         return
 

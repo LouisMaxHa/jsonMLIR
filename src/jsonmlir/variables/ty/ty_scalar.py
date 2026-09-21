@@ -10,6 +10,14 @@ from jsonmlir.variables.ty.ty import TyNodeBase
 
 
 class TyScalar(TyNodeBase):
+    """Represent an MLIR integer, floating-point, or index scalar.
+
+    Example:
+
+    .. code-block:: python
+
+       i64 = TyScalar(Scalar.i64)
+    """
     type: Literal["scalar"] = "scalar"
     scalar: Scalar = Field(alias="name")
 

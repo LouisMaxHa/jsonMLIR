@@ -16,7 +16,22 @@ if TYPE_CHECKING:
 
 
 class WhileOp(OpNode):
-    """Generate a while loop from a condition and a body."""
+    """Generate a while loop from a condition and a body.
+
+    Example:
+
+    .. code-block:: python
+
+       While(
+        Binary("<", Var("i"), Const(10)),
+            [
+                Set(
+                    Var("i"),
+                    Binary("+", Var("i"), Const(1))
+                )
+            ]
+        )
+    """
 
     op: Literal["while"] = "while"
     cond: BaseValue

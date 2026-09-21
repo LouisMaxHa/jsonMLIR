@@ -9,11 +9,13 @@ when writing descriptions by hand, or generate the JSON representation from
 another language and feed it to the ``jsonmlir`` command.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Guides
 
    quickstart
    api
+   operations
+   typesAndVals
 
 .. seealso::
 

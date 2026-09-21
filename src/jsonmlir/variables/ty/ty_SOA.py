@@ -11,6 +11,16 @@ from jsonmlir.variables.ty.ty_struct import StructRef
 
 
 class TySOA(TyNodeBase):
+    """Represent a structure-of-arrays value.
+
+    Each struct field is stored in its own column with the same element count.
+
+    Example:
+
+    .. code-block:: python
+
+       columns = TySOA((128,), TyStruct("Point"))
+    """
     type: Literal["soa"] = "soa"
 
     # Number of struct contained

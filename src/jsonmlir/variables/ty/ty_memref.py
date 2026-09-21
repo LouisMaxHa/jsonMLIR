@@ -25,6 +25,16 @@ from jsonmlir.variables.ty.ty_struct import TyStruct
 # }
 
 class TyMemref(TyNodeBase):
+    """Represent a shaped MLIR memref with a nested element type.
+
+    Dimensions may be static integers or ``None`` for dynamic dimensions.
+
+    Example:
+
+    .. code-block:: python
+
+       matrix = TyMemref((None, 4), TyScalar(Scalar.f32))
+    """
     type: Literal["memref"] = "memref"
     dimensions: tuple[int | None, ...] = Field(alias="dims")
     base: TyNested

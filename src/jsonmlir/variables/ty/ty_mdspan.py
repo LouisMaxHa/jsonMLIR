@@ -20,6 +20,14 @@ MDSPAN_SIZE = 8 + 8
 
 
 class TyMdspan(TyNodeBase):
+    """Represent a one-dimensional span descriptor containing pointer and size.
+
+    Example:
+
+    .. code-block:: python
+
+       span = TyMdspan(None, TyScalar(Scalar.f64))
+    """
     type: Literal["mdspan"] = "mdspan"
     dimension: int | None = Field(alias="dims")
     base: TyNested

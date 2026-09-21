@@ -6,12 +6,12 @@ from pydantic import BaseModel, ConfigDict, model_serializer, model_validator
 
 
 class StructAttribut(BaseModel):
-    """Pydantic class that represent struct attribut: ``[name, type, offset, size]``"""
+    """Pydantic class representing a struct attribute: ``[name, type, offset, size]``."""
 
     model_config = ConfigDict(frozen=True)
 
     name: str
-    type: Any  # TyNode union - résolu à l'exécution pour éviter les imports circulaires
+    type: Any  # TyNode union - resolved at runtime to avoid circular imports.
     offset: int
     size: int
 

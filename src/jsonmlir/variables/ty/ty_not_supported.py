@@ -8,6 +8,14 @@ from jsonmlir.variables.ty.ty import TyNodeBase
 
 
 class TyNotSupported(TyNodeBase):
+    """Represent an input type preserved for diagnostics but not lowerable to MLIR.
+
+    Example:
+
+    .. code-block:: python
+
+       unknown = TyNotSupported("vendor_type")
+    """
     type: Literal["notSupported"] = "notSupported"
     msg: str
 

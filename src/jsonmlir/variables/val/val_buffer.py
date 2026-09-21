@@ -69,8 +69,8 @@ class ValBuffer(ValNode[TyBuffer]):
         remaining = index[len(self.ty.dimensions) :]
         assert all_ssavalues(consuming)
 
-        # ViewOp (pas subview) : conserve un layout identité, requis ensuite
-        # par les memref.view de champs de struct.
+        # ViewOp (not subview): preserve an identity layout, required later by
+        # memref.view for struct fields.
         struct_size = self.ty.base.struct.size
         offset = arith.MulIOp(
             ssa_val.idx_to_ssavalues(consuming[0]),
@@ -112,7 +112,7 @@ class ValBuffer(ValNode[TyBuffer]):
 
 
     # ──────────── n_elements ────────────
-    """Nombre d'éléments struct = taille buffer / taille struct (octets)."""
+    """Number of struct elements = buffer size / struct size (bytes)."""
     def get_size(self) -> Value | int:
         assert len(self.ty.dimensions) >= 1
         struct_size = self.ty.base.struct.size
@@ -198,9 +198,9 @@ class ValBuffer(ValNode[TyBuffer]):
                 StridedLayoutAttr.get(0, [stride_size]),
             ),
             flat_view,
-            [],           # offsets (dynamiques)
-            cast_sizes,   # sizes (dynamiques)
-            [],           # strides (dynamiques)
+            [],           # offsets (dynamic)
+            cast_sizes,   # sizes (dynamic)
+            [],           # strides (dynamic)
             static_offsets=[0],
             static_sizes=static_sizes,
             static_strides=[stride_size],

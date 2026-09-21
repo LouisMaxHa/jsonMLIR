@@ -18,12 +18,12 @@ const_heap: dict[tuple[int | float, str], list[Value]] = {}
 # TODO: Clear variable end of function
 
 def ensure_index(value: Value) -> Value:
-    """Cast un entier vers ``index`` si besoin (requis par memref.load/store)."""
+    """Cast an integer to ``index`` when needed (required by memref.load/store)."""
     if isinstance(value.type, IndexType):
         return value
     if isinstance(value.type, IntegerType):
         return IndexCastOp(IndexType.get(), value).result
-    raise TypeError(f"Impossible de caster {value.type} vers index")
+        raise TypeError(f"Cannot cast {value.type} to index")
 
 
 def idx_to_ssavalues(value: int | Value) -> Value:

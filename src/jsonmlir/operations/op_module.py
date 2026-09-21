@@ -14,7 +14,7 @@ from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.memory import functions_registry, structs_registry
 from jsonmlir.variables.val.val import ValNode
 
-# Déclaration de struct, de signature de fonction, ou de corps de fonction
+# Struct declaration, function signature, or function body.
 ModuleStatement = Annotated[
     DefineStructOp | DefineFunctionOp | FunctionOp | CommentOp,
     Field(discriminator="op"),
@@ -22,10 +22,26 @@ ModuleStatement = Annotated[
 
 
 class ModuleJsonOp(OpNode):
-    """Root operation that declares types and generates functions.
+    """Root operation that contains struct declaration, function declaration, function implementation and comments.
 
-    Function signatures are registered before function bodies are generated,
-    which permits calls to functions declared later in the module.
+
+    Example:
+
+    .. code-block:: python
+
+       Module([
+        Comment("My first module using jsonMlir!"),
+        DefineStruct("coordinate", 16, [("x", "f64", 0, 8), ("y", "f64", 8, 8)]),
+        DefineFunction("sum", [TyStruct("coordinate")], "f64")
+        Function(
+            "sum", [("coo", TyStruct("coordinate")], [
+                Binary("+",
+                    Var("coo", ["x"]),
+                    Var("coo", ["y"])
+                )
+            ]
+        )
+       ])
     """
 
     op: Literal["module"] = "module"
@@ -36,13 +52,13 @@ class ModuleJsonOp(OpNode):
         structs_registry.clear()
         functions_registry.clear()
 
-        # Pré-pass : enregistrer toutes les déclarations de fonction
-        # avant de générer les corps (permet les appels dans n'importe quel ordre)
+        # First pass: register all function declarations before generating
+        # bodies, allowing calls in any order.
         for item in self.body:
             if isinstance(item, DefineFunctionOp):
                 item.codegen()
 
-        # Passe principale : générer le reste (structs, corps de fonctions)
+        # Main pass: generate the remaining items (structs, function bodies).
         for item in self.body:
             if not isinstance(item, DefineFunctionOp):
                 item.codegen()

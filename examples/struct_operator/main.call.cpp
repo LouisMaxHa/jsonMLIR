@@ -3,8 +3,8 @@
 #include <cstdint>
 #include <iostream>
 
-// Un opérateur de structure est résolu via struct_method.py : Real3 + Real3
-// applique `+f` champ par champ, puis renvoie une nouvelle Real3 (memref).
+// A struct operator is resolved through struct_method.py: Real3 + Real3
+// applies `+f` field by field, then returns a new Real3 (memref).
 struct Real3 {
   double x;
   double y;

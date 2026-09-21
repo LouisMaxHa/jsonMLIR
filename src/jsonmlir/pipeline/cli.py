@@ -193,6 +193,5 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 if __name__ == "__main__":
     from jsonmlir.pipeline.compiler import main
-    print("hey")
 
     raise SystemExit(main())

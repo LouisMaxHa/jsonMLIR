@@ -12,7 +12,7 @@ module = Module([
         ("z", "f64", 16, 8),
     ]),
 
-    # v1 + v2 : délégué au handler Real3 enregistré dans struct_method.py
+# v1 + v2: delegated to the Real3 handler registered in struct_method.py.
     Function(
         "lib_main",
         [("v1", TyStruct("Real3")), ("v2", TyStruct("Real3"))],

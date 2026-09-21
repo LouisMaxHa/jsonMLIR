@@ -11,10 +11,23 @@ from jsonmlir.variables.val.val import ValNode
 
 
 class DefineStructOp(OpNode):
-    """Register the layout of an externally defined struct.
+    """Register a struct layout.
 
     The declaration records field names, types, offsets, and the total size;
     it does not emit MLIR by itself.
+
+    Example:
+
+    .. code-block:: python
+
+        DefineStruct(
+            "Point", # Name
+            16,      # Size
+            [   # Name, Type, offset, size
+                ("x", "f64", 0, 8),
+                ("y", "f64", 8, 8)
+            ]
+        )
     """
 
     op: Literal["define struct"] = "define struct"

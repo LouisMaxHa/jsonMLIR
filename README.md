@@ -33,8 +33,8 @@ docker build -t jsonmlir .
 export PATH="$(pwd)/bin:$PATH"
 
 # Run
-jsonmlir examples/somme/main.json -A         # Generate a shared librairie from JSON
-jsonmlir examples/python_max/main.py         # Generate a shared librairie from python project
+jsonmlir examples/somme/main.json -A         # Generate a shared library from JSON
+jsonmlir examples/python_max/main.py         # Generate a shared library from Python project
 jsonmlir tests/run_tests.py                  # Run all tests
 jsonmlir tests/run_tests.py mdspan           # Run only the tests matching "mdspan"
 ```
@@ -55,18 +55,18 @@ jsonmlir python scripts/generate_ts_ast.py output_json_schema.json
 
 
 ## Options
-- `--ast`, `-a`         : Print the Python **a**ST
-- `--mlir`, `-m`        : Print the **m**LIR IR
-- `--mlir_opti`, `-M`   : Print the **M**LIR IR after optimisations passes
-- `--mlir_llvm`, `-n`   : Print the MLIR code after lowering to LLVM dialect of MLIR
-- `--llvm`, `-l`        : Print the **l**LVM code
-- `--llvm_opti`, `-L`   : Print the **L**LVM code after LLVM optimisations passes
-- `--cmd`, `-C`         : Print **C**ommands used during code generation
-- `--All`, `-A`         : Print **A**ll steps and informations
+- `-a`, `--ast`         : Print the Python **a**ST
+- `-m`, `--mlir`        : Print the **m**LIR IR
+- `-M`, `--mlir_opti`   : Print the **M**LIR IR after optimisations passes
+- `-n`, `--mlir_llvm`   : Print the MLIR code after lowering to LLVM dialect of MLIR
+- `-l`, `--llvm`        : Print the **l**LVM code
+- `-L`, `--llvm_opti`   : Print the **L**LVM code after LLVM optimisations passes
+- `-C`, `--cmd`         : Print **C**ommands used during code generation
+- `-A`, `--All`         : Print **A**ll steps and informations
 
 - `--mlir-bin-dir` : Directory containing the `mlir-opt` executable
 - `--project-root` : Change the current directory (used for `./build`)
-- `--output-name`  : Name of the generated librairie
+- `--output-name`  : Name of the generated library
 
 ## Running tests
 
@@ -85,9 +85,6 @@ name. With no argument, all examples are run. If nothing matches, the runner
 prints a warning and exits with code `1`.
 
 ## Execution trace example
-
-![Tests](docs/images/tests.png)
-
 
 ## Project structure
 
@@ -126,7 +123,7 @@ prints a warning and exits with code `1`.
 
 ## Example
 
-We want to generate a librairie with a function that look like this:
+We want to generate a library with a function that looks like this:
 ```python
 def lib_main(max: int) -> int:
     toto = 0

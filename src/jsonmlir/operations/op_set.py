@@ -16,7 +16,22 @@ if TYPE_CHECKING:
 
 
 class SetOp(OpNode):
-    """Assign an expression to a variable, creating it when necessary."""
+    """Assign an expression to a variable, creating it when necessary.
+
+    Type can be defined in the VarOp or deduce from the val value.
+    If both are available, a check is done.
+    If you use index in VarOp, the variable should already have been declared.
+
+    Example:
+
+    .. code-block:: python
+
+        # result = x + 1
+        Set(
+            Var("result"),
+            Binary("+", Var("x"), Const(1))
+        )
+    """
 
     op: Literal["set"] = "set"
     var: VarOp

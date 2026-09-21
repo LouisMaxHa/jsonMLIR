@@ -16,7 +16,20 @@ if TYPE_CHECKING:
 
 
 class IfOp(OpNode):
-    """Generate a conditional block with optional then and else regions."""
+    """Generate a conditional block with optional then and else regions.
+
+    If last operation of then and else block are the same type, this value is returned, otherwise, no value is returned.
+
+    Example:
+
+    .. code-block:: python
+
+       If(
+            Binary(">", Var("x"), Var("y"))),
+            [Var("x")],
+            [Var("y")]
+        )
+    """
     op: Literal["if"] = "if"
     cond: BaseValue
     thenBlock: Sequence[BaseValue]
@@ -29,15 +42,15 @@ class IfOp(OpNode):
         assert len(conds_ssa) == 1
         cond_ssa = conds_ssa[0].get_SSA()
 
-        # Create IfOp (les blocs then/else appartiennent à ses régions)
+        # Create IfOp (the then/else blocks belong to its regions).
         has_else = self.elseBlock is not None
         if_op = scf.IfOp(cond_ssa, has_else=has_else)
 
-        # Région then
+        # Then region.
         codegenBlock(self.thenBlock, if_op.then_block)
         scf.YieldOp([], ip=InsertionPoint(if_op.then_block))
 
-        # Région else
+        # Else region.
         if if_op.else_block:
             codegenBlock(self.elseBlock, if_op.else_block)
             scf.YieldOp([], ip=InsertionPoint(if_op.else_block))

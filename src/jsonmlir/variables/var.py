@@ -34,7 +34,8 @@ class Var:
 
     def get_ty(self, permissive: bool = False) -> TyNode:
         """Get type of variable.
-        Can be found in 'type' attribut or in register if variable already allocated """
+         Can be found in the 'type' attribute or in the register if the variable
+         is already allocated."""
         saved_type: TyNode | None = None
         if self.get_name() in variables_heap.keys():
             saved_type = variables_heap[self.get_name()].get_ty()

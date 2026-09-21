@@ -19,7 +19,7 @@ module = Module([
     Function(
         "lib_main",
         [
-            # ptr<span<i64>> : le MdSpan est passé par adresse (ABI i64).
+            # ptr<span<i64>>: MdSpan is passed by address (i64 ABI).
             ("spanRef", TyPtr(TyMdspan(dims=None, base=TyScalar(Scalar.i64)))),
         ],
         [

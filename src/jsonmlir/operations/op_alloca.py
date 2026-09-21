@@ -18,7 +18,11 @@ from jsonmlir.variables.val.val import ValNode
 
 
 class AllocaOp(OpNode):
-    """Allocate a stack-backed memref with automatic scope cleanup."""
+    """Allocate a stack-backed memref with automatic scope cleanup.
+    Save the variable in the variable register.
+
+    See `AllocOp` for example.
+    """
 
     op: Literal["alloca"] = "alloca"
     name: str

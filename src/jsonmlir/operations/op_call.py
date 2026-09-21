@@ -20,7 +20,13 @@ class CallOp(OpNode):
     """Call a function declared with :class:`DefineFunctionOp`.
 
     Return types and argument validation are resolved from the global function
-    registry.
+    registry. You may need to use `extern C` for the function definition.
+
+    Example:
+
+    .. code-block:: python
+
+       Call("add", [Const(1), Const(2)])
     """
 
     op: Literal["call"] = "call"
@@ -32,11 +38,11 @@ class CallOp(OpNode):
         sig = functions_registry.get(self.name)
         if sig is None:
             raise ValueError(
-                f"Fonction '{self.name}' non déclarée. "
-                "Utilisez DefineFunction dans le module avant de l'appeler."
+                f"Function '{self.name}' is not declared. "
+                "Use DefineFunction in the module before calling it."
             )
 
-        # Évaluation des arguments
+        # Evaluate arguments.
         arg_ssas: list[Value] = []
         arg_vals: list[ValNode[Any]] = []
         for arg in self.args:
@@ -45,24 +51,24 @@ class CallOp(OpNode):
             for val in vals:
                 arg_ssas.append(val.get_SSA())
 
-        # Vérification du nombre d'arguments
+        # Check the argument count.
         if len(arg_ssas) != len(sig.args):
             raise TypeError(
-                f"Fonction '{self.name}' attend {len(sig.args)} argument(s), "
-                f"{len(arg_ssas)} fourni(s)."
+                f"Function '{self.name}' expects {len(sig.args)} argument(s), "
+                f"but received {len(arg_ssas)}."
             )
 
-        # Vérification des types d'arguments
+        # Check argument types.
         for i, (val, (_arg_name, expected_ty)) in enumerate(zip(arg_vals, sig.args)):
             actual_type = val.get_type()
             expected_type = expected_ty.get_type()
             if actual_type != expected_type:
                 raise TypeError(
-                    f"Argument {i} de '{self.name}' : "
-                    f"type attendu {expected_type}, reçu {actual_type}."
+                    f"Argument {i} of '{self.name}': "
+                    f"expected type {expected_type}, received {actual_type}."
                 )
 
-        # Types de retour depuis le registre
+        # Get return types from the registry.
         mlir_return_types = [ty.get_type() for ty in sig.return_types]
 
         call_op = MLIRCallOp(mlir_return_types, self.name, arg_ssas)

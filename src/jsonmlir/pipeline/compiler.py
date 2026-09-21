@@ -1,4 +1,4 @@
-"""Orchestration de la compilation JSON/YAML → exécutable natif."""
+"""Orchestrate JSON/YAML compilation into a native executable."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from mlir.ir import Context, InsertionPoint, Location, Module
 
 from jsonmlir.operations.op_module import ModuleJsonOp
 from jsonmlir.pipeline.cli import parse_args, resolve_output_name
-from jsonmlir.pipeline.commands import (Toolchain, build_sample_ast_json,
+from jsonmlir.pipeline.commands import (Toolchain, build_ast,
                                         compile_llvm_to_object,
                                         convert_to_llvm, link_executable,
                                         load_input_file, run_llvm_opt,
@@ -100,13 +100,19 @@ MLIR_OPT_LOWER_TO_LLVM: Sequence[str] = [
 ]
 
 def main(argv: Sequence[str] | None = None) -> int:
-    """Compile an input JSON or YAML description from the command line."""
+    """Compile an input JSON or YAML description from the command line.
+
+    Example:
+
+    .. code-block:: python
+
+       status = main(["examples/somme/main.json", "-A"])
+    """
     args = parse_args(argv)
 
-    print('hey')
     # Json -> Pydantic AST
     data = load_input_file(args.input)
-    module_ast = build_sample_ast_json(data)
+    module_ast = build_ast(data)
     return compiler(module_ast, argv)
 
 
@@ -119,16 +125,20 @@ def compiler(module_ast: ModuleJsonOp, argv: Sequence[str] | None = None) -> int
 
     Returns:
         ``0`` after successful compilation.
+
+    Example:
+
+    .. code-block:: python
+
+       module_ast = Module([Function("main", body=[Const(0)])])
+       status = compiler(module_ast, ["examples/somme/main.json"])
     """
     # Read params and configuration
     args = parse_args(argv)
     output_name = resolve_output_name(args.input, args.output_name)
     set_display_cmd(args.cmd)
     project_root = args.project_root.resolve()
-    toolchain = Toolchain.discover(
-        args.mlir_bin_dir,
-        project_root=project_root
-    )
+    toolchain = Toolchain.discover(args.mlir_bin_dir)
 
     # Set build path
     input_path = args.input
@@ -234,7 +244,7 @@ def compiler(module_ast: ModuleJsonOp, argv: Sequence[str] | None = None) -> int
     )
 
 
-    # llvm -> objet relocatable (.o)
+    # LLVM -> relocatable object file (.o)
     compile_llvm_to_object(
         toolchain,
         path_llvm_opti,

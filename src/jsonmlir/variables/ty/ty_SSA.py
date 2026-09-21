@@ -8,6 +8,14 @@ from jsonmlir.variables.ty.ty import TyNodeBase
 
 
 class TySSA(TyNodeBase):
+    """Represent an existing MLIR SSA value with a runtime-known type.
+
+    Example:
+
+    .. code-block:: python
+
+       ssa_value = TySSA()
+    """
     type: Literal["ssa"] = "ssa"
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:

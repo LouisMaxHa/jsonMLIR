@@ -11,10 +11,25 @@ from jsonmlir.variables.val.val import ValNode
 
 
 class DefineFunctionOp(OpNode):
-    """Declare a function signature for calls from generated functions.
+    """Declare a function signature.
 
     This operation emits no IR. It populates the registry used by ``CallOp``
     to resolve return types and validate arguments.
+
+    Example:
+
+    .. code-block:: python
+
+        DefineFunction(
+            "add",  #  Name
+            # Arguments: (arg name, type), ...
+            [
+                ("lhs", TyScalar(Scalar.i64)),
+                ("rhs", TyScalar(Scalar.i64))
+            ],
+            # Return type
+            [ TyScalar(Scalar.i64) ]
+        )
     """
 
     op: Literal["define_function"] = "define_function"

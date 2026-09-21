@@ -16,13 +16,13 @@ from jsonmlir.variables.val.val_memref import ValMemref
 
 
 class ValSOA(ValNode[TySOA]):
-    """Vue Structure-of-Arrays : une colonne memref strided par attribut."""
+    """Structure-of-Arrays view: one strided memref column per field."""
 
     addrs: dict[str, ValMemref | ValBuffer]
 
     # ──────────── Init ────────────
     def __init__(self, ty: TySOA, addrs: dict[str, ValMemref | ValBuffer]):
-        # Résolution différée : le struct doit exister à l'exécution
+        # Deferred resolution: the struct must exist at runtime.
         # assert ty.base in structs_registry.keys()
 
         # Each array should have correct number of elements
@@ -113,7 +113,7 @@ class ValSOA(ValNode[TySOA]):
 
         struct: StructDescriptor = buffer.ty.base.struct
 
-        # Init for all attributs
+        # Initialize all fields.
         addrs: dict[str, ValBuffer | ValMemref] = {}
         for attribut in struct.fields.values():
             addrs[attribut.name] = buffer.build_view(attribut.name)
