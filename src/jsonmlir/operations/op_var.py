@@ -13,6 +13,8 @@ from jsonmlir.variables.var import Var
 
 
 class VarOp(OpNode):
+    """Load a named variable, optionally applying indices."""
+
     op: Literal["var"] = "var"
     name: str
     indices: Sequence[int | str | VarOp] = Field(default_factory=list)

@@ -24,6 +24,7 @@ structs_registry: dict[str, StructDescriptor] = {}
 functions_registry: dict[str, FunctionSignature] = {}
 
 def get_available_varname(base: str) -> str:
+    """Return ``base`` or the first unused suffixed variable name."""
     if base not in variables_heap.keys():
         return base
 

@@ -18,14 +18,10 @@ PRINT_INT_SYMBOL = "print_int"
 
 
 class PrintOp(OpNode):
-    """Affiche la valeur d'une expression via la fonction externe ``print_int``.
+    """Print one expression through the external ``print_int`` function.
 
-    La déclaration ``func.func private @print_int(i64) -> ()`` est ajoutée
-    automatiquement au module par ``compiler.declare_runtime``. Le symbole
-    doit être défini dans le fichier d'appel C++ associé (par exemple
-    ``examples/main.cpp``) avec un linkage ``extern "C"`` ; il est
-    résolu une fois pour toutes au link statique entre le ``.o`` issu du
-    pipeline jsonMLIR et l'objet du fichier d'appel.
+    The generated module expects the symbol to be provided by the associated
+    C++ call wrapper with ``extern "C"`` linkage.
     """
 
     op: Literal["print"] = "print"

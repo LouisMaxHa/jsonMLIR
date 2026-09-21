@@ -19,6 +19,12 @@ from jsonmlir.variables.val.val_SSA import ValSSA
 
 availables_functions = {}
 class FunctionOp(OpNode):
+    """Generate a function from typed arguments and a sequence of operations.
+
+    The result types are inferred from the values returned by the function
+    body.
+    """
+
     op: Literal["function"] = "function"
     name: str
     args: Sequence[tuple[str, TyNode]] = ()

@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 
 class SetOp(OpNode):
-    """Affecte une expression à une variable."""
+    """Assign an expression to a variable, creating it when necessary."""
 
     op: Literal["set"] = "set"
     var: VarOp

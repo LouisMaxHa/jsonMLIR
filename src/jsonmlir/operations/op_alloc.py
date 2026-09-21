@@ -18,7 +18,11 @@ from jsonmlir.variables.val.val import ValNode
 
 
 class AllocOp(OpNode):
-    """memref.AllocOp: dealloc manually"""
+    """Allocate a heap-backed memref and register it under ``name``.
+
+    The allocation is intentionally not scoped automatically; generated code
+    must arrange for the corresponding deallocation when required.
+    """
 
     op: Literal["alloc"] = "alloc"
     name: str

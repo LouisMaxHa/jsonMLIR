@@ -10,7 +10,7 @@
 #   docker build --target mlir-toolchain -t jsonmlir-mlir-toolchain:22.1.8 .
 #   docker build --build-arg TOOLCHAIN_IMAGE=jsonmlir-mlir-toolchain:22.1.8 .
 
-ARG TOOLCHAIN_IMAGE=mlir-toolchain
+ARG TOOLCHAIN_IMAGE=mlir-toolchain 
 ARG LLVM_VERSION=llvmorg-22.1.8
 ARG PYTHON_VERSION=3.13
 
@@ -20,11 +20,11 @@ FROM fedora:42 AS mlir-build
 ARG LLVM_VERSION
 ARG PYTHON_VERSION
 
-ENV LLVM_SRC=/opt/llvm-project
-ENV LLVM_PREFIX=/opt/llvm
-ENV VIRTUAL_ENV=/opt/venv
-ENV CCACHE_DIR=/var/cache/ccache
-ENV PATH="${VIRTUAL_ENV}/bin:${LLVM_PREFIX}/bin:${PATH}"
+ENV LLVM_SRC=/opt/llvm-project \
+  LLVM_PREFIX=/opt/llvm \
+  VIRTUAL_ENV=/opt/venv \
+  CCACHE_DIR=/var/cache/ccache \
+  PATH="${VIRTUAL_ENV}/bin:${LLVM_PREFIX}/bin:${PATH}"
 
 # Installation des packages
 RUN dnf install -y \
@@ -92,10 +92,10 @@ FROM fedora:42 AS mlir-toolchain
 
 ARG PYTHON_VERSION
 
-ENV LLVM_PREFIX=/opt/llvm
-ENV VIRTUAL_ENV=/opt/venv
-ENV PATH="${VIRTUAL_ENV}/bin:${LLVM_PREFIX}/bin:${PATH}"
-ENV MLIR_BIN_DIR="${LLVM_PREFIX}/bin"
+ENV LLVM_PREFIX=/opt/llvm \
+  VIRTUAL_ENV=/opt/venv \
+  PATH="${VIRTUAL_ENV}/bin:${LLVM_PREFIX}/bin:${PATH}" \
+  MLIR_BIN_DIR="${LLVM_PREFIX}/bin"
 
 # Installation des packages
 RUN dnf install -y \
@@ -117,21 +117,20 @@ FROM ${TOOLCHAIN_IMAGE}
 
 ARG PYTHON_VERSION
 
-ENV LLVM_PREFIX=/opt/llvm
-ENV VIRTUAL_ENV=/opt/venv
-ENV PATH="${VIRTUAL_ENV}/bin:${LLVM_PREFIX}/bin:${PATH}"
-ENV MLIR_BIN_DIR="${LLVM_PREFIX}/bin"
+ENV LLVM_PREFIX=/opt/llvm \
+  VIRTUAL_ENV=/opt/venv \
+  PATH="${VIRTUAL_ENV}/bin:${LLVM_PREFIX}/bin:${PATH}" \
+  MLIR_BIN_DIR="${LLVM_PREFIX}/bin" \
+  SETUPTOOLS_SCM_PRETEND_VERSION=0.0.0
 
-# hatch-vcs : pas de .git dans le contexte Docker (.dockerignore)
-ENV SETUPTOOLS_SCM_PRETEND_VERSION=0.0.0
 
+# Le wrapper monte le dépôt hôte pour éviter toute confusion.
 WORKDIR /opt/jsonMLIR
-# Pas d'examples/ dans l'image : le wrapper monte le dépôt hôte pour éviter toute confusion.
-COPY pyproject.toml README.md ./
-RUN pip install --upgrade pip
 
 # Installation de jsonMLIR
-COPY src/ ./src/
+COPY pyproject.toml README.md ./
+RUN pip install --upgrade pip
 RUN pip install -e . --group dev
 
+COPY src/ ./src/
 CMD ["python", "-c", "import jsonmlir; import mlir.ir; print('OK')"]

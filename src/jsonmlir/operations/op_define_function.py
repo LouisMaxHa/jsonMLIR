@@ -11,10 +11,10 @@ from jsonmlir.variables.val.val import ValNode
 
 
 class DefineFunctionOp(OpNode):
-    """Déclare la signature d'une fonction (nom, types d'entrée, types de sortie).
+    """Declare a function signature for calls from generated functions.
 
-    Ne génère aucun IR - alimente uniquement le registre global utilisé par
-    CallOp pour résoudre les types de retour et vérifier les types des arguments.
+    This operation emits no IR. It populates the registry used by ``CallOp``
+    to resolve return types and validate arguments.
     """
 
     op: Literal["define_function"] = "define_function"

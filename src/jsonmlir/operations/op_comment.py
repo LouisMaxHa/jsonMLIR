@@ -9,7 +9,7 @@ from jsonmlir.variables.val.val import ValNode
 
 
 class CommentOp(OpNode):
-    """Use to store a string message, displayed in tree debug, do nothing."""
+    """Store a message for operation-tree tracing without generating IR."""
     op: Literal["comment"] = "comment"
     msg: str
 

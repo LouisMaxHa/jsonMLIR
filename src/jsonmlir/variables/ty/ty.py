@@ -56,12 +56,14 @@ class TyNodeBase(BaseModel, ABC):
     """Return the MLIR type (Arith.const, Memref)"""
     @abstractmethod
     def get_type(self) -> Type:
+        """Return the corresponding MLIR value type."""
         raise NotImplementedError
 
     """Return the memref version of the value.
     Ex: Const are in fact memref<f64> rather than f64 to allow mutability"""
     @abstractmethod
     def get_memref_type(self) -> MemRefType:
+        """Return the MLIR memref type used to store this value."""
         raise NotImplementedError
 
 def dump_ty(value: TyNodeBase) -> Any:
@@ -131,6 +133,17 @@ else:
 
 """Construit le type correspondant à une description JSON"""
 def parse_ty(value: Any | TyNode) -> TyNode:
+    """Parse a canonical or legacy type description.
+
+    Strings such as ``"i64"`` and legacy dictionaries are normalized to the
+    discriminated type model used by the compiler.
+
+    Args:
+        value: A type model, scalar type name, or JSON-compatible dictionary.
+
+    Returns:
+        The corresponding typed node.
+    """
 
     # Si notre type implémente TyNodeBase, on peut le cast parmis l'union des
     # classes TyNode

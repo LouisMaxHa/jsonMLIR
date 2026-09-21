@@ -9,6 +9,8 @@ from jsonmlir.variables.val.val import ValNode
 
 
 class NotSupportedOp(OpNode):
+    """Represent an operation that has not been implemented yet."""
+
     op: Literal["notSupported"] = "notSupported"
     msg: str
 

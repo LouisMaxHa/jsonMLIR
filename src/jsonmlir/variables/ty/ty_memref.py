@@ -10,6 +10,19 @@ from jsonmlir.utils.enum_scalars import Scalar
 from jsonmlir.variables.ty.ty import TyNested, TyNodeBase
 from jsonmlir.variables.ty.ty_struct import TyStruct
 
+# Struct for memref, should match:
+# {
+#      T* allocated;         // start of the allocated storage
+#      T* aligned;           // pointer to the first element
+#      int64_t offset;       // shift of first element
+#
+#      // number of elements along each dimension
+#      int64_t size[Rank];
+#
+#      // step between consecutive indices along each dimension,
+#      // for example, if you want one element out of 2,
+#      int64_t stride[Rank];
+# }
 
 class TyMemref(TyNodeBase):
     type: Literal["memref"] = "memref"

@@ -46,6 +46,7 @@ def load_input_file(path: Path) -> Any:
 
 # Json -> Pydantic
 def build_sample_ast_json(data: Any) -> ModuleJsonOp:
+    """Validate decoded JSON/YAML data and build the operation tree."""
     adapter: TypeAdapter[ModuleJsonOp] = TypeAdapter(ModuleJsonOp)
     return adapter.validate_python(data)
 
@@ -121,11 +122,20 @@ def examples_include_dir(project_root: Path | None = None) -> Path:
     return (root / "examples").resolve()
 
 _display_cmd: bool = False
-def set_display_cmd(state: bool):
+def set_display_cmd(state: bool) -> None:
+    """Enable or disable printing of external compiler commands."""
     global _display_cmd
     _display_cmd = state
 
 def run_command(cmd: Sequence[str]) -> str:
+    """Run a toolchain command and return its standard output.
+
+    Args:
+        cmd: Executable and arguments passed to :func:`subprocess.run`.
+
+    Raises:
+        ValueError: If the command exits unsuccessfully.
+    """
     name = Path(cmd[0]).name
     if _display_cmd:
         print(shlex.join(cmd).replace(" -", "\n\t-"))
@@ -159,7 +169,8 @@ def run_mlir_opt(
     output_path: Path,
     passes: list[str],
     display_passes: bool = False
-):
+) -> None:
+    """Run ``mlir-opt`` with a sequence of transformation passes."""
     if display_passes:
         passes.append("--mlir-print-ir-after-all")
 
@@ -175,7 +186,8 @@ def convert_to_llvm(
     toolchain: Toolchain,
     input_path: Path,
     output_path: Path
-):
+) -> None:
+    """Translate MLIR in the LLVM dialect into LLVM IR."""
     run_command([
         str(toolchain.mlir_translate),
         "--mlir-to-llvmir",
@@ -189,7 +201,8 @@ def run_llvm_opt(
     input_path: Path,
     output_path: Path,
     passes: list[str]
-):
+) -> None:
+    """Run LLVM optimization passes on an LLVM IR file."""
     run_command([
         str(toolchain.llvm_opt),
         f"-passes={','.join(passes)}",
@@ -204,6 +217,7 @@ def compile_llvm_to_object(
     input_path: Path,
     output_path: Path
 ) -> None:
+    """Compile LLVM IR into a relocatable object file."""
     run_command([
         str(toolchain.llc),
         "-O2",
@@ -222,6 +236,7 @@ def link_executable(
     *,
     project_root: Path | None = None
 ) -> None:
+    """Link generated object code and a C++ call wrapper into an executable."""
     include_dir = examples_include_dir(project_root)
     run_command([
         str(toolchain.clangxx),

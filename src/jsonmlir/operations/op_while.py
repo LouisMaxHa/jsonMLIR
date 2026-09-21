@@ -16,6 +16,8 @@ if TYPE_CHECKING:
 
 
 class WhileOp(OpNode):
+    """Generate a while loop from a condition and a body."""
+
     op: Literal["while"] = "while"
     cond: BaseValue
     thenBlock: Sequence[BaseValue] = ()

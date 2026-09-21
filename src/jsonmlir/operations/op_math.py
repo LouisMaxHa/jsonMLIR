@@ -16,10 +16,12 @@ if TYPE_CHECKING:
 
 
 class MathOperator(Enum):
+    """Math operations supported by :class:`MathOp`."""
+
     sqrtOp = "sqrt"
 
 class MathOp(OpNode):
-    """Opération binaire composée de deux opérandes."""
+    """Apply a supported mathematical operation to one operand."""
 
     op: Literal["math"] = "math"
     ope: MathOperator

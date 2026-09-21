@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 
 class IfOp(OpNode):
-    """Represente a conditionnal bloc"""
+    """Generate a conditional block with optional then and else regions."""
     op: Literal["if"] = "if"
     cond: BaseValue
     thenBlock: Sequence[BaseValue]

@@ -17,10 +17,10 @@ if TYPE_CHECKING:
 
 
 class CallOp(OpNode):
-    """Appel d'une fonction déclarée via DefineFunctionOp.
+    """Call a function declared with :class:`DefineFunctionOp`.
 
-    Les types de retour et la vérification des types d'arguments sont
-    résolus automatiquement depuis le registre global des fonctions.
+    Return types and argument validation are resolved from the global function
+    registry.
     """
 
     op: Literal["call"] = "call"

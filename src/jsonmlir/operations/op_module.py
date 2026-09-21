@@ -22,7 +22,11 @@ ModuleStatement = Annotated[
 
 
 class ModuleJsonOp(OpNode):
-    """Racine JSON de type module : enregistre les structs puis génère les fonctions."""
+    """Root operation that declares types and generates functions.
+
+    Function signatures are registered before function bodies are generated,
+    which permits calls to functions declared later in the module.
+    """
 
     op: Literal["module"] = "module"
     body: Sequence[ModuleStatement] = ()

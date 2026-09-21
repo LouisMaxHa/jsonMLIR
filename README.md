@@ -6,6 +6,21 @@ The generated libraries can then be called from your codebase without having to 
 Unlike working directly with MLIR, the JSON description provides an extra level of abstraction allowing you to manipulate array, ptr, struct and array of pointer to struct !
 This solution is designed to be generic, modular, and accessible - make sure you have a good understanding of each operation before using it.
 
+## Documentation
+
+Read the [jsonMLIR documentation](https://louismaxha.github.io/jsonMLIR/) for the Python DSL and compiler API.
+
+Build and view the documentation locally from the repository root:
+
+```bash
+uv sync --group docs
+uv run sphinx-build -W --keep-going docs docs/_build/html
+python -m http.server 8000 --directory docs/_build/html
+```
+
+Then open <http://localhost:8000> in a browser. The documentation uses the
+Furo Sphinx theme and does not require the MLIR toolchain to build.
+
 
 ## Installation
 

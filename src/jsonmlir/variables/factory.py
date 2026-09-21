@@ -32,6 +32,7 @@ class Factory:
     @staticmethod
     @trace_step("Factory.from_val", display_entry=True)
     def from_val(type: TyNode, value: ValNode[Any]) -> ValNode[Any]:
+        """Create the value implementation matching ``type``."""
         match type:
             case TyPtr():
                 return ValPtr.init_from(type, value)
@@ -53,6 +54,7 @@ class Factory:
     @staticmethod
     @trace_step("Factory.from_SSA", display_entry=True)
     def from_SSA(type: TyNode, addr: Value) -> ValNode[Any]:
+        """Wrap an MLIR SSA value using the requested high-level type."""
         return Factory.from_val(type, ValSSA(addr))
 
     @staticmethod
@@ -60,6 +62,7 @@ class Factory:
     def generic_memref(
         dimensions: Sequence[int | None], base: TyNode, value: ValNode[Any]
     ) -> ValBuffer | ValMemref:
+        """Create a buffer or memref value for a multidimensional type."""
         assert len(dimensions) > 0, "Use scalar for no dimension memref"
 
         if isinstance(base, TyStruct):

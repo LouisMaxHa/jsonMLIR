@@ -18,7 +18,7 @@ from jsonmlir.variables.val.val import ValNode
 
 
 class AllocaOp(OpNode):
-    """memref.AllocaOp: dealloc when leave scope with AutomaticAllocationScope trait"""
+    """Allocate a stack-backed memref with automatic scope cleanup."""
 
     op: Literal["alloca"] = "alloca"
     name: str

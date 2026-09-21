@@ -17,13 +17,15 @@ if TYPE_CHECKING:
 
 
 class UnaryOperator(Enum):
+    """Unary operators supported by :class:`UnaryOp`."""
+
     negOp = "-"
     negFOp = "-f"
     notOp = "!"
 
 
 class UnaryOp(OpNode):
-    """Opération unaire, réécrite en opération binaire avec une constante."""
+    """Apply a unary operator, lowered to a binary operation with a constant."""
 
     op: Literal["unary"] = "unary"
     ope: UnaryOperator
@@ -53,4 +55,3 @@ class UnaryOp(OpNode):
                     rhs = ConstOp(val=1, type=Scalar.i1),
                     ope = OperatorOp.xorOp
                 ).codegen()
-

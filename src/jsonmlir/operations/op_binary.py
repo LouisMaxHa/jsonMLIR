@@ -32,7 +32,11 @@ if TYPE_CHECKING:
     from jsonmlir.operations.base import BaseValue
 
 class BinaryOp(OpNode):
-    """Opération binaire composée de deux opérandes."""
+    """Apply an operator to two operands element by element.
+
+    Scalar operations are lowered to the matching arithmetic or comparison
+    operation. Struct operands are dispatched to their registered methods.
+    """
 
     op: Literal["binary"] = "binary"
     lhs: BaseValue

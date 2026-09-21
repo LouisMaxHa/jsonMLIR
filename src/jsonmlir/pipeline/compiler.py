@@ -24,6 +24,11 @@ def print_if(
     *,
     last_print_path: Path | None = None,
 ) -> None:
+    """Print an intermediate compiler artifact when its flag is enabled.
+
+    When ``last_print_path`` is supplied, the output is displayed as a diff
+    against the previous stage and the current text is saved for the next one.
+    """
     if not cond:
         return
     text = path.read_text()
@@ -95,6 +100,7 @@ MLIR_OPT_LOWER_TO_LLVM: Sequence[str] = [
 ]
 
 def main(argv: Sequence[str] | None = None) -> int:
+    """Compile an input JSON or YAML description from the command line."""
     args = parse_args(argv)
 
     print('hey')
@@ -105,6 +111,15 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 
 def compiler(module_ast: ModuleJsonOp, argv: Sequence[str] | None = None) -> int:
+    """Compile a validated operation tree through the MLIR/LLVM pipeline.
+
+    Args:
+        module_ast: Pydantic operation tree to lower.
+        argv: CLI arguments controlling the output and toolchain.
+
+    Returns:
+        ``0`` after successful compilation.
+    """
     # Read params and configuration
     args = parse_args(argv)
     output_name = resolve_output_name(args.input, args.output_name)
