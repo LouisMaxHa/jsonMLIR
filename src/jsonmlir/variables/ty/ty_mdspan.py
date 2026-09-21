@@ -15,8 +15,8 @@ from jsonmlir.variables.ty.ty_scalar import TyScalar
 from jsonmlir.variables.ty.ty_struct import TyStruct
 from jsonmlir.variables.val.struct_attribut import StructAttribut
 
-# Ptr (8 bytes) + padding (4 bytes) + size (4 bytes)
-MDSPAN_SIZE = 8 + 4 + 4
+# Ptr (8 bytes) + size (8 bytes), matches std::span's {T*, size_t} layout
+MDSPAN_SIZE = 8 + 8
 
 
 class TyMdspan(TyNodeBase):
@@ -49,9 +49,9 @@ class TyMdspan(TyNodeBase):
                 ),
                 "size": StructAttribut(
                     name="size",
-                    type=TyScalar(Scalar.i32),
-                    offset=12,
-                    size=4,
+                    type=TyScalar(Scalar.i64),
+                    offset=8,
+                    size=8,
                 ),
             },
         ))

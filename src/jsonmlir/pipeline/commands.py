@@ -225,6 +225,7 @@ def link_executable(
     include_dir = examples_include_dir(project_root)
     run_command([
         str(toolchain.clangxx),
+        "-std=c++20",
         str(object_path),
         str(call_source),
         f"-I{include_dir}",

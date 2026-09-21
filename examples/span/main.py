@@ -19,32 +19,32 @@ module = Module([
     Function(
         "lib_main",
         [
-            # ptr<mdspan<i64>> : le MdSpan est passé par adresse (ABI i64).
+            # ptr<span<i64>> : le MdSpan est passé par adresse (ABI i64).
             ("spanRef", TyPtr(TyMdspan(dims=None, base=TyScalar(Scalar.i64)))),
         ],
         [
-            # mdspan = *spanRef
-            Set(Var(name="mdspan"), Var("spanRef", ["*"]),),
+            # span = *spanRef
+            Set(Var(name="span"), Var("spanRef", ["*"]),),
 
-            Set(Var(name="i", type="i32"), Const(0, "i32")),
+            Set(Var(name="i", type="i64"), Const(0, "i64")),
             While(
-                Binary("<", Var("i"), Var("mdspan", ["size"])),
+                Binary("<", Var("i"), Var("span", ["size"])),
                 [
-                    # mdspan[i] += 1
+                    # span[i] += 1
                     Set(
-                        Var("mdspan", [Var("i")]),
-                        Binary("+", Var("mdspan", [Var("i")]), Const(1, "i64")),
+                        Var("span", [Var("i")]),
+                        Binary("+", Var("span", [Var("i")]), Const(1, "i64")),
                     ),
                     # i += 1
                     Set(
                         Var("i"),
-                        Binary("+", Var("i"), Const(1, "i32")),
+                        Binary("+", Var("i"), Const(1, "i64")),
                     ),
                 ],
             ),
 
             # return span->size
-            Var("mdspan", ["size"]),
+            Var("span", ["size"]),
         ],
     )
 ])
