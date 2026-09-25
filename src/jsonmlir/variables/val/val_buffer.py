@@ -24,7 +24,7 @@ class ValBuffer(ValNode[TyBuffer]):
     def __init__(
         self, ty: TyBuffer, addr: Value
     ):
-        assert len(ty.dimensions) >= 1
+        assert len(ty.dims) >= 1
         assert_same_type(addr.type, ty.get_type())
         self.addr = addr
         self.ty = ty
@@ -36,7 +36,7 @@ class ValBuffer(ValNode[TyBuffer]):
     @trace_step("ValBuffer.init_from", display_entry=True)
     def init_from(
         ty: TyBuffer, source: ValMemref | ValSSA
-    ) -> ValBuffer: 
+    ) -> ValBuffer:
         return ValBuffer(ty, source.get_SSA())
 
     # ──────────── Getter ────────────
@@ -45,7 +45,7 @@ class ValBuffer(ValNode[TyBuffer]):
 
     def get_dim(self) -> Sequence[Value]:
         return dimensions_to_ssa(
-            self.ty.dimensions,
+            self.ty.dims,
             self.addr,
         )
 
@@ -59,14 +59,14 @@ class ValBuffer(ValNode[TyBuffer]):
         index: Sequence[str | Value],
     ) -> ValNode[Any]:
         from jsonmlir.variables.factory import Factory
-        assert len(self.ty.dimensions) == 1, "Buffer supported for only 1D"
+        assert len(self.ty.dims) == 1, "Buffer supported for only 1D"
 
         if index == []:
             return self
 
         # Split index
-        consuming = index[: len(self.ty.dimensions)]
-        remaining = index[len(self.ty.dimensions) :]
+        consuming = index[: len(self.ty.dims)]
+        remaining = index[len(self.ty.dims) :]
         assert all_ssavalues(consuming)
 
         # ViewOp (not subview): preserve an identity layout, required later by
@@ -98,9 +98,9 @@ class ValBuffer(ValNode[TyBuffer]):
         source: ValNode[Any],
     ) -> None:
         # Split index
-        assert len(index) >= len(self.ty.dimensions)
-        consuming = index[: len(self.ty.dimensions)]
-        remaining = index[len(self.ty.dimensions) :]
+        assert len(index) >= len(self.ty.dims)
+        consuming = index[: len(self.ty.dims)]
+        remaining = index[len(self.ty.dims) :]
         assert all_ssavalues(consuming)
 
         # Recursive
@@ -108,13 +108,15 @@ class ValBuffer(ValNode[TyBuffer]):
             return self.load(consuming).store(remaining, source)
 
         # Not recursive
-        raise NotImplementedError("Copying entire struct into buffer is not yet supported")
+        raise NotImplementedError(
+            "Copying entire struct into buffer is not yet supported"
+        )
 
 
     # ──────────── n_elements ────────────
     """Number of struct elements = buffer size / struct size (bytes)."""
     def get_size(self) -> Value | int:
-        assert len(self.ty.dimensions) >= 1
+        assert len(self.ty.dims) >= 1
         struct_size = self.ty.base.struct.size
 
         # Static size
@@ -125,7 +127,7 @@ class ValBuffer(ValNode[TyBuffer]):
             return n_elements
 
         # Dynamic size (byte)
-        assert len(self.ty.dimensions) == 1, "TODO: Only supported for one dimension"
+        assert len(self.ty.dims) == 1, "TODO: Only supported for one dimension"
         n_bytes_ssa = memref.DimOp(
             self.get_SSA(),
             ssa_val.val_to_SSAValue(0, Scalar.idx),

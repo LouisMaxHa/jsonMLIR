@@ -1,15 +1,17 @@
 from __future__ import annotations
 
+import builtins
 from collections.abc import Sequence
 from typing import Any
 
+from mlir.dialects import arith
 from mlir.ir import MemRefType, Value
 
+from jsonmlir.utils import ssa_val
 from jsonmlir.utils.same_types import assert_same_shape
-from jsonmlir.utils.ssa_dim import dimensions_to_ssa
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.ty.ty import TyNode
-from jsonmlir.variables.ty.ty_mdspan import TyMdspan
+from jsonmlir.variables.ty.ty_mdspan import MDSPAN_SIZE_ATTR_NAME, TyMdspan
 from jsonmlir.variables.val.val import ValNode
 from jsonmlir.variables.val.val_SSA import ValSSA
 from jsonmlir.variables.val.val_struct import ValStruct
@@ -42,10 +44,49 @@ class ValMdspan(ValNode[TyMdspan]):
         return ValStruct(self.ty.get_struct(), self.addr)
 
     def get_dim(self) -> Sequence[Value]:
-        return dimensions_to_ssa([self.ty.dimension], self.addr)
+        """Return a mlir Value containing the dynamic size of the mdspan first dimension
+        """
+        return [
+            ssa_val.ensure_index(self.get_struct().load([
+                MDSPAN_SIZE_ATTR_NAME,
+            ]).get_SSA())
+        ]
 
     def _get_SSA(self) -> Value:
         return self.addr
+
+    # ──────────── Index ────────────
+    def _linear_index(self, index: Sequence[Value]) -> Value:
+        n_dims = len(self.ty.dims)
+        assert len(index) == n_dims
+
+        match(n_dims):
+            # One dimension
+            case 1:
+                return ssa_val.ensure_index(index[0])
+
+            # Two dimension
+            case 2:
+                i_first_dim, y_second_dim = index
+                n_first_dim = self.get_dim()[0]
+
+                # Row-major index = row * row_size + column.
+                return arith.AddIOp(
+                    arith.MulIOp(
+                        ssa_val.ensure_index(i_first_dim),
+                        ssa_val.ensure_index(n_first_dim),
+                    ).result,
+                    ssa_val.ensure_index(y_second_dim),
+                ).result
+
+            # Default
+            case _:
+                raise ValueError(
+                    f"mdspan only support up to 2 dimensions, got {n_dims}"
+                )
+
+    def _data_index(self, index: Sequence[Value]) -> list[Value | str]:
+        return ["data", "*", self._linear_index(index)]
 
     # ──────────── Load ────────────
     def _load(
@@ -55,12 +96,24 @@ class ValMdspan(ValNode[TyMdspan]):
         if index == []:
             return self
 
-        # str   -> consider struct
-        # Value -> load data and apply
-        if isinstance(index[0], Value):
-            return self.get_struct().load(["data", "*"] + list(index))
-        return self.get_struct().load(index)
+        match(type(index[0])):
+            # str   -> consider struct (.data, .sizeFirstDimension)
+            case builtins.str:
+                # In 1D, size = sizeFirstDimension
+                if index[0] == "size" and len(self.ty.dims) == 1:
+                    index = list(index)
+                    index[0] = MDSPAN_SIZE_ATTR_NAME
 
+                return self.get_struct().load(index)
+
+            # Value -> load data and apply
+            case Value:
+                rank = len(self.ty.dims)
+                value_index = index[:rank]
+                assert all(isinstance(value, Value) for value in value_index)
+                return self.get_struct().load(
+                    self._data_index(value_index) + list(index[rank:])
+                )
 
 
     # ──────────── Store ────────────
@@ -70,9 +123,22 @@ class ValMdspan(ValNode[TyMdspan]):
         source: ValNode[Any],
     ):
         assert(len(index) > 0)
-        # int   -> load data and apply
-        # Value -> consider struct
-        if isinstance(index[0], Value):
-            return self.get_struct().store(["data", "*"] + list(index), source)
-        return self.get_struct().store(index, source)
+        match(type(index[0])):
+            # str   -> consider struct (.data, .sizeFirstDimension)
+            case builtins.str:
+                # In 1D, size = sizeFirstDimension
+                if index[0] == "size" and len(self.ty.dims) == 1:
+                    index = list(index)
+                    index[0] = MDSPAN_SIZE_ATTR_NAME
 
+                return self.get_struct().store(index, source)
+
+            # Value -> load data and apply
+            case Value:
+                rank = len(self.ty.dims)
+                value_index = index[:rank]
+                assert all(isinstance(value, Value) for value in value_index)
+                return self.get_struct().store(
+                    self._data_index(value_index) + list(index[rank:]),
+                    source,
+                )

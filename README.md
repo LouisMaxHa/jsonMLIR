@@ -80,9 +80,14 @@ jsonmlir tests/run_tests.py struct array # Run examples matching "struct" OR "ar
 jsonmlir tests/run_tests.py -j 1 mdspan  # Single worker (useful for readable logs)
 ```
 
-Each positional argument is a substring matched against the example directory
-name. With no argument, all examples are run. If nothing matches, the runner
-prints a warning and exits with code `1`.
+You can also run example manually:
+```bash
+jsonmlir examples/mdspan/main.py -C
+jsonmlir bash 
+$ ./examples/mdspan/main.out
+```
+The binary may not be executable outside the docker if your configuration differ.
+
 
 ## Execution trace example
 

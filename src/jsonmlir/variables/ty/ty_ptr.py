@@ -10,11 +10,37 @@ from jsonmlir.variables.ty.ty import TyNested, TyNodeBase
 class TyPtr(TyNodeBase):
     """Represent an address-valued pointer with a described pointee.
 
+    You may want to use a ptr to reference a buffer of elements.
+    Checks example below to choose the right one.
+
     Example:
 
     .. code-block:: python
+        tyI64 = TyScalar(Scalar.i64)
 
-       pointer = TyPtr(TyScalar(Scalar.i64))
+        # Ptr to int: &int
+        TyPtr(tyI64)
+
+        # Ptr to array of structs : &MyStruct[]
+        TyPtr(TyBuffer([none], "MyStruct"))
+
+        # Ptr to array of int : &int[3]
+        # A memref descriptor will be created for int[3] from his addr
+        TyPtr(TyMemref([3], tyI64))
+
+        # If you have a ptr to a memref descriptor, you may use
+        p = Ptr(TyBuffer([1], "MemrefDescriptor"))
+
+        # And access it with
+        valSSA = p.load("*").get_SSA()
+        memrefDescriptor = Factory.from_val(
+            TyMemref([3], tyI64),
+            valSSA
+        )
+        memrefDescriptor.load([2])
+
+        # It is unlikely to be used, unless you use memref descriptors in your code.
+        # You may also look at TyMdspan to have a sort-of ptr to list of element.
     """
     type: Literal["ptr"] = "ptr"
     base: TyNested

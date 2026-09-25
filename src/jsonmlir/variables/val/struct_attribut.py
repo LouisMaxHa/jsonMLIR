@@ -6,7 +6,8 @@ from pydantic import BaseModel, ConfigDict, model_serializer, model_validator
 
 
 class StructAttribut(BaseModel):
-    """Pydantic class representing a struct attribute: ``[name, type, offset, size]``."""
+    """Pydantic class representing a struct attribute: ``[name, type, offset, size]``
+    """
 
     model_config = ConfigDict(frozen=True)
 

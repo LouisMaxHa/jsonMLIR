@@ -33,21 +33,21 @@ class TyMemref(TyNodeBase):
 
     .. code-block:: python
 
-       matrix = TyMemref((None, 4), TyScalar(Scalar.f32))
+       TyMemref((None, 3), TyScalar(Scalar.f32)) # Matrix[n][3]
     """
     type: Literal["memref"] = "memref"
-    dimensions: tuple[int | None, ...] = Field(alias="dims")
+    dims: tuple[int | None, ...] = Field(alias="dims")
     base: TyNested
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
     def get_n_elements(self) -> Sequence[int | None]:
-        return list(self.dimensions)
+        return list(self.dims)
 
     def get_type(self) -> MemRefType:
         dynamic = ShapedType.get_dynamic_size()
-        dimension = [d if d is not None else dynamic for d in self.dimensions]
+        dimension = [d if d is not None else dynamic for d in self.dims]
 
         if isinstance(self.base, TyStruct):
             struct_size = self.base.struct.size
@@ -61,4 +61,4 @@ class TyMemref(TyNodeBase):
         return self.get_type()
 
     def __repr__(self) -> str:
-        return f"Memref(dims={list(self.dimensions)!r}, base={self.base!r})"
+        return f"Memref(dims={list(self.dims)!r}, base={self.base!r})"

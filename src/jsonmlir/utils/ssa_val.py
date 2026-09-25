@@ -23,7 +23,7 @@ def ensure_index(value: Value) -> Value:
         return value
     if isinstance(value.type, IntegerType):
         return IndexCastOp(IndexType.get(), value).result
-        raise TypeError(f"Cannot cast {value.type} to index")
+    raise TypeError(f"Cannot cast {value.type} to index")
 
 
 def idx_to_ssavalues(value: int | Value) -> Value:

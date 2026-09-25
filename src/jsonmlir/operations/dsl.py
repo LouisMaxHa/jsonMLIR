@@ -33,7 +33,7 @@ from jsonmlir.operations.op_binary import BinaryOp
 from jsonmlir.operations.op_call import CallOp
 from jsonmlir.operations.op_comment import CommentOp
 from jsonmlir.operations.op_if import IfOp
-from jsonmlir.operations.op_constant import ConstOp
+from jsonmlir.operations.op_const import ConstOp
 from jsonmlir.operations.op_define_function import DefineFunctionOp
 from jsonmlir.operations.op_define_struct import DefineStructOp
 from jsonmlir.operations.op_function import FunctionOp
@@ -139,8 +139,19 @@ def Var(
 
 def Const(
     val: float | int,
-    type: str | Scalar = Scalar.i64,
+    type: str | Scalar | None = None,
 ) -> ConstOp:
+    # Detect type from val
+    if type is None:
+        if type is None and isinstance(val, bool):
+            type = Scalar.i1
+        if type is None and isinstance(val, float):
+            type = Scalar.f64
+        if type is None and isinstance(val, int):
+            type = Scalar.i64
+        assert type is not None
+
+    # Build
     return ConstOp(val=val, type=_parse_scalar(type))
 
 def Binary(

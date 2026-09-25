@@ -4,6 +4,12 @@ API Reference
 Examples and conceptual descriptions live in the Python docstrings and are
 rendered below by autodoc.
 
+Compiler pipeline
+-----------------
+
+.. autofunction:: jsonmlir.pipeline.compiler.main
+.. autofunction:: jsonmlir.pipeline.compiler.compiler
+
 Toolchain commands
 ------------------
 
@@ -13,8 +19,4 @@ Toolchain commands
    :members: discover
 .. autofunction:: jsonmlir.pipeline.commands.set_display_cmd
 
-Compiler pipeline
------------------
 
-.. autofunction:: jsonmlir.pipeline.compiler.main
-.. autofunction:: jsonmlir.pipeline.compiler.compiler

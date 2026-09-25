@@ -10,7 +10,7 @@ from jsonmlir.operations.op_binary import BinaryOp
 from jsonmlir.operations.op_call import CallOp
 from jsonmlir.operations.op_comment import CommentOp
 from jsonmlir.operations.op_if import IfOp
-from jsonmlir.operations.op_constant import ConstOp
+from jsonmlir.operations.op_const import ConstOp
 from jsonmlir.operations.op_define_struct import DefineStructOp
 from jsonmlir.operations.op_math import MathOp
 from jsonmlir.operations.op_not_supported import NotSupportedOp

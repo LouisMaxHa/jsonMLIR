@@ -15,28 +15,31 @@ from jsonmlir.variables.ty.ty_scalar import TyScalar
 from jsonmlir.variables.ty.ty_struct import TyStruct
 from jsonmlir.variables.val.struct_attribut import StructAttribut
 
-# Ptr (8 bytes) + size (8 bytes), matches std::span's {T*, size_t} layout
-MDSPAN_SIZE = 8 + 8
-
+# Pointer size in the target ABI. The dimension fields can be i32 or i64.
+MDSPAN_POINTER_SIZE = 8
+MDSPAN_SIZE = MDSPAN_POINTER_SIZE + 8  # Legacy 1D i64 descriptor size.
+MDSPAN_SIZE_ATTR_NAME: str = "sizeFirstDimension"
 
 class TyMdspan(TyNodeBase):
-    """Represent a one-dimensional span descriptor containing pointer and size.
+    """Represent a row-major span descriptor containing pointer and extents.
 
     Example:
 
     .. code-block:: python
 
-       span = TyMdspan(None, TyScalar(Scalar.f64))
+       TyMdspan((None,), TyScalar(Scalar.f64))
+       TyMdspan((None, None), TyScalar(Scalar.f64), index_type=Scalar.i32)
     """
     type: Literal["mdspan"] = "mdspan"
-    dimension: int | None = Field(alias="dims")
+    dims: tuple[int | None, ...] = Field(alias="dims")
     base: TyNested
+    index_type: Literal[Scalar.i32, Scalar.i64] = Scalar.i64
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 
     def get_n_elements(self) -> Sequence[int | None]:
-        return [self.dimension]
+        return list(self.dims)
 
     def get_type(self) -> MemRefType:
         return MemRefType.get([MDSPAN_SIZE], Scalar.i8.get_type())
@@ -51,18 +54,21 @@ class TyMdspan(TyNodeBase):
             {
                 "data": StructAttribut(
                     name="data",
-                    type=TyPtr(TyMemref((self.dimension,), self.base)),
+                    type=TyPtr(TyMemref((None,), self.base)),
                     offset=0,
-                    size=8,
+                    size=MDSPAN_POINTER_SIZE,
                 ),
-                "size": StructAttribut(
-                    name="size",
-                    type=TyScalar(Scalar.i64),
-                    offset=8,
-                    size=8,
-                ),
-            },
-        ))
+                MDSPAN_SIZE_ATTR_NAME: StructAttribut(
+                    name=MDSPAN_SIZE_ATTR_NAME,
+                    type=TyScalar(self.index_type),
+                    offset= 8 if (self.index_type == Scalar.i64) else 12,
+                    size  = 8 if (self.index_type == Scalar.i64) else 4
+                )
+            })
+        )
 
     def __repr__(self) -> str:
-        return f"Mdspanw(dims={self.dimension!r}, base={self.base!r})"
+        return (
+            f"Mdspan(dims={list(self.dims)!r}, base={self.base!r}, "
+            f"index_type={self.index_type!r})"
+        )

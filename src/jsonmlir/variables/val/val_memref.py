@@ -48,7 +48,7 @@ class ValMemref(ValNode[TyMemref]):
         return self.ty.base
 
     def get_dim(self) -> Sequence[Value]:
-        return dimensions_to_ssa(self.ty.dimensions, self.addr)
+        return dimensions_to_ssa(self.ty.dims, self.addr)
 
     def _get_SSA(self) -> Value:
         return self.addr
@@ -64,8 +64,8 @@ class ValMemref(ValNode[TyMemref]):
             return self
 
         # Split index
-        consuming = index[: len(self.ty.dimensions)]
-        remaining = index[len(self.ty.dimensions) :]
+        consuming = index[: len(self.ty.dims)]
+        remaining = index[len(self.ty.dims) :]
         assert all_ssavalues(consuming)
 
         # Load
@@ -85,9 +85,9 @@ class ValMemref(ValNode[TyMemref]):
     ):
 
         # Split index
-        assert len(index) >= len(self.ty.dimensions)
-        consuming = index[: len(self.ty.dimensions)]
-        remaining = index[len(self.ty.dimensions) :]
+        assert len(index) >= len(self.ty.dims)
+        consuming = index[: len(self.ty.dims)]
+        remaining = index[len(self.ty.dims) :]
         assert all_ssavalues(consuming)
 
         # Recursive

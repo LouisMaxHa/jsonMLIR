@@ -9,11 +9,17 @@ from mlir.ir import Context, InsertionPoint, Location, Module
 
 from jsonmlir.operations.op_module import ModuleJsonOp
 from jsonmlir.pipeline.cli import parse_args, resolve_output_name
-from jsonmlir.pipeline.commands import (Toolchain, build_ast,
-                                        compile_llvm_to_object,
-                                        convert_to_llvm, link_executable,
-                                        load_input_file, run_llvm_opt,
-                                        run_mlir_opt, set_display_cmd)
+from jsonmlir.pipeline.commands import (
+    Toolchain,
+    build_ast,
+    compile_llvm_to_object,
+    convert_to_llvm,
+    link_executable,
+    load_input_file,
+    run_llvm_opt,
+    run_mlir_opt,
+    set_display_cmd,
+)
 from jsonmlir.utils.trace import enable_trace
 
 
@@ -131,7 +137,7 @@ def compiler(module_ast: ModuleJsonOp, argv: Sequence[str] | None = None) -> int
     .. code-block:: python
 
        module_ast = Module([Function("main", body=[Const(0)])])
-       status = compiler(module_ast, ["examples/somme/main.json"])
+       status = compiler(module_ast, ["-A"])
     """
     # Read params and configuration
     args = parse_args(argv)

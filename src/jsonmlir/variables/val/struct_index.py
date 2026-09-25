@@ -37,7 +37,7 @@ def call_structure_index(
 
 # ──────────── Methodes ────────────
 @struct_index("mdspan")
-def _real3_operator(
+def _mdspan_operator(
     struct: ValStruct, index: str | int
 ) -> ValNode[Any]:
   assert isinstance(index, int)

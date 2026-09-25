@@ -32,7 +32,10 @@ class Factory:
     @staticmethod
     @trace_step("Factory.from_val", display_entry=True)
     def from_val(type: TyNode, value: ValNode[Any]) -> ValNode[Any]:
-        """Create the value implementation matching ``type``."""
+        """Create the value implementation matching ``type``.
+
+        (type: TyNode, value: ValNode[Any]) -> ValNode[Any]
+        """
         match type:
             case TyPtr():
                 return ValPtr.init_from(type, value)
@@ -47,7 +50,7 @@ class Factory:
             case TyMdspan():
                 return ValMdspan.init_from(type, value)
             case TyMemref() | TyBuffer():
-                return Factory.generic_memref(type.dimensions, type.base, value)
+                return Factory.generic_memref(type.dims, type.base, value)
             case _:
                 raise ValueError(f"From val: {type} not handled")
 
@@ -60,13 +63,13 @@ class Factory:
     @staticmethod
     @trace_step("Factory.generic_memref", display_entry=True)
     def generic_memref(
-        dimensions: Sequence[int | None], base: TyNode, value: ValNode[Any]
+        dims: Sequence[int | None], base: TyNode, value: ValNode[Any]
     ) -> ValBuffer | ValMemref:
         """Create a buffer or memref value for a multidimensional type."""
-        assert len(dimensions) > 0, "Use scalar for no dimension memref"
+        assert len(dims) > 0, "Use scalar for no dimension memref"
 
         if isinstance(base, TyStruct):
-            return ValBuffer.init_from(TyBuffer(dimensions, base), value)
+            return ValBuffer.init_from(TyBuffer(dims, base), value)
         if isinstance(base, TyBuffer):
-            return ValBuffer.init_from(TyBuffer(dimensions, base), value)
-        return ValMemref.init_from(TyMemref(dimensions, base), value)
+            return ValBuffer.init_from(TyBuffer(dims, base), value)
+        return ValMemref.init_from(TyMemref(dims, base), value)

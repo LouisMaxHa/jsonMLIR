@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Literal
 
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.operations.op_binary import BinaryOp
-from jsonmlir.operations.op_constant import ConstOp
+from jsonmlir.operations.op_const import ConstOp
 from jsonmlir.operations.op_operator import OperatorOp
 from jsonmlir.utils.enum_scalars import Scalar
 from jsonmlir.utils.trace import trace_step

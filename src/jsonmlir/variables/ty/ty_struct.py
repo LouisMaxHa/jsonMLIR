@@ -34,7 +34,9 @@ class TyStruct(TyNodeBase):
     # Lazy resolution: a struct may be referenced before it is defined.
     _resolved: StructDescriptor | None = PrivateAttr(default=None)
 
-    def __init__(self, base: str | StructDescriptor | None = None, /, **kwargs: Any) -> None:
+    def __init__(
+        self, base: str | StructDescriptor | None = None, /, **kwargs: Any
+    ) -> None:
         # Set name
         if isinstance(base, str):
             kwargs["name"] = base
