@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from mlir.ir import Type, Value
 
@@ -13,17 +13,14 @@ from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_not_supported import TyNotSupported
 from jsonmlir.variables.val.val import ValNode
 
-if TYPE_CHECKING:
-    from jsonmlir.operations.op_var import VarOp
-
 
 class Var:
     name: str
-    indices: Sequence[int | str | VarOp]
+    indices: Sequence[int | str | Value]
     type: TyNode | None = None
 
     def __init__(
-        self, name: str, indices: Sequence[int | str | VarOp], type: TyNode | None
+        self, name: str, indices: Sequence[int | str | Value], type: TyNode | None
     ):
         self.name = name
         self.indices = indices
@@ -72,12 +69,12 @@ class Var:
         index_ssa: Sequence[str | Value] = []
 
         for i in self.indices:
-            if isinstance(i, str):
-                index_ssa.append(i)
-            elif isinstance(i, int):
-                index_ssa.append(ssa_val.val_to_SSAValue(i, Scalar.idx))
-            else:
-                index_ssa.append(i.as_var().get_SSA())
+            # str   -> str
+            # Value -> Value
+            # int   -> Value (Arith.Const)
+            if isinstance(i, int):
+                i = ssa_val.val_to_SSAValue(i, Scalar.idx)
+            index_ssa.append(i)
 
         return index_ssa
 

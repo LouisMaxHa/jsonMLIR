@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
+from mlir.ir import Value
 from pydantic import Field
 
 from jsonmlir.operations.codegen import OpNode
@@ -11,10 +12,14 @@ from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.val.val import ValNode
 from jsonmlir.variables.var import Var
 
+if TYPE_CHECKING:
+    from jsonmlir.operations.base import BaseValue
+
 
 class VarOp(OpNode):
     """Load a named variable, optionally applying indices.
-    You can set type to force type checking or let it to none and jsonMlir will try to deduce it from the register or other operands.
+    You can set type to force type checking or let it to none and jsonMlir will try to
+    deduce it from the register or other operands.
 
     Example:
 
@@ -28,11 +33,27 @@ class VarOp(OpNode):
 
     op: Literal["var"] = "var"
     name: str
-    indices: Sequence[int | str | VarOp] = Field(default_factory=list)
+    indices: Sequence[int | str | VarOp | BaseValue] = Field(default_factory=list)
     type: TyNode | None = None
 
     def as_var(self) -> Var:
-        return Var(self.name, self.indices, self.type)
+        # Convert indices to values
+        indices: Sequence[int | str | Value] = []
+        for i in self.indices:
+
+            # op -> op.codegen[0].get_ssa()
+            if isinstance(i, OpNode):
+                values = i.codegen()
+                assert(len(values) == 1)
+                indices.append(values[0].get_SSA())
+
+            # str -> str
+            # int -> int
+            else:
+                indices.append(i)
+
+        # Return var
+        return Var(self.name, indices, self.type)
 
     # TODO: rename load to avoid confusion with get_SSA that dont use index
     @trace_step("VarOp: {self.name}, {self.indices}")
