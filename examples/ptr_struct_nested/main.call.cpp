@@ -29,7 +29,7 @@ int get_value() { return ctr++; }
 
 int main() {
 
-  // ──────────── Tableaux contenant les informations ────────────
+  // ──────────── Arrays containing the data ────────────
   xyz *coords_positions = new xyz[5];
   for (int i = 0; i < 5; i++) {
     coords_positions[i].x = get_value();
@@ -44,7 +44,7 @@ int main() {
     coords_temperatures[i].z = get_value();
   }
 
-  // ──────────── Description des tableaux ────────────
+  // ──────────── Array descriptions ────────────
   Noeuds *noeuds_positions = new Noeuds;
   noeuds_positions->coords = coords_positions;
   noeuds_positions->size = 5;

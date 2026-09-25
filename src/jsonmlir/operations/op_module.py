@@ -1,43 +1,64 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import Field
 
 from jsonmlir.operations.codegen import OpNode
+from jsonmlir.operations.op_comment import CommentOp
 from jsonmlir.operations.op_define_function import DefineFunctionOp
 from jsonmlir.operations.op_define_struct import DefineStructOp
 from jsonmlir.operations.op_function import FunctionOp
 from jsonmlir.utils.trace import trace_step
-from jsonmlir.variables.memory import functions_registry, structs_type
+from jsonmlir.variables.memory import functions_registry, structs_registry
 from jsonmlir.variables.val.val import ValNode
 
-# Déclaration de struct, de signature de fonction, ou de corps de fonction
+# Struct declaration, function signature, or function body.
 ModuleStatement = Annotated[
-    DefineStructOp | DefineFunctionOp | FunctionOp,
+    DefineStructOp | DefineFunctionOp | FunctionOp | CommentOp,
     Field(discriminator="op"),
 ]
 
 
 class ModuleJsonOp(OpNode):
-    """Racine JSON de type module : enregistre les structs puis génère les fonctions."""
+    """Root operation that contains struct declaration, function declaration, function implementation and comments.
+
+
+    Example:
+
+    .. code-block:: python
+
+       Module([
+        Comment("My first module using jsonMlir!"),
+        DefineStruct("coordinate", 16, [("x", "f64", 0, 8), ("y", "f64", 8, 8)]),
+        DefineFunction("sum", [TyStruct("coordinate")], "f64")
+        Function(
+            "sum", [("coo", TyStruct("coordinate")], [
+                Binary("+",
+                    Var("coo", ["x"]),
+                    Var("coo", ["y"])
+                )
+            ]
+        )
+       ])
+    """
 
     op: Literal["module"] = "module"
     body: Sequence[ModuleStatement] = ()
 
     @trace_step("ModuleJsonOp")
-    def codegen(self) -> Sequence[ValNode]:
-        structs_type.clear()
+    def codegen(self) -> Sequence[ValNode[Any]]:
+        structs_registry.clear()
         functions_registry.clear()
 
-        # Pré-pass : enregistrer toutes les déclarations de fonction
-        # avant de générer les corps (permet les appels dans n'importe quel ordre)
+        # First pass: register all function declarations before generating
+        # bodies, allowing calls in any order.
         for item in self.body:
             if isinstance(item, DefineFunctionOp):
                 item.codegen()
 
-        # Passe principale : générer le reste (structs, corps de fonctions)
+        # Main pass: generate the remaining items (structs, function bodies).
         for item in self.body:
             if not isinstance(item, DefineFunctionOp):
                 item.codegen()

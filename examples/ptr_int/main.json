@@ -8,7 +8,8 @@
         [
           "myAddr",
           {
-            "addr": "i64"
+            "type": "ptr",
+            "base": "i64"
           }
         ]
       ],

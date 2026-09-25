@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Literal
+from typing import Any, Literal
 
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.utils.trace import trace_step
@@ -11,10 +11,25 @@ from jsonmlir.variables.val.val import ValNode
 
 
 class DefineFunctionOp(OpNode):
-    """Déclare la signature d'une fonction (nom, types d'entrée, types de sortie).
+    """Declare a function signature.
 
-    Ne génère aucun IR — alimente uniquement le registre global utilisé par
-    CallOp pour résoudre les types de retour et vérifier les types des arguments.
+    This operation emits no IR. It populates the registry used by ``CallOp``
+    to resolve return types and validate arguments.
+
+    Example:
+
+    .. code-block:: python
+
+        DefineFunction(
+            "add",  #  Name
+            # Arguments: (arg name, type), ...
+            [
+                ("lhs", TyScalar(Scalar.i64)),
+                ("rhs", TyScalar(Scalar.i64))
+            ],
+            # Return type
+            [ TyScalar(Scalar.i64) ]
+        )
     """
 
     op: Literal["define_function"] = "define_function"
@@ -23,7 +38,7 @@ class DefineFunctionOp(OpNode):
     return_types: Sequence[TyNode] = ()
 
     @trace_step("DefineFunctionOp: {self.name}")
-    def codegen(self) -> Sequence[ValNode]:
+    def codegen(self) -> Sequence[ValNode[Any]]:
         functions_registry[self.name] = FunctionSignature(
             args=list(self.args),
             return_types=list(self.return_types),

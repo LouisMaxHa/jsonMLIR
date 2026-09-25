@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from decimal import InvalidOperation
+from typing import Any
 
 from mlir.ir import Type, Value
 
 from jsonmlir.utils.trace import trace_step
-from jsonmlir.variables.memory import STRUCTS_TYPE
+from jsonmlir.variables.memory import StructDescriptor
 from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_buffer import TyBuffer
 from jsonmlir.variables.ty.ty_SOA import TySOA
@@ -16,18 +16,19 @@ from jsonmlir.variables.val.val_memref import ValMemref
 
 
 class ValSOA(ValNode[TySOA]):
-    """Vue Structure-of-Arrays : une colonne memref strided par attribut."""
+    """Structure-of-Arrays view: one strided memref column per field."""
 
     addrs: dict[str, ValMemref | ValBuffer]
 
     # ──────────── Init ────────────
     def __init__(self, ty: TySOA, addrs: dict[str, ValMemref | ValBuffer]):
-        # Résolution différée : le struct doit exister à l'exécution
-        # assert ty.base in structs_type.keys()
+        # Deferred resolution: the struct must exist at runtime.
+        # assert ty.base in structs_registry.keys()
 
         # Each array should have correct number of elements
         for addr in addrs.values():
-            assert addr.get_ty().get_n_elements() == list(ty.n_elements), f"Got {addr.get_ty().get_n_elements()}, expected {ty.n_elements}"
+            assert addr.get_ty().get_n_elements() == list(ty.n_elements), \
+            f"Got {addr.get_ty().get_n_elements()}, expected {ty.n_elements}"
 
         self.addrs = addrs
         self.ty = ty
@@ -44,11 +45,11 @@ class ValSOA(ValNode[TySOA]):
         raise NotImplementedError
 
     def get_SSA(
-        self, index: Sequence[str | Value | int]
+        self, index: Sequence[str | Value | int] = []
     ) -> Value:
         assert len(index) >= 1
         assert isinstance(index[0], str)
-        assert index[0] in self.ty.base.struct.FIELDS
+        assert index[0] in self.ty.base.struct.fields
 
         consumming = index[0]
         remaining = index[1::]
@@ -57,19 +58,19 @@ class ValSOA(ValNode[TySOA]):
     def _get_SSA(
         self,
     ) -> Value:
-        raise InvalidOperation(
-            "ValScalar don't have SSA equivalent.Use get_SSA with attribut str"
+        raise ValueError(
+            "ValScalar don't have SSA equivalent. Use get_SSA with at least one index"
         )
 
     # ──────────── Load ────────────
     def _load(
         self,
         index: Sequence[str | Value],
-    ) -> ValNode:
+    ) -> ValNode[Any]:
 
         assert len(index) >= 1
         assert isinstance(index[0], str)
-        assert index[0] in self.ty.base.struct.FIELDS
+        assert index[0] in self.ty.base.struct.fields
 
         # Load
         consumming = index[0]
@@ -80,11 +81,11 @@ class ValSOA(ValNode[TySOA]):
     def _store(
         self,
         index: Sequence[str | Value],
-        source: ValNode,
+        source: ValNode[Any],
     ):
         assert len(index) >= 1
         assert isinstance(index[0], str)
-        assert index[0] in self.ty.base.struct.FIELDS
+        assert index[0] in self.ty.base.struct.fields
 
         # Store
         consumming = index[0]
@@ -95,24 +96,26 @@ class ValSOA(ValNode[TySOA]):
 
     @staticmethod
     @trace_step("ValSOA.init_from", display_entry=True)
-    def init_from(type: TyNode, source: ValNode) -> ValSOA:
+    def init_from(type: TyNode, source: ValNode[Any]) -> ValSOA:
         from jsonmlir.variables.ty.ty_SOA import TySOA
 
         assert isinstance(type, TySOA)
         assert len(type.n_elements) == 1, "Need to test this before"
 
         # We need to have a ValBuffer
-        if not isinstance(source, ValBuffer):
-            source = ValBuffer.init_from(
+        if isinstance(source, ValBuffer):
+            buffer = source
+        else:
+            buffer = ValBuffer.init_from(
                 TyBuffer(type.get_sizes(), type.base),
                 source,
             )
 
-        struct: STRUCTS_TYPE = source.ty.base.struct
+        struct: StructDescriptor = buffer.ty.base.struct
 
-        # Init for all attributs
+        # Initialize all fields.
         addrs: dict[str, ValBuffer | ValMemref] = {}
-        for attribut in struct.FIELDS.values():
-            addrs[attribut.NAME] = source.build_view(attribut.NAME)
+        for attribut in struct.fields.values():
+            addrs[attribut.name] = buffer.build_view(attribut.name)
 
         return ValSOA(type, addrs)

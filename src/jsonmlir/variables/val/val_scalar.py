@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import Any
 
 from mlir.dialects import memref
 from mlir.ir import MemRefType, Value
@@ -13,8 +14,6 @@ from jsonmlir.variables.val.val_SSA import ValSSA
 
 
 class ValScalar(ValNode[TyScalar]):
-    addr: Value
-
     # ──────────── Init ────────────
 
     def __init__(self, ty: TyScalar, addr: Value):
@@ -32,7 +31,7 @@ class ValScalar(ValNode[TyScalar]):
     @staticmethod
     @trace_step("ValScalar.init_from", display_entry=True)
     def init_from(
-        type: TyNode, source: ValNode
+        type: TyNode, source: ValNode[Any]
     ) -> ValScalar:
         assert isinstance(type, TyScalar)
         assert isinstance(source, (ValSSA, ValScalar))
@@ -55,14 +54,13 @@ class ValScalar(ValNode[TyScalar]):
         return []
 
     def _get_SSA(self) -> Value:
-        op = memref.LoadOp(self.addr, [])
-        return op.result
+        return memref.LoadOp(self.addr, []).result
 
     # ──────────── Load ────────────
     def _load(
         self,
         index: Sequence[str | Value],
-    ) -> ValNode:
+    ) -> ValNode[Any]:
         assert index == []
         return ValSSA(self.get_SSA(index))
 
@@ -71,11 +69,11 @@ class ValScalar(ValNode[TyScalar]):
     def _store(
         self,
         index: Sequence[str | Value],
-        source: ValNode,
+        source: ValNode[Any],
     ):
         assert index == []
         assert isinstance(source, (ValSSA, ValScalar))
-        ssa = source.get_SSA([])
+        ssa = source.get_SSA()
 
         # Extract ssa value from memref<ssa value>
         if isinstance(ssa.type, MemRefType):

@@ -82,15 +82,43 @@ def _parse_expectations(stdout: str) -> tuple[list[tuple[str, str]], int]:
     return (mismatches, n_tests)
 
 
+def _resolve_python(project_root: Path) -> str:
+    """Prefer the project virtualenv interpreter when available.
+
+    The ``mlir`` Python bindings and the editable ``jsonmlir`` package are
+    installed in the project's ``.venv``; using ``sys.executable`` when the
+    runner is launched outside the venv would hide them from subprocesses.
+    """
+    candidates = [
+        project_root / ".venv" / "bin" / "python",
+        project_root / ".venv" / "Scripts" / "python.exe",
+    ]
+    for candidate in candidates:
+        if candidate.is_file():
+            return str(candidate)
+    return sys.executable
+
+
+def _subprocess_env(project_root: Path) -> dict[str, str]:
+    """Return an environment that makes the ``src`` package importable."""
+    env = os.environ.copy()
+    src_dir = str((project_root / "src").resolve())
+    existing = env.get("PYTHONPATH")
+    env["PYTHONPATH"] = src_dir if not existing else src_dir + os.pathsep + existing
+    return env
+
+
 def _compile_example(
     input_path: Path,
     project_root: Path,
 ) -> subprocess.CompletedProcess[str] | None:
     """Compile an example in a subprocess for process-level isolation."""
+    env = _subprocess_env(project_root)
+    python = _resolve_python(project_root)
     output_name = input_path.parent.name
     if input_path.suffix == ".py":
         cmd = [
-            sys.executable,
+            python,
             str(input_path),
             "--project-root",
             str(project_root),
@@ -99,7 +127,7 @@ def _compile_example(
         ]
     else:
         cmd = [
-            sys.executable,
+            python,
             "-m",
             "jsonmlir.pipeline.cli",
             str(input_path),
@@ -116,6 +144,7 @@ def _compile_example(
             text=True,
             timeout=120,
             check=False,
+            env=env,
         )
     except Exception:
         return None
@@ -247,8 +276,8 @@ def print_summary(results: list[ResultInfo]) -> None:
     console.print(
         f"\n[bold]Benchmark[/bold]: "
         f"[{summary_style}]{passed}/{len(results)} passed[/] "
-        f"— total [magenta]{_format_duration(total_time)}[/] "
-        f"— slowest [yellow]{slowest.name}[/] "
+        f"- total [magenta]{_format_duration(total_time)}[/] "
+        f"- slowest [yellow]{slowest.name}[/] "
         f"([magenta]{_format_duration(slowest.elapsed_s)}[/])"
     )
 
@@ -265,15 +294,32 @@ def _print_progress(infos: ResultInfo) -> None:
             console.print("")
 
 
+def _matches_filter(path: Path, filters: list[str]) -> bool:
+    """Return True if *path* matches any filter (substring of the example name)."""
+    if not filters:
+        return True
+    name = path.parent.name
+    return any(f in name for f in filters)
+
+
 def run_all_examples(
     project_root: Path | None = None,
     *,
     jobs: int | None = None,
+    filters: list[str] | None = None,
 ) -> list[ResultInfo]:
-    """Run all examples and print the summary."""
+    """Run examples (optionally filtered by name) and print the summary."""
     root = (project_root or Path(__file__).resolve().parents[1]).resolve()
-    paths = discover_examples(root)
+    filters = filters or []
+    paths = [path for path in discover_examples(root) if _matches_filter(path, filters)]
     workers = jobs if jobs is not None else (os.cpu_count() or 4)
+
+    if not paths:
+        console.print(
+            f"[bold red]No example matched[/] {filters} in "
+            f"[cyan]{root / 'examples'}[/]"
+        )
+        return []
 
     console.print(
         f"[bold]Running {len(paths)} examples[/] from [cyan]{root / 'examples'}[/] "
@@ -313,11 +359,19 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         metavar="N",
         help=f"number of parallel workers (default: {default_jobs})",
     )
+    parser.add_argument(
+        "names",
+        nargs="*",
+        metavar="NAME",
+        help="only run examples whose name contains one of these substrings",
+    )
     return parser.parse_args(argv)
 
 
 if __name__ == "__main__":
     args = _parse_args()
-    results = run_all_examples(jobs=args.jobs)
+    results = run_all_examples(jobs=args.jobs, filters=args.names)
+    if args.names and not results:
+        sys.exit(1)
     failed = [r for r in results if r.status != ResultStats.OK]
     sys.exit(1 if failed else 0)

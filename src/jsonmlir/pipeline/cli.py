@@ -41,10 +41,17 @@ def _expand_grouped_trace_flags(argv: Sequence[str]) -> list[str]:
 
 
 def resolve_output_name(input_path: Path, explicit: str | None = None) -> str:
-    """Nom de base des artefacts intermédiaires dans ``build/``.
+    """Resolve the base name used for intermediate files in ``build/``.
 
-    Pour ``main.json`` / ``main.py`` (exemples parallèles), utilise le nom du
-    dossier parent afin d'éviter les conflits entre compilations concurrentes.
+    ``main.json`` and ``main.py`` use their parent directory name so parallel
+    examples do not overwrite each other's artifacts.
+
+    Args:
+        input_path: Input JSON, YAML, or Python file.
+        explicit: Optional name supplied by the caller.
+
+    Returns:
+        The artifact base name.
     """
     if explicit is not None:
         return explicit
@@ -55,6 +62,15 @@ def resolve_output_name(input_path: Path, explicit: str | None = None) -> str:
 
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
+    """Parse command-line arguments for the ``jsonmlir`` executable.
+
+    Args:
+        argv: Arguments to parse, excluding the executable name. If omitted,
+            ``sys.argv[1:]`` is used.
+
+    Returns:
+        The parsed command-line namespace.
+    """
     parser = argparse.ArgumentParser(
         prog="jsonmlir",
         description=(
@@ -177,6 +193,5 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 if __name__ == "__main__":
     from jsonmlir.pipeline.compiler import main
-    print("hey")
 
     raise SystemExit(main())

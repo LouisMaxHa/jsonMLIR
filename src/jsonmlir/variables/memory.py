@@ -1,25 +1,17 @@
 from __future__ import annotations
 
-from typing import NamedTuple
+from typing import TYPE_CHECKING, Any, NamedTuple
 
-from mlir.ir import Type
+from jsonmlir.variables.val.struct_attribut import StructAttribut
 
-from jsonmlir.variables.ty.ty import TyNode
-from jsonmlir.variables.val.val import ValNode
+if TYPE_CHECKING:
+    from jsonmlir.variables.ty.ty import TyNode
+    from jsonmlir.variables.val.val import ValNode
 
-
-class FIELD_TYPE(NamedTuple):
-    NAME: str
-    TYPE: TyNode
-    OFFSET: int
-    SIZE: int
-
-
-class STRUCTS_TYPE(NamedTuple):
-    NAME: str
-    LLVM_TYPE: Type
-    SIZE: int
-    FIELDS: dict[str, FIELD_TYPE]
+class StructDescriptor(NamedTuple):
+    name: str
+    size: int
+    fields: dict[str, StructAttribut]
 
 
 class FunctionSignature(NamedTuple):
@@ -27,6 +19,16 @@ class FunctionSignature(NamedTuple):
     return_types: list[TyNode]
 
 
-structs_type: dict[str, STRUCTS_TYPE] = {}
-variables_heap: dict[str, ValNode] = {}
+variables_heap: dict[str, ValNode[Any]] = {}
+structs_registry: dict[str, StructDescriptor] = {}
 functions_registry: dict[str, FunctionSignature] = {}
+
+def get_available_varname(base: str) -> str:
+    """Return ``base`` or the first unused suffixed variable name."""
+    if base not in variables_heap.keys():
+        return base
+
+    i = 0
+    while base + str(i) in variables_heap.keys():
+        i += 1
+    return base + str(i)

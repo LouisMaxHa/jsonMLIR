@@ -24,6 +24,10 @@ jsonmlir
 jsonmlir tests/run_tests.py -j 8
 jsonmlir python tests/run_tests.py -j 8
 
+# Run only the tests matching a name (substring of the example directory)
+jsonmlir tests/run_tests.py mdspan
+jsonmlir tests/run_tests.py struct array
+
 # Generate a library from a Python DSL script
 jsonmlir examples/python_max/main.py
 
@@ -106,4 +110,5 @@ uv run python -c "import mlir.ir; print('OK')"
 
 # Run the tests
 uv run python tests/run_tests.py -j 8
+uv run python tests/run_tests.py mdspan   # only examples matching "mdspan"
 ```

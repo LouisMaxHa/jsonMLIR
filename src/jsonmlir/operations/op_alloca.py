@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Literal
+from typing import Any, Literal
 
 from mlir.dialects import memref
 from mlir.ir import Value
@@ -9,8 +9,8 @@ from pydantic import Field
 
 from jsonmlir.operations.codegen import OpNode
 from jsonmlir.operations.op_var import VarOp
-from jsonmlir.utils.trace import trace_step
 from jsonmlir.utils.ssa_val import idx_to_ssavalues
+from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.factory import Factory
 from jsonmlir.variables.memory import variables_heap
 from jsonmlir.variables.ty.ty import TyNode
@@ -18,6 +18,11 @@ from jsonmlir.variables.val.val import ValNode
 
 
 class AllocaOp(OpNode):
+    """Allocate a stack-backed memref with automatic scope cleanup.
+    Save the variable in the variable register.
+
+    See `AllocOp` for example.
+    """
 
     op: Literal["alloca"] = "alloca"
     name: str
@@ -25,7 +30,7 @@ class AllocaOp(OpNode):
     size: Sequence[int | VarOp] = Field(default_factory=list[int | VarOp])
 
     @trace_step("AllocaOp: {self.name}")
-    def codegen(self) -> Sequence[ValNode]:
+    def codegen(self) -> Sequence[ValNode[Any]]:
 
         assert self.name not in variables_heap.keys()
 
@@ -33,7 +38,7 @@ class AllocaOp(OpNode):
         dyn_size: list[Value] = [
             idx_to_ssavalues(s)
             if isinstance(s, int)
-            else s.codegen()[0].get_SSA([])
+            else s.codegen()[0].get_SSA()
             for s in self.size
         ]
 

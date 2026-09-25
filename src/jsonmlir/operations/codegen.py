@@ -7,30 +7,35 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
+from jsonmlir.utils.schema_shape import ast_schema_extra
 from jsonmlir.variables.val.val import ValNode
 
 
 # ABC : Abstract Base Class
 class OpNode(BaseModel, ABC):
-    # Nécessaire pour autoriser des types non-Pydantic dans les sous-classes
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    """ Abstract class that have a codegen() methode
+    """
 
+    # Required to allow non-Pydantic types in subclasses.
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        populate_by_name=True,
+        json_schema_extra=ast_schema_extra,
+    )
+
+    # Pydantic only accepts named arguments: map positional arguments to the
+    # declared fields (excluding the "op" discriminator) for manual
+    # instantiation, e.g. Const(1, "i32").
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        # Pydantic n'accepte que des arguments nommés : on mappe les arguments
-        # positionnels sur les champs déclarés (hors discriminant "op") pour
-        # permettre l'instanciation manuelle, ex. Const(1, "i32").
         if args:
+            # Extract the method parameters.
             fields = [f for f in type(self).model_fields if f != "op"]
-            if len(args) > len(fields):
-                raise TypeError(
-                    f"{type(self).__name__} accepte au plus {len(fields)} "
-                    f"arguments positionnels, {len(args)} reçus"
-                )
+
+            # Check that a "name" argument is not already defined by a keyword.
             for name, value in zip(fields, args):
                 if name in kwargs:
                     raise TypeError(
-                        f"{type(self).__name__}: '{name}' fourni à la fois en "
-                        "positionnel et en mot-clé"
+                        f"{type(self).__name__}: '{name}' already defined in kwargs"
                     )
                 kwargs[name] = value
         super().__init__(**kwargs)
@@ -38,11 +43,12 @@ class OpNode(BaseModel, ABC):
     def __repr__(self) -> str:
         return type(self).__name__
 
-    # Force les sous-classes à implémenter cette méthode abstraite
+    # @abstractmethod forces subclasses to implement this abstract method.
     @abstractmethod
-    def codegen(self) -> Sequence[ValNode]:
-        """Génère l'opération MLIR au point d'insertion courant et retourne la SSA produite."""
+    def codegen(self) -> Sequence[ValNode[Any]]:
+        """Generate the MLIR operation at the current insertion point and
+        return a list of nodes containing the results."""
         raise NotImplementedError
 
 class ABCEnumMeta(EnumMeta, ABCMeta):
-    """Permet d'hériter à la fois de Enum et de ValNode (ABC)."""
+    """Allow inheritance from both Enum and ValNode (ABC)."""

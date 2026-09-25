@@ -247,3 +247,5 @@ tests/**/Output/*
 
 # Docker wrapper stamp
 .jsonmlir-docker-stamp
+
+dist/

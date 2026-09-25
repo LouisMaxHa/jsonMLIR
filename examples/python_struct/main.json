@@ -27,7 +27,8 @@
         [
           "myStruct",
           {
-            "struct": "noeud"
+            "type": "struct",
+            "name": "noeud"
           }
         ]
       ],

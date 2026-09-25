@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import contextvars
 import inspect
-import os
 from collections.abc import Callable
 from functools import wraps
 from string import Formatter
@@ -182,7 +181,7 @@ def trace_step(label: str, *, display_entry: bool = False):
         with trace_step("Loading args"):
             ...
 
-    label : str.format() template — parameter and attribute names
+    label : str.format() template - parameter and attribute names
             (e.g. ``ConstOp: val={self.val}``, ``from_val type={type}``).
     display_entry : add input parameters as child nodes.
     """

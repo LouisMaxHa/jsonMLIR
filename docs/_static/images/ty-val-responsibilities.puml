@@ -1,0 +1,59 @@
+@startuml
+scale 5
+
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam defaultTextAlignment left
+skinparam class {
+  BorderColor #333333
+  BackgroundColor #FAFAFA
+  HeaderBackgroundColor #E3F2FD
+  FontName monospace
+}
+
+abstract class Type {
+  + get_type()
+  + get_memref_type()
+  + get_dimensions() : List[int]
+}
+
+class Scalaire {
+  - type : Enum
+}
+
+class Tableau {
+  - element : Type
+  - dimensions : List[int]
+}
+
+class Pointeur {
+  - element : Type
+}
+
+Type <|-- Scalaire
+Type <|-- Tableau
+Type <|-- Pointeur
+
+class Valeur {
+  - addr : Adresse mémoire
+  - type : Type
+  + load(indices)
+  + set(indices, valeur)
+}
+
+Valeur *-- Type
+
+class Variable {
+  - nom : str
+  + get()
+}
+
+Variable --> Valeur
+
+note right of Variable
+  Résout le nom symbolique ;
+  les valeurs intermédiaires
+  n'ont pas de Variable associée.
+end note
+
+@enduml

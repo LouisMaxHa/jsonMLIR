@@ -1,34 +1,26 @@
 import sys
 
-from jsonmlir.operations import (
-    Binary,
-    Call,
-    Cond,
-    DefineFunction,
-    Function,
-    Module,
-    Scalar,
-    Set,
-    TyScalar,
-    Var,
-)
+from jsonmlir.operations.dsl import (Binary, Call, DefineFunction, Function,
+                                     If, Module, Set, Var)
 from jsonmlir.pipeline.compiler import compiler
+from jsonmlir.utils.enum_scalars import Scalar
+from jsonmlir.variables.ty.ty_scalar import TyScalar
 
 module = Module([
-    # Déclaration de la signature de max_i64 (entrées + sortie)
+# Declare the max_i64 signature (inputs + output).
     DefineFunction(
         "max_i64",
         [("a", TyScalar(Scalar.i64)), ("b", TyScalar(Scalar.i64))],
         [TyScalar(Scalar.i64)],
     ),
 
-    # Corps de max_i64 : renvoie le plus grand des deux entiers
+# max_i64 body: return the larger of the two integers.
     Function(
         "max_i64",
         [("a", TyScalar(Scalar.i64)), ("b", TyScalar(Scalar.i64))],
         [
             Set(Var(name="result", type="i64"), Var("a")),
-            Cond(
+            If(
                 cond=Binary(">", Var("b"), Var("a")),
                 thenBlock=[Set(Var("result"), Var("b"))],
             ),
@@ -36,14 +28,14 @@ module = Module([
         ],
     ),
 
-    # Déclaration de la signature de lib_main
+# Declare the lib_main signature.
     DefineFunction(
         "lib_main",
         [("x", TyScalar(Scalar.i64)), ("y", TyScalar(Scalar.i64))],
         [TyScalar(Scalar.i64)],
     ),
 
-    # Corps de lib_main : appelle max_i64 et renvoie son résultat
+# lib_main body: call max_i64 and return its result.
     Function(
         "lib_main",
         [("x", TyScalar(Scalar.i64)), ("y", TyScalar(Scalar.i64))],

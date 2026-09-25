@@ -4,7 +4,22 @@ This project lets you generate specialized shared libraries using MLIR, based on
 The generated libraries can then be called from your codebase without having to write a complex front-end for your solution.
 
 Unlike working directly with MLIR, the JSON description provides an extra level of abstraction allowing you to manipulate array, ptr, struct and array of pointer to struct !
-This solution is designed to be generic, modular, and accessible — make sure you have a good understanding of each operation before using it.
+This solution is designed to be generic, modular, and accessible - make sure you have a good understanding of each operation before using it.
+
+## Documentation
+
+Read the [jsonMLIR documentation](https://louismaxha.github.io/jsonMLIR/) for the Python DSL and compiler API.
+
+Build and view the documentation locally from the repository root:
+
+```bash
+uv sync --group docs
+uv run sphinx-build -W --keep-going docs docs/_build/html
+python -m http.server 8000 --directory docs/_build/html
+```
+
+Then open <http://localhost:8000> in a browser. The documentation uses the
+Furo Sphinx theme and does not require the MLIR toolchain to build.
 
 
 ## Installation
@@ -18,9 +33,10 @@ docker build -t jsonmlir .
 export PATH="$(pwd)/bin:$PATH"
 
 # Run
-jsonmlir examples/somme/main.json -A         # JSON -> Shared librairie
-jsonmlir examples/python_max/main.py         # or from python project
-jsonmlir jsonmlir python tests/run_tests.py  # run tests
+jsonmlir examples/somme/main.json -A         # Generate a shared library from JSON
+jsonmlir examples/python_max/main.py         # Generate a shared library from Python project
+jsonmlir tests/run_tests.py                  # Run all tests
+jsonmlir tests/run_tests.py mdspan           # Run only the tests matching "mdspan"
 ```
 
 The `jsonmlir` wrapper will:
@@ -28,24 +44,52 @@ The `jsonmlir` wrapper will:
 - Mounts the source repository (latest version of the code without need to rebuild)
 - Rebuilds the image if the `Dockerfile` or `pyproject.toml` has changed
 
+## Use jsonMLIR with your codebase
+You can export a json description of the AST used by this project. This description can help you generate the same AST on any other language.
+One usecase can be found here for typescript, [jsonMLIR-typescript](https://github.com/LouisMaxHa/jsonMLIR-typescript)
+
+You can get the json description using:
+```bash
+jsonmlir python scripts/generate_ts_ast.py output_json_schema.json
+```
+
+
 ## Options
-- `--ast`, `-a`         : Print the Python **a**ST
-- `--mlir`, `-m`        : Print the **m**LIR IR
-- `--mlir_opti`, `-M`   : Print the **M**LIR IR after optimisations passes
-- `--mlir_llvm`, `-n`   : Print the MLIR code after lowering to LLVM dialect of MLIR
-- `--llvm`, `-l`        : Print the **l**LVM code
-- `--llvm_opti`, `-L`   : Print the **L**LVM code after LLVM optimisations passes
-- `--cmd`, `-C`         : Print **C**ommands used during code generation
-- `--All`, `-A`         : Print **A**ll steps and informations
+- `-a`, `--ast`         : Print the Python **a**ST
+- `-m`, `--mlir`        : Print the **m**LIR IR
+- `-M`, `--mlir_opti`   : Print the **M**LIR IR after optimisations passes
+- `-n`, `--mlir_llvm`   : Print the MLIR code after lowering to LLVM dialect of MLIR
+- `-l`, `--llvm`        : Print the **l**LVM code
+- `-L`, `--llvm_opti`   : Print the **L**LVM code after LLVM optimisations passes
+- `-C`, `--cmd`         : Print **C**ommands used during code generation
+- `-A`, `--All`         : Print **A**ll steps and informations
 
 - `--mlir-bin-dir` : Directory containing the `mlir-opt` executable
 - `--project-root` : Change the current directory (used for `./build`)
-- `--output-name`  : Name of the generated librairie
+- `--output-name`  : Name of the generated library
+
+## Running tests
+
+`tests/run_tests.py` compiles and runs every directory in `examples/` and checks
+the `EXPECT` lines printed by each program.
+
+```bash
+jsonmlir tests/run_tests.py              # Run every example
+jsonmlir tests/run_tests.py mdspan       # Run only examples whose name contains "mdspan"
+jsonmlir tests/run_tests.py struct array # Run examples matching "struct" OR "array"
+jsonmlir tests/run_tests.py -j 1 mdspan  # Single worker (useful for readable logs)
+```
+
+You can also run example manually:
+```bash
+jsonmlir examples/mdspan/main.py -C
+jsonmlir bash 
+$ ./examples/mdspan/main.out
+```
+The binary may not be executable outside the docker if your configuration differ.
+
 
 ## Execution trace example
-
-![Tests](docs/images/tests.png)
-
 
 ## Project structure
 
@@ -73,13 +117,18 @@ The `jsonmlir` wrapper will:
 │       ├── memory.py      # Register and access instances
 │       └── var.py         # Association between variable name <-> instance
 │
+├── ts-ast/           # TypeScript AST (schema + DSL)
+│   ├── schema/            # JSON Schema exported from Pydantic
+│   ├── generated/         # TypeScript interfaces (do not edit)
+│   └── manual.ts          # Hand-written DSL helpers
+│
 └── tests/
     └── run_tests.py       # Run tests
 ```
 
 ## Example
 
-We want to generate a librairie with a function that look like this:
+We want to generate a library with a function that looks like this:
 ```python
 def lib_main(max: int) -> int:
     toto = 0

@@ -1,26 +1,45 @@
-"""Constructeurs DSL à arguments positionnels, compatibles basedpyright.
+"""Positional-argument DSL constructors compatible with basedpyright.
+This module exposes typed factory functions for writing Python descriptions by hand.
 
-Les classes ``*Op`` restent des modèles Pydantic (validation JSON, codegen).
-Ce module expose des fonctions factory typées pour l'écriture manuelle en Python.
+This avoids writing
+```python
+Var(name="MyIntArray", indices=[10], type=TyScalar(Scalar.i64)
+```
+
+and instead allows
+```python
+Var("MyIntArray", [10], "i64"
+```
+
+Pydantic also normalizes compact input at the JSON boundary. A scalar type can
+be written as ``"i64"`` instead of its explicit object form, and operation
+fields accept enum values such as ``"+"`` directly:
+
+.. code-block:: python
+
+   compact_type = parse_ty("i64")
+   compact_operation = Binary("+", Var("x"), Const(1))
+
 """
 
 from __future__ import annotations
 
 from collections.abc import Sequence
 
-from jsonmlir.operations.op_math import MathOp, MathOperator
-
 from jsonmlir.operations.base import BaseValue
 from jsonmlir.operations.op_alloc import AllocOp
 from jsonmlir.operations.op_alloca import AllocaOp
 from jsonmlir.operations.op_binary import BinaryOp
 from jsonmlir.operations.op_call import CallOp
-from jsonmlir.operations.op_cond import CondOp
-from jsonmlir.operations.op_constant import ConstOp
+from jsonmlir.operations.op_comment import CommentOp
+from jsonmlir.operations.op_if import IfOp
+from jsonmlir.operations.op_const import ConstOp
 from jsonmlir.operations.op_define_function import DefineFunctionOp
 from jsonmlir.operations.op_define_struct import DefineStructOp
 from jsonmlir.operations.op_function import FunctionOp
+from jsonmlir.operations.op_math import MathOp, MathOperator
 from jsonmlir.operations.op_module import ModuleJsonOp, ModuleStatement
+from jsonmlir.operations.op_not_supported import NotSupportedOp
 from jsonmlir.operations.op_operator import OperatorOp
 from jsonmlir.operations.op_print import PrintOp
 from jsonmlir.operations.op_set import SetOp
@@ -28,14 +47,16 @@ from jsonmlir.operations.op_unary import UnaryOp, UnaryOperator
 from jsonmlir.operations.op_var import VarOp
 from jsonmlir.operations.op_while import WhileOp
 from jsonmlir.utils.enum_scalars import Scalar
-from jsonmlir.variables.memory import FIELD_TYPE
 from jsonmlir.variables.ty.ty import TyNode, parse_ty
+from jsonmlir.variables.val.struct_attribut import StructAttribut
 
-FieldSpec = tuple[str, str | TyNode, int, int] | FIELD_TYPE
+FieldSpec = tuple[str, str | TyNode, int, int] | StructAttribut
 
 
 def _parse_ty(value: str | TyNode) -> TyNode:
-    return parse_ty(value) if isinstance(value, str) else value
+    if isinstance(value, str):
+        return parse_ty(value)
+    return value
 
 
 def _parse_scalar(value: str | Scalar) -> Scalar:
@@ -44,11 +65,11 @@ def _parse_scalar(value: str | Scalar) -> Scalar:
     return Scalar(value)
 
 
-def _parse_field(field: FieldSpec) -> FIELD_TYPE:
-    if isinstance(field, FIELD_TYPE):
+def _parse_field(field: FieldSpec) -> StructAttribut:
+    if isinstance(field, StructAttribut):
         return field
     name, ty, offset, size = field
-    return FIELD_TYPE(name, _parse_ty(ty), offset, size)
+    return StructAttribut(name=name, type=_parse_ty(ty), offset=offset, size=size)
 
 
 def _parse_ope(ope: str | OperatorOp) -> OperatorOp:
@@ -75,7 +96,6 @@ def DefineStruct(
         size=size,
         fields=[_parse_field(field) for field in fields],
     )
-
 
 def DefineFunction(
     name: str,
@@ -105,7 +125,6 @@ def Function(
 ) -> FunctionOp:
     return FunctionOp(name=name, args=args, body=body)
 
-
 def Var(
     name: str,
     indices: Sequence[int | str | VarOp] = (),
@@ -118,13 +137,22 @@ def Var(
         type=_parse_ty(type) if isinstance(type, str) else type,
     )
 
-
 def Const(
     val: float | int,
-    type: str | Scalar = Scalar.i64,
+    type: str | Scalar | None = None,
 ) -> ConstOp:
-    return ConstOp(val=val, type=_parse_scalar(type))
+    # Detect type from val
+    if type is None:
+        if type is None and isinstance(val, bool):
+            type = Scalar.i1
+        if type is None and isinstance(val, float):
+            type = Scalar.f64
+        if type is None and isinstance(val, int):
+            type = Scalar.i64
+        assert type is not None
 
+    # Build
+    return ConstOp(val=val, type=_parse_scalar(type))
 
 def Binary(
     ope: str | OperatorOp,
@@ -133,17 +161,14 @@ def Binary(
 ) -> BinaryOp:
     return BinaryOp(lhs=lhs, rhs=rhs, ope=_parse_ope(ope))
 
-
 def Unary(
     ope: str | UnaryOperator,
     value: BaseValue,
 ) -> UnaryOp:
     return UnaryOp(ope=_parse_ope_unary(ope), value=value)
 
-
 def Set(var: VarOp, val: BinaryOp | ConstOp | VarOp | CallOp | UnaryOp) -> SetOp:
     return SetOp(var=var, val=val)
-
 
 def While(
     cond: BaseValue,
@@ -151,14 +176,12 @@ def While(
 ) -> WhileOp:
     return WhileOp(cond=cond, thenBlock=thenBlock)
 
-
-def Cond(
+def If(
     cond: BaseValue,
     thenBlock: Sequence[BaseValue],
     elseBlock: Sequence[BaseValue] | None = None,
-) -> CondOp:
-    return CondOp(cond=cond, thenBlock=thenBlock, elseBlock=elseBlock)
-
+) -> IfOp:
+    return IfOp(cond=cond, thenBlock=thenBlock, elseBlock=elseBlock)
 
 def Call(
     name: str,
@@ -172,6 +195,13 @@ def Math(
 ) -> MathOp:
     return MathOp(ope=_parse_ope_math(ope), value=value)
 
+def Comment(
+    msg: str
+) -> CommentOp:
+    return CommentOp(msg=msg)
 
 def Print(value: BaseValue) -> PrintOp:
     return PrintOp(value=value)
+
+def NotSupported(msg: str) -> NotSupportedOp:
+    return NotSupportedOp(msg=msg)

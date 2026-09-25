@@ -5,8 +5,8 @@
 #include <cstdint>
 #include <iostream>
 
-// Noeud
-//   [0..3]   capacite (i32)
+// Node
+//   [0..3]   capacity (i32)
 //   [4..7]   padding
 //   [8..15]  temperature (f64)
 //   [16..23] padding

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Literal
+from typing import Any, Literal
 
 from mlir.dialects import func
 from mlir.ir import FunctionType, InsertionPoint, TypeAttr, UnitAttr
@@ -9,8 +9,8 @@ from mlir.ir import FunctionType, InsertionPoint, TypeAttr, UnitAttr
 from jsonmlir.operations.base import BaseValue
 from jsonmlir.operations.block import codegenBlock
 from jsonmlir.operations.codegen import OpNode
-from jsonmlir.utils.trace import trace_step
 from jsonmlir.utils.ssa_val import const_heap
+from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.factory import Factory
 from jsonmlir.variables.memory import variables_heap
 from jsonmlir.variables.ty.ty import TyNode
@@ -19,13 +19,36 @@ from jsonmlir.variables.val.val_SSA import ValSSA
 
 availables_functions = {}
 class FunctionOp(OpNode):
+    """Generate a function from typed arguments and a sequence of operations.
+
+    The result types are inferred from the values returned by the function
+    body. Args are mendatory to get the args name.
+
+    Example:
+
+    .. code-block:: python
+
+        Function(
+            "add",
+            # Arguments
+            [
+                ("lhs", TyScalar(Scalar.i64)),
+                ("rhs", TyScalar(Scalar.i64))
+            ],
+            # Implementation
+            [
+                Binary("+", Var("lhs"), Var("rhs"))
+            ]
+        )
+    """
+
     op: Literal["function"] = "function"
     name: str
     args: Sequence[tuple[str, TyNode]] = ()
     body: Sequence[BaseValue] = ()
 
     @trace_step("FunctionOp: {self.name}")
-    def codegen(self) -> Sequence[ValNode]:
+    def codegen(self) -> Sequence[ValNode[Any]]:
         variables_heap.clear()
         const_heap.clear()
 
@@ -38,18 +61,16 @@ class FunctionOp(OpNode):
         function.attributes["llvm.emit_c_interface"] = UnitAttr.get()
         entry_block = function.add_entry_block()
 
-        # Init variable
+        # Register entry block variable into variable heap
         with InsertionPoint(entry_block):
             with trace_step("Init args"):
                 for arg_ssa, (arg_name, arg_type) in zip(
                     entry_block.arguments,
                     self.args
                 ):
-                    val_arg = ValSSA(arg_ssa)
-
                     variables_heap[arg_name] = Factory.from_val(
                         arg_type,
-                        val_arg,
+                        ValSSA(arg_ssa)
                     )
 
         # Block codegen
@@ -57,7 +78,7 @@ class FunctionOp(OpNode):
 
         # Block return
         with InsertionPoint(body_block):
-            return_ssas = [a.get_SSA([]) for a in return_values]
+            return_ssas = [a.get_SSA() for a in return_values]
             func.ReturnOp(return_ssas)
 
         # Update function type with the inferred return types

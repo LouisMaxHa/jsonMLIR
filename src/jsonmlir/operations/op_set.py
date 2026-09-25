@@ -1,41 +1,61 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from jsonmlir.operations.codegen import OpNode
-from jsonmlir.operations.op_binary import BinaryOp
-from jsonmlir.operations.op_call import CallOp
-from jsonmlir.operations.op_constant import ConstOp
-from jsonmlir.operations.op_unary import UnaryOp
 from jsonmlir.operations.op_var import VarOp
 from jsonmlir.utils.trace import trace_note, trace_step
 from jsonmlir.variables.factory import Factory
 from jsonmlir.variables.memory import variables_heap
+from jsonmlir.variables.ty.ty_not_supported import TyNotSupported
 from jsonmlir.variables.val.val import ValNode
+
+if TYPE_CHECKING:
+    from jsonmlir.operations.base import BaseValue
 
 
 class SetOp(OpNode):
-    """Affecte une expression à une variable."""
+    """Assign an expression to a variable, creating it when necessary.
+
+    Type can be defined in the VarOp or deduce from the val value.
+    If both are available, a check is done.
+    If you use index in VarOp, the variable should already have been declared.
+
+    Example:
+
+    .. code-block:: python
+
+        # result = x + 1
+        Set(
+            Var("result"),
+            Binary("+", Var("x"), Const(1))
+        )
+    """
 
     op: Literal["set"] = "set"
     var: VarOp
-    val: BinaryOp | ConstOp | VarOp | CallOp | UnaryOp
+    val: BaseValue
 
     @trace_step("SetOp: {self.var.name}")
-    def codegen(self) -> Sequence[ValNode]:
+    def codegen(self) -> Sequence[ValNode[Any]]:
         var = self.var.as_var()
-        trace_note(f"Var: {var.get_ty()}")
+        trace_note(f"Var: {var.get_ty(permissive=True)}")
 
         # Instantiate
         if var.get_name() not in variables_heap.keys():
             assert len(self.var.indices) == 0
 
+            # Generate value
             vals = self.val.codegen()
             assert len(vals) == 1
             val = vals[0]
 
-            type = var.get_ty()
+            # Get type from given value if no type is precised
+            type = var.get_ty(permissive=True)
+            if isinstance(type, TyNotSupported):
+                type = val.get_ty()
+
             variables_heap[var.get_name()] = Factory.from_val(type, val)
             return []
 

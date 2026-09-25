@@ -2,6 +2,8 @@ from enum import Enum
 
 
 class OperatorOp(Enum):
+    """Binary operators supported by :class:`BinaryOp`."""
+
     plusOp = "+"
     minusOp = "-"
     timesOp = "*"

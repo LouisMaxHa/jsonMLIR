@@ -1,32 +1,32 @@
 # syntax=docker/dockerfile:1
-# Image de développement jsonMLIR + bindings Python MLIR (LLVM 22.1.8).
+# jsonMLIR development image with Python MLIR bindings (LLVM 22.1.8).
 #
 # Build multi-stage (cf. https://llvm.org/docs/Docker.html) :
-# 1. mlir-build     - compile LLVM/MLIR (image jetable)
-# 2. mlir-toolchain - image réutilisable (binaires + venv + clang/python)
+# 1. mlir-build     - compile LLVM/MLIR (disposable image)
+# 2. mlir-toolchain - reusable image (binaries + venv + clang/python)
 # 3. image finale   - installe jsonMLIR
 #
-# Réutiliser la toolchain sans recompiler LLVM :
+# Reuse the toolchain without recompiling LLVM:
 #   docker build --target mlir-toolchain -t jsonmlir-mlir-toolchain:22.1.8 .
 #   docker build --build-arg TOOLCHAIN_IMAGE=jsonmlir-mlir-toolchain:22.1.8 .
 
-ARG TOOLCHAIN_IMAGE=mlir-toolchain
-ARG LLVM_VERSION=llvmorg-22.1.8
+ARG TOOLCHAIN_IMAGE=mlir-toolchain 
+ARG LLVM_VERSION=llvmorg-22.1.8 
 ARG PYTHON_VERSION=3.13
 
-# ── Stage 1 : compilation LLVM/MLIR ──────────────────────────────────
+# ── Stage 1: LLVM/MLIR build ─────────────────────────────────────────
 FROM fedora:42 AS mlir-build
 
 ARG LLVM_VERSION
 ARG PYTHON_VERSION
 
-ENV LLVM_SRC=/opt/llvm-project
-ENV LLVM_PREFIX=/opt/llvm
-ENV VIRTUAL_ENV=/opt/venv
-ENV CCACHE_DIR=/var/cache/ccache
-ENV PATH="${VIRTUAL_ENV}/bin:${LLVM_PREFIX}/bin:${PATH}"
+ENV LLVM_SRC=/opt/llvm-project \
+  LLVM_PREFIX=/opt/llvm \
+  VIRTUAL_ENV=/opt/venv \
+  CCACHE_DIR=/var/cache/ccache \
+  PATH="${VIRTUAL_ENV}/bin:${LLVM_PREFIX}/bin:${PATH}"
 
-# Installation des packages
+# Install packages
 RUN dnf install -y \
       clang \
       cmake \
@@ -40,18 +40,19 @@ RUN dnf install -y \
     && dnf clean all \
     && ccache --set-config=max_size=10G
 
-# Clone de LLVM
+# Clone LLVM
 RUN git clone --depth=1 \
       https://github.com/llvm/llvm-project \
       --branch "${LLVM_VERSION}" \
       "${LLVM_SRC}"
 
-# Installation des packages pythons
+# Install Python packages
 RUN python${PYTHON_VERSION} -m venv "${VIRTUAL_ENV}" \
-    && pip install --upgrade pip \
-    && pip install -r "${LLVM_SRC}/mlir/python/requirements.txt"
+    && "${VIRTUAL_ENV}/bin/python" -m pip install --upgrade pip \
+    && "${VIRTUAL_ENV}/bin/python" -m pip install -r "${LLVM_SRC}/mlir/python/requirements.txt" \
+    && "${VIRTUAL_ENV}/bin/python" -c "import nanobind; print(nanobind.cmake_dir())"
 
-# Configure -> build -> tests Python (échecs partiels attendus) -> install
+# Configure -> build -> Python tests (partial failures expected) -> install
 RUN cmake -G Ninja \
       -S "${LLVM_SRC}/llvm" \
       -B "${LLVM_SRC}/build" \
@@ -87,17 +88,17 @@ RUN cmake -G Ninja \
          install-MLIRPythonModules \
     && ccache -s
 
-# ── Stage 2 : toolchain slim réutilisable ────────────────────────────
+# ── Stage 2: reusable slim toolchain ─────────────────────────────────
 FROM fedora:42 AS mlir-toolchain
 
 ARG PYTHON_VERSION
 
-ENV LLVM_PREFIX=/opt/llvm
-ENV VIRTUAL_ENV=/opt/venv
-ENV PATH="${VIRTUAL_ENV}/bin:${LLVM_PREFIX}/bin:${PATH}"
-ENV MLIR_BIN_DIR="${LLVM_PREFIX}/bin"
+ENV LLVM_PREFIX=/opt/llvm \
+  VIRTUAL_ENV=/opt/venv \
+  PATH="${VIRTUAL_ENV}/bin:${LLVM_PREFIX}/bin:${PATH}" \
+  MLIR_BIN_DIR="${LLVM_PREFIX}/bin"
 
-# Installation des packages
+# Install packages
 RUN dnf install -y \
       clang \
       python${PYTHON_VERSION} \
@@ -108,30 +109,28 @@ RUN dnf install -y \
 COPY --from=mlir-build "${VIRTUAL_ENV}" "${VIRTUAL_ENV}"
 COPY --from=mlir-build "${LLVM_PREFIX}" "${LLVM_PREFIX}"
 
-RUN echo "${LLVM_PREFIX}/python_packages/mlir_core" \
-      > "${VIRTUAL_ENV}/lib/python${PYTHON_VERSION}/site-packages/mlir_core.pth" \
-    && python -c "import mlir.ir; print('OK')"
+RUN "${VIRTUAL_ENV}/bin/python" -c "import site; from pathlib import Path; Path(site.getsitepackages()[0], 'mlir_core.pth').write_text('${LLVM_PREFIX}/python_packages/mlir_core\n')" \
+    && "${VIRTUAL_ENV}/bin/python" -c "import mlir.ir; print('OK')"
 
 # ── Stage 3 : jsonMLIR ───────────────────────────────────────────────
 FROM ${TOOLCHAIN_IMAGE}
 
 ARG PYTHON_VERSION
 
-ENV LLVM_PREFIX=/opt/llvm
-ENV VIRTUAL_ENV=/opt/venv
-ENV PATH="${VIRTUAL_ENV}/bin:${LLVM_PREFIX}/bin:${PATH}"
-ENV MLIR_BIN_DIR="${LLVM_PREFIX}/bin"
+ENV LLVM_PREFIX=/opt/llvm \
+  VIRTUAL_ENV=/opt/venv \
+  PATH="${VIRTUAL_ENV}/bin:${LLVM_PREFIX}/bin:${PATH}" \
+  MLIR_BIN_DIR="${LLVM_PREFIX}/bin" \
+  SETUPTOOLS_SCM_PRETEND_VERSION=0.0.0
 
-# hatch-vcs : pas de .git dans le contexte Docker (.dockerignore)
-ENV SETUPTOOLS_SCM_PRETEND_VERSION=0.0.0
 
+# The wrapper mounts the host repository to avoid ambiguity.
 WORKDIR /opt/jsonMLIR
-# Pas d'examples/ dans l'image : le wrapper monte le dépôt hôte pour éviter toute confusion.
-COPY pyproject.toml README.md ./
-RUN pip install --upgrade pip
 
-# Installation de jsonMLIR
+# Install jsonMLIR
+COPY pyproject.toml README.md ./
 COPY src/ ./src/
+RUN pip install --upgrade pip
 RUN pip install -e . --group dev
 
 CMD ["python", "-c", "import jsonmlir; import mlir.ir; print('OK')"]

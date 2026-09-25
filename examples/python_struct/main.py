@@ -1,6 +1,6 @@
 import sys
 
-from jsonmlir.operations import (
+from jsonmlir.operations.dsl import (
     Binary,
     Const,
     DefineStruct,

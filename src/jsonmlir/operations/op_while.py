@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from mlir.dialects import scf
 from mlir.ir import InsertionPoint
@@ -16,23 +16,40 @@ if TYPE_CHECKING:
 
 
 class WhileOp(OpNode):
+    """Generate a while loop from a condition and a body.
+
+    Example:
+
+    .. code-block:: python
+
+       While(
+        Binary("<", Var("i"), Const(10)),
+            [
+                Set(
+                    Var("i"),
+                    Binary("+", Var("i"), Const(1))
+                )
+            ]
+        )
+    """
+
     op: Literal["while"] = "while"
     cond: BaseValue
     thenBlock: Sequence[BaseValue] = ()
 
     @trace_step("WhileOp")
-    def codegen(self) -> Sequence[ValNode]:
+    def codegen(self) -> Sequence[ValNode[Any]]:
         while_op = scf.WhileOp([], [])
 
         # Condition block (before region)
-        before_block = while_op.before.blocks.append()
+        before_block = while_op.before.blocks.append()  # type: ignore[reportUnknownMemberType]
         with InsertionPoint(before_block):
             conds_ssa = self.cond.codegen()
             assert len(conds_ssa) == 1
-            scf.ConditionOp(conds_ssa[0].get_SSA([]), [])
+            scf.ConditionOp(conds_ssa[0].get_SSA(), [])
 
         # After region: body + scf.yield to loop back to the before region.
-        after_block = while_op.after.blocks.append()
+        after_block = while_op.after.blocks.append()  # type: ignore[reportUnknownMemberType]
         codegenBlock(self.thenBlock, after_block)
         scf.YieldOp([], ip=InsertionPoint(after_block))
 

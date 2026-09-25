@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import Any, cast
 
 from mlir.dialects import llvm, memref
 from mlir.ir import MemRefType, Value
 
-from jsonmlir.utils.trace import trace_step
 from jsonmlir.utils.bare_ptr import bare_ptr_to_memref
+from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_ptr import TyPtr
 from jsonmlir.variables.val.val import ValNode
@@ -15,8 +16,6 @@ from jsonmlir.variables.val.val_SSA import ValSSA
 
 
 class ValPtr(ValNode[TyPtr]):
-    addr: Value
-
     # ──────────── Init ────────────
 
     def __init__(self, ty: TyPtr, addr: Value):
@@ -34,7 +33,7 @@ class ValPtr(ValNode[TyPtr]):
     @staticmethod
     @trace_step("ValPtr.init_from", display_entry=True)
     def init_from(
-        type: TyNode, source: ValNode
+        type: TyNode, source: ValNode[Any]
     ) -> ValPtr:
         assert isinstance(type, TyPtr)
         assert isinstance(source, (ValSSA, ValScalar, ValPtr))
@@ -64,8 +63,9 @@ class ValPtr(ValNode[TyPtr]):
     def _load(
         self,
         index: Sequence[str | Value],
-    ) -> ValNode:
+    ) -> ValNode[Any]:
         from jsonmlir.variables.factory import Factory
+
         # Return ptr
         if index == []:
             return ValSSA(self.get_SSA(index))
@@ -73,12 +73,13 @@ class ValPtr(ValNode[TyPtr]):
         # Consume index
         consuming = index[0]
         remaining = index[1::]
-        assert consuming == "*"
+        assert consuming == "*", f"Got {consuming}"
 
         # i64 -> llvm.ptr
         ssa_i64 = self._get_SSA()
         ssa_ptr_llvm = llvm.IntToPtrOp(
-            llvm.PointerType.get(), ssa_i64
+            cast(Any, llvm.PointerType).get(),  # type: ignore[reportAttributeAccessIssue]
+            ssa_i64,
         ).result
 
         # llvm.ptr -> memref (descripteur LLVM explicite)
@@ -101,16 +102,42 @@ class ValPtr(ValNode[TyPtr]):
     def _store(
         self,
         index: Sequence[str | Value],
-        source: ValNode,
+        source: ValNode[Any],
     ):
-        assert index == []
-        assert isinstance(source, (ValSSA, ValPtr, ValScalar))
-        ssa = source.get_SSA([])
+        from jsonmlir.variables.factory import Factory
 
-        # Extract ssa value from memref<ssa value>
-        if isinstance(ssa.type, MemRefType):
-            op = memref.LoadOp(ssa, [])
-            ssa = op.result
+        # Return ptr
+        if index == []:
+            ssa = source.get_SSA()
+            #TODO: Why this case ? Shoulw be already good format ?
+            # Extract ssa value from memref<ssa value>
+            if isinstance(ssa.type, MemRefType):
+                ssa = memref.LoadOp(ssa, []).result
+            memref.StoreOp(ssa, self.addr, [])
+            return
 
-        # Store
-        memref.StoreOp(ssa, self.addr, [])
+        # Consume index
+        consuming = index[0]
+        remaining = index[1::]
+        assert consuming == "*", f"Got {consuming}"
+
+        # i64 -> llvm.ptr
+        ssa_i64 = self._get_SSA()
+        ssa_ptr_llvm = llvm.IntToPtrOp(
+            cast(Any, llvm.PointerType).get(),  # type: ignore[reportAttributeAccessIssue]
+            ssa_i64,
+        ).result
+
+        # llvm.ptr -> memref (descripteur LLVM explicite)
+        ssa_derefed = ValSSA(
+            bare_ptr_to_memref(
+                ssa_ptr_llvm,
+                self.ty.base.get_memref_type(),
+            )
+        )
+
+        # Go recursive
+        return Factory.from_val(
+            self.ty.base,
+            ssa_derefed,
+        ).store(remaining, source)

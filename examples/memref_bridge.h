@@ -24,8 +24,8 @@ template <typename T, int Rank> struct MemRefType {
   int64_t strides[Rank];
 };
 
-// Construit un descripteur zero-copy autour d'un buffer existant.
-// `n` et `stride_in_elements` sont exprimés en unités de T (pas en octets).
+// Build a zero-copy descriptor around an existing buffer.
+// `n` and `stride_in_elements` are expressed in units of T (not bytes).
 template <typename T>
 MemRefType<T, 1> make_memref_1d(
     T *data, int64_t n,

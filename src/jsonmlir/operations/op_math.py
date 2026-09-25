@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from enum import Enum
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from mlir.dialects.math import SqrtOp
 
@@ -16,19 +16,28 @@ if TYPE_CHECKING:
 
 
 class MathOperator(Enum):
+    """Math operations supported by :class:`MathOp`."""
+
     sqrtOp = "sqrt"
 
 class MathOp(OpNode):
-    """Opération binaire composée de deux opérandes."""
+    """Apply a supported mathematical operation to one operand.
+
+    Example:
+
+    .. code-block:: python
+
+       Math("sqrt", Var("value"))
+    """
 
     op: Literal["math"] = "math"
     ope: MathOperator
     value: BaseValue
 
     @trace_step("MathOp: {self.ope.value}")
-    def codegen(self) -> Sequence[ValNode]:
+    def codegen(self) -> Sequence[ValNode[Any]]:
         value = self.value.codegen()
-        value_ssa = value[0].get_SSA([])
+        value_ssa = value[0].get_SSA()
 
         match self.ope.value:
             case "sqrt":

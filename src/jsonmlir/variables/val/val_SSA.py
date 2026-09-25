@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import Any
 
 from mlir.ir import Type, Value
 
@@ -11,8 +12,6 @@ from jsonmlir.variables.val.val import ValNode
 
 
 class ValSSA(ValNode[TySSA]):
-    addr: Value
-
     # ──────────── Init ────────────
     def __init__(self, addr: Value):
         self.ty = TySSA()
@@ -21,7 +20,7 @@ class ValSSA(ValNode[TySSA]):
     @staticmethod
     @trace_step("ValSSA.init_from", display_entry=True)
     def init_from(
-        type: TyNode, source: ValNode
+        type: TyNode, source: ValNode[Any]
     ) -> ValSSA:
         raise ValueError("ValSSA should not be used for operations")
 
@@ -42,7 +41,7 @@ class ValSSA(ValNode[TySSA]):
     def _load(
         self,
         index: Sequence[str | Value],
-    ) -> ValNode:
+    ) -> ValNode[Any]:
         raise ValueError("ValSSA should not be used for operations")
 
 
@@ -50,6 +49,6 @@ class ValSSA(ValNode[TySSA]):
     def _store(
         self,
         index: Sequence[str | Value],
-        source: ValNode,
+        source: ValNode[Any],
     ):
         raise ValueError("ValSSA should not be used for operations")
