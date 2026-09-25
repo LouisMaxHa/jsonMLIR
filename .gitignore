@@ -10,6 +10,7 @@ build/
 *.bc
 *.d
 *.out
+.opencode
 
 # Reference IR files checked in for documentation slides
 !docs/slides/**/*.ll
