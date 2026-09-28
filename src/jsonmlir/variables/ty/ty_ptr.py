@@ -16,6 +16,7 @@ class TyPtr(TyNodeBase):
     Example:
 
     .. code-block:: python
+
         tyI64 = TyScalar(Scalar.i64)
 
         # Ptr to int: &int

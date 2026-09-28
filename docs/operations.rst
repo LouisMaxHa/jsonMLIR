@@ -21,7 +21,7 @@ Operation models
 .. autoclass:: jsonmlir.operations.op_alloca.AllocaOp
 .. autoclass:: jsonmlir.operations.op_function.FunctionOp
 .. autoclass:: jsonmlir.operations.op_var.VarOp
-.. autoclass:: jsonmlir.operations.op_constant.ConstOp
+.. autoclass:: jsonmlir.operations.op_const.ConstOp
 .. autoclass:: jsonmlir.operations.op_binary.BinaryOp
 .. autoclass:: jsonmlir.operations.op_unary.UnaryOp
 .. autoclass:: jsonmlir.operations.op_set.SetOp
