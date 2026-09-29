@@ -41,8 +41,8 @@ echo "[jsonMLIR] Mount  $(pwd) at /workspace" >&2
 run_args=(
     --userns=keep-id
     --rm
-    -v "$(pwd):/workspace:Z"
-    -v "${JSONMLIR_ROOT}:/opt/jsonMLIR"
+    -v "$(pwd):/workspace:z"
+    -v "${JSONMLIR_ROOT}:/opt/jsonMLIR:z"
     -w /workspace
 )
 

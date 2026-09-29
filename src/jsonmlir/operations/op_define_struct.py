@@ -3,14 +3,14 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any, Literal
 
-from jsonmlir.operations.codegen import OpNode
+from jsonmlir.operations.codegen import Codegen
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.memory import StructDescriptor, structs_registry
 from jsonmlir.variables.val.struct_attribut import StructAttribut
 from jsonmlir.variables.val.val import ValNode
 
 
-class DefineStructOp(OpNode):
+class DefineStructOp(Codegen):
     """Register a struct layout.
 
     The declaration records field names, types, offsets, and the total size;

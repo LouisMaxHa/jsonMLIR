@@ -5,7 +5,7 @@ from typing import Annotated, Any, Literal
 
 from pydantic import Field
 
-from jsonmlir.operations.codegen import OpNode
+from jsonmlir.operations.codegen import Codegen
 from jsonmlir.operations.op_comment import CommentOp
 from jsonmlir.operations.op_define_function import DefineFunctionOp
 from jsonmlir.operations.op_define_struct import DefineStructOp
@@ -21,7 +21,7 @@ ModuleStatement = Annotated[
 ]
 
 
-class ModuleJsonOp(OpNode):
+class ModuleJsonOp(Codegen):
     """Root operation that contains struct declaration, function declaration, function implementation and comments.
 
 

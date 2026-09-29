@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, Literal
 
-from jsonmlir.operations.codegen import OpNode
+from jsonmlir.operations.codegen import Codegen
 from jsonmlir.operations.op_var import VarOp
 from jsonmlir.utils.trace import trace_note, trace_step
 from jsonmlir.variables.factory import Factory
@@ -12,10 +12,10 @@ from jsonmlir.variables.ty.ty_not_supported import TyNotSupported
 from jsonmlir.variables.val.val import ValNode
 
 if TYPE_CHECKING:
-    from jsonmlir.operations.base import BaseValue
+    from jsonmlir.operations.json_op import JsonOp
 
 
-class SetOp(OpNode):
+class SetOp(Codegen):
     """Assign an expression to a variable, creating it when necessary.
 
     Type can be defined in the VarOp or deduce from the val value.
@@ -35,7 +35,7 @@ class SetOp(OpNode):
 
     op: Literal["set"] = "set"
     var: VarOp
-    val: BaseValue
+    val: JsonOp
 
     @trace_step("SetOp: {self.var.name}")
     def codegen(self) -> Sequence[ValNode[Any]]:

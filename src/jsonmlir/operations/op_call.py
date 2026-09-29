@@ -6,17 +6,17 @@ from typing import TYPE_CHECKING, Any, Literal
 from mlir.dialects.func import CallOp as MLIRCallOp
 from mlir.ir import Value
 
-from jsonmlir.operations.codegen import OpNode
+from jsonmlir.operations.codegen import Codegen
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.memory import functions_registry
 from jsonmlir.variables.val.val import ValNode
 from jsonmlir.variables.val.val_SSA import ValSSA
 
 if TYPE_CHECKING:
-    from jsonmlir.operations.base import BaseValue
+    from jsonmlir.operations.json_op import JsonOp
 
 
-class CallOp(OpNode):
+class CallOp(Codegen):
     """Call a function declared with :class:`DefineFunctionOp`.
 
     Return types and argument validation are resolved from the global function
@@ -31,7 +31,7 @@ class CallOp(OpNode):
 
     op: Literal["call"] = "call"
     name: str
-    args: Sequence[BaseValue] = ()
+    args: Sequence[JsonOp] = ()
 
     @trace_step("CallOp: {self.name}")
     def codegen(self) -> Sequence[ValNode[Any]]:

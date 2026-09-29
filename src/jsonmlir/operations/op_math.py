@@ -6,13 +6,13 @@ from typing import TYPE_CHECKING, Any, Literal
 
 from mlir.dialects.math import SqrtOp
 
-from jsonmlir.operations.codegen import OpNode
+from jsonmlir.operations.codegen import Codegen
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.val.val import ValNode
 from jsonmlir.variables.val.val_SSA import ValSSA
 
 if TYPE_CHECKING:
-    from jsonmlir.operations.base import BaseValue
+    from jsonmlir.operations.json_op import JsonOp
 
 
 class MathOperator(Enum):
@@ -20,7 +20,7 @@ class MathOperator(Enum):
 
     sqrtOp = "sqrt"
 
-class MathOp(OpNode):
+class MathOp(Codegen):
     """Apply a supported mathematical operation to one operand.
 
     Example:
@@ -32,7 +32,7 @@ class MathOp(OpNode):
 
     op: Literal["math"] = "math"
     ope: MathOperator
-    value: BaseValue
+    value: JsonOp
 
     @trace_step("MathOp: {self.ope.value}")
     def codegen(self) -> Sequence[ValNode[Any]]:

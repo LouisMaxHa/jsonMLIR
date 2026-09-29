@@ -14,12 +14,13 @@ from mlir.dialects.arith import (
     MulFOp,
     MulIOp,
     OrIOp,
+    RemSIOp,
     SubFOp,
     SubIOp,
     XOrIOp,
 )
 
-from jsonmlir.operations.codegen import OpNode
+from jsonmlir.operations.codegen import Codegen
 from jsonmlir.operations.op_operator import OperatorOp
 from jsonmlir.utils.same_types import assert_same_val
 from jsonmlir.utils.trace import trace_step
@@ -29,9 +30,9 @@ from jsonmlir.variables.val.val_SSA import ValSSA
 from jsonmlir.variables.val.val_struct import ValStruct
 
 if TYPE_CHECKING:
-    from jsonmlir.operations.base import BaseValue
+    from jsonmlir.operations.json_op import JsonOp
 
-class BinaryOp(OpNode):
+class BinaryOp(Codegen):
     """Apply an operator to two operands element by element.
 
     Scalar operations are lowered to the matching arithmetic or comparison operation.
@@ -49,8 +50,8 @@ class BinaryOp(OpNode):
     """
 
     op: Literal["binary"] = "binary"
-    lhs: BaseValue
-    rhs: BaseValue
+    lhs: JsonOp
+    rhs: JsonOp
     ope: OperatorOp
 
     @trace_step("BinaryOp: {self.ope.value}")
@@ -84,6 +85,8 @@ def generate_bin_op(ope: OperatorOp, lhs: ValNode[Any], rhs: ValNode[Any]
     l_ssa = lhs.get_SSA()
     r_ssa = rhs.get_SSA()
     match ope.value:
+        case "%":
+            op = RemSIOp(l_ssa, r_ssa)
         case "+":
             op = AddIOp(l_ssa, r_ssa)
         case "+f":

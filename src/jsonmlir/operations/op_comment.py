@@ -3,12 +3,12 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any, Literal
 
-from jsonmlir.operations.codegen import OpNode
+from jsonmlir.operations.codegen import Codegen
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.val.val import ValNode
 
 
-class CommentOp(OpNode):
+class CommentOp(Codegen):
     """Store a message for operation-tree tracing without generating IR.
 
     Example:

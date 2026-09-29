@@ -30,6 +30,7 @@
           "indices": [
             "*",
             {
+              "op": "var",
               "name": "i"
             }
           ]

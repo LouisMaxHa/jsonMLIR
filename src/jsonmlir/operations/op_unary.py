@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Literal
 
-from jsonmlir.operations.codegen import OpNode
+from jsonmlir.operations.codegen import Codegen
 from jsonmlir.operations.op_binary import BinaryOp
 from jsonmlir.operations.op_const import ConstOp
 from jsonmlir.operations.op_operator import OperatorOp
@@ -13,7 +13,7 @@ from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.val.val import ValNode
 
 if TYPE_CHECKING:
-    from jsonmlir.operations.base import BaseValue
+    from jsonmlir.operations.json_op import JsonOp
 
 
 class UnaryOperator(Enum):
@@ -24,7 +24,7 @@ class UnaryOperator(Enum):
     notOp = "!"
 
 
-class UnaryOp(OpNode):
+class UnaryOp(Codegen):
     """Apply a unary operator, lowered to a binary operation with a constant.
 
     Example:
@@ -38,7 +38,7 @@ class UnaryOp(OpNode):
 
     op: Literal["unary"] = "unary"
     ope: UnaryOperator
-    value: BaseValue
+    value: JsonOp
 
     @trace_step("UnaryOp: {self.ope.value}")
     def codegen(self) -> Sequence[ValNode[Any]]:

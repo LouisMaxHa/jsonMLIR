@@ -9,11 +9,11 @@ from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.val.val import ValNode
 
 if TYPE_CHECKING:
-    from jsonmlir.operations.base import BaseValue
+    from jsonmlir.operations.json_op import JsonOp
 
 @trace_step("CodegenBlock", display_entry=True)
 def codegenBlock(
-    content: Sequence[BaseValue] | None,
+    content: Sequence[JsonOp] | None,
     block: Block,
 ) -> tuple[Block, Sequence[ValNode[Any]]]:
     """ Represent a list of instruction. For example, used in if bloc or function.

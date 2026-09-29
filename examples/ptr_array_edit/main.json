@@ -80,6 +80,7 @@
                 "name": "myArray",
                 "indices": [
                   {
+                    "op": "var",
                     "name": "i"
                   }
                 ]
@@ -92,6 +93,7 @@
                   "name": "myArray",
                   "indices": [
                     {
+                      "op": "var",
                       "name": "i"
                     }
                   ]

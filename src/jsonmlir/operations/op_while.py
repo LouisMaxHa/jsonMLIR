@@ -7,15 +7,15 @@ from mlir.dialects import scf
 from mlir.ir import InsertionPoint
 
 from jsonmlir.operations.block import codegenBlock
-from jsonmlir.operations.codegen import OpNode
+from jsonmlir.operations.codegen import Codegen
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.val.val import ValNode
 
 if TYPE_CHECKING:
-    from jsonmlir.operations.base import BaseValue
+    from jsonmlir.operations.json_op import JsonOp
 
 
-class WhileOp(OpNode):
+class WhileOp(Codegen):
     """Generate a while loop from a condition and a body.
 
     Example:
@@ -34,8 +34,8 @@ class WhileOp(OpNode):
     """
 
     op: Literal["while"] = "while"
-    cond: BaseValue
-    thenBlock: Sequence[BaseValue] = ()
+    cond: JsonOp
+    thenBlock: Sequence[JsonOp] = ()
 
     @trace_step("WhileOp")
     def codegen(self) -> Sequence[ValNode[Any]]:

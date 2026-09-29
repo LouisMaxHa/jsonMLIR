@@ -12,7 +12,7 @@ from jsonmlir.variables.val.val import ValNode
 
 
 # ABC : Abstract Base Class
-class OpNode(BaseModel, ABC):
+class Codegen(BaseModel, ABC):
     """ Abstract class that have a codegen() methode
     """
 

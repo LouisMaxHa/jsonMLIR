@@ -1,0 +1,146 @@
+<mxfile host="app.diagrams.net" modified="2026-09-28T00:00:00.000Z" agent="OpenCode" version="24.7.17">
+  <diagram id="jsonmlir-summary" name="jsonMLIR summary">
+    <mxGraphModel dx="1800" dy="1280" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1280" background="#f7f8fa" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="jsonMLIR: the three-layer model" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontFamily=Helvetica;fontSize=30;fontStyle=1;fontColor=#1f2937" vertex="1" parent="1">
+          <mxGeometry x="50" y="25" width="1200" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="Operations describe intent  |  Values carry runtime state  |  Types describe representation" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontFamily=Helvetica;fontSize=16;fontColor=#667085" vertex="1" parent="1">
+          <mxGeometry x="53" y="68" width="1300" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="opRoot" value="&lt;div style=&quot;font-size:22px;font-weight:bold&quot;&gt;Codegen&lt;/div&gt;&lt;div style=&quot;color:#8a5a00;font-size:14px&quot;&gt;abstract operation / JSON AST node&lt;/div&gt;&lt;hr&gt;&lt;div align=&quot;left&quot;&gt;&lt;b&gt;inherits&lt;/b&gt; BaseModel + ABC&lt;br&gt;&lt;b&gt;attrs&lt;/b&gt; op: Literal[...] discriminator&lt;br&gt;model_config: arbitrary_types_allowed&lt;br&gt;&lt;b&gt;interface&lt;/b&gt; codegen() -&amp;gt; Sequence[ValNode]&lt;br&gt;__repr__() -&amp;gt; class name&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;fontFamily=Helvetica;fontSize=14;fontColor=#3f3f46;spacing=12;verticalAlign=top" vertex="1" parent="1">
+          <mxGeometry x="50" y="125" width="520" height="215" as="geometry" />
+        </mxCell>
+        <mxCell id="valRoot" value="&lt;div style=&quot;font-size:22px;font-weight:bold&quot;&gt;ValNode[T]&lt;/div&gt;&lt;div style=&quot;color:#35639a;font-size:14px&quot;&gt;abstract runtime value wrapper&lt;/div&gt;&lt;hr&gt;&lt;div align=&quot;left&quot;&gt;&lt;b&gt;attrs&lt;/b&gt; ty: T, usually addr: mlir.ir.Value&lt;br&gt;&lt;b&gt;interface&lt;/b&gt; init_from(type, source)&lt;br&gt;get_ty(), get_type(), get_dim()&lt;br&gt;get_SSA() -&amp;gt; MLIR Value&lt;br&gt;load(index) / store(index, source)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;fontFamily=Helvetica;fontSize=14;fontColor=#243b53;spacing=12;verticalAlign=top" vertex="1" parent="1">
+          <mxGeometry x="640" y="125" width="520" height="215" as="geometry" />
+        </mxCell>
+        <mxCell id="tyRoot" value="&lt;div style=&quot;font-size:22px;font-weight:bold&quot;&gt;TyNodeBase&lt;/div&gt;&lt;div style=&quot;color:#3e7544;font-size:14px&quot;&gt;frozen type descriptor / schema node&lt;/div&gt;&lt;hr&gt;&lt;div align=&quot;left&quot;&gt;&lt;b&gt;inherits&lt;/b&gt; BaseModel + ABC&lt;br&gt;&lt;b&gt;attrs&lt;/b&gt; type: discriminator, nested base/dims&lt;br&gt;frozen + populate_by_name&lt;br&gt;&lt;b&gt;interface&lt;/b&gt; get_type() -&amp;gt; MLIR Type&lt;br&gt;get_memref_type() -&amp;gt; MemRefType&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;strokeWidth=2;fontFamily=Helvetica;fontSize=14;fontColor=#274e2b;spacing=12;verticalAlign=top" vertex="1" parent="1">
+          <mxGeometry x="1230" y="125" width="520" height="215" as="geometry" />
+        </mxCell>
+
+        <mxCell id="opTags" value="op tag space: { module | defineStruct | defineFunction | function | if | while | const | var | set | alloc | alloca | binary | unary | math | call | print | comment | notSupported }" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontFamily=Courier New;fontSize=11;fontColor=#8a5a00" vertex="1" parent="1">
+          <mxGeometry x="55" y="352" width="510" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="valTags" value="value family: { ValSSA | ValScalar | ValPtr | ValStruct | ValMemref | ValBuffer | ValSOA | ValMdspan }" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontFamily=Courier New;fontSize=13;fontColor=#35639a" vertex="1" parent="1">
+          <mxGeometry x="645" y="352" width="520" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="tyTags" value="type variants: { scalar | ptr | struct | memref | buffer | soa | ssa | mdspan | notSupported }" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontFamily=Courier New;fontSize=13;fontColor=#3e7544" vertex="1" parent="1">
+          <mxGeometry x="1235" y="352" width="520" height="28" as="geometry" />
+        </mxCell>
+
+        <mxCell id="opGroup1" value="&lt;div style=&quot;font-weight:bold;font-size:16px&quot;&gt;container + control&lt;/div&gt;&lt;hr&gt;&lt;div align=&quot;left&quot;&gt;ModuleJsonOp&lt;br&gt;DefineStructOp&lt;br&gt;DefineFunctionOp&lt;br&gt;FunctionOp&lt;br&gt;IfOp&lt;br&gt;WhileOp&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#d6b656;fontFamily=Helvetica;fontSize=14;spacing=10;verticalAlign=top" vertex="1" parent="1">
+          <mxGeometry x="50" y="390" width="250" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="opGroup2" value="&lt;div style=&quot;font-weight:bold;font-size:16px&quot;&gt;data + memory&lt;/div&gt;&lt;hr&gt;&lt;div align=&quot;left&quot;&gt;ConstOp&lt;br&gt;VarOp&lt;br&gt;SetOp&lt;br&gt;AllocOp&lt;br&gt;AllocaOp&lt;br&gt;CallOp&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#d6b656;fontFamily=Helvetica;fontSize=14;spacing=10;verticalAlign=top" vertex="1" parent="1">
+          <mxGeometry x="315" y="390" width="250" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="opGroup3" value="&lt;div style=&quot;font-weight:bold;font-size:16px&quot;&gt;compute + utility&lt;/div&gt;&lt;hr&gt;&lt;div align=&quot;left&quot;&gt;BinaryOp&lt;br&gt;UnaryOp&lt;br&gt;MathOp&lt;br&gt;PrintOp&lt;br&gt;CommentOp&lt;br&gt;NotSupportedOp&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#d6b656;fontFamily=Helvetica;fontSize=14;spacing=10;verticalAlign=top" vertex="1" parent="1">
+          <mxGeometry x="50" y="610" width="250" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="opGroup4" value="&lt;div style=&quot;font-weight:bold;font-size:16px&quot;&gt;recursive composition&lt;/div&gt;&lt;hr&gt;&lt;div align=&quot;left&quot;&gt;JsonOp = discriminated union&lt;br&gt;Binary(lhs, rhs)&lt;br&gt;Set(var, val)&lt;br&gt;While(cond, thenBlock)&lt;br&gt;Module(body)&lt;br&gt;&lt;span style=&quot;color:#8a5a00&quot;&gt;ops contain other ops&lt;/span&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#d6b656;fontFamily=Helvetica;fontSize=14;spacing=10;verticalAlign=top" vertex="1" parent="1">
+          <mxGeometry x="315" y="610" width="250" height="190" as="geometry" />
+        </mxCell>
+
+        <mxCell id="valGroup1" value="&lt;div style=&quot;font-weight:bold;font-size:16px&quot;&gt;direct / scalar-like&lt;/div&gt;&lt;hr&gt;&lt;div align=&quot;left&quot;&gt;ValSSA&lt;br&gt;ValScalar&lt;br&gt;ValPtr&lt;br&gt;ValStruct&lt;br&gt;&lt;span style=&quot;color:#35639a&quot;&gt;each binds one Ty* + an MLIR address/value&lt;/span&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eaf3ff;strokeColor=#6c8ebf;fontFamily=Helvetica;fontSize=14;spacing=10;verticalAlign=top" vertex="1" parent="1">
+          <mxGeometry x="640" y="390" width="250" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="valGroup2" value="&lt;div style=&quot;font-weight:bold;font-size:16px&quot;&gt;shaped / aggregate&lt;/div&gt;&lt;hr&gt;&lt;div align=&quot;left&quot;&gt;ValMemref&lt;br&gt;ValBuffer&lt;br&gt;ValSOA&lt;br&gt;ValMdspan&lt;br&gt;&lt;span style=&quot;color:#35639a&quot;&gt;indexing delegates through load/store&lt;/span&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eaf3ff;strokeColor=#6c8ebf;fontFamily=Helvetica;fontSize=14;spacing=10;verticalAlign=top" vertex="1" parent="1">
+          <mxGeometry x="910" y="390" width="250" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="valContract" value="&lt;div style=&quot;font-weight:bold;font-size:16px&quot;&gt;value contract&lt;/div&gt;&lt;hr&gt;&lt;div align=&quot;left&quot;&gt;load(index) -&amp;gt; ValNode&lt;br&gt;store(index, source) -&amp;gt; None&lt;br&gt;get_SSA(index) resolves / loads&lt;br&gt;auto_log wraps _load / _store&lt;br&gt;&lt;span style=&quot;color:#35639a&quot;&gt;generic T is the bridge to TyNode&lt;/span&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eaf3ff;strokeColor=#6c8ebf;fontFamily=Helvetica;fontSize=14;spacing=10;verticalAlign=top" vertex="1" parent="1">
+          <mxGeometry x="640" y="610" width="520" height="190" as="geometry" />
+        </mxCell>
+
+        <mxCell id="tyGroup1" value="&lt;div style=&quot;font-weight:bold;font-size:16px&quot;&gt;atomic / identity&lt;/div&gt;&lt;hr&gt;&lt;div align=&quot;left&quot;&gt;TyScalar: scalar / name&lt;br&gt;TyPtr: base&lt;br&gt;TyStruct: name / registry lookup&lt;br&gt;TySSA: runtime-known MLIR type&lt;br&gt;TyNotSupported: fallback / error&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eaf6e8;strokeColor=#82b366;fontFamily=Helvetica;fontSize=14;spacing=10;verticalAlign=top" vertex="1" parent="1">
+          <mxGeometry x="1230" y="390" width="250" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="tyGroup2" value="&lt;div style=&quot;font-weight:bold;font-size:16px&quot;&gt;shaped / layout&lt;/div&gt;&lt;hr&gt;&lt;div align=&quot;left&quot;&gt;TyMemref: dims + base&lt;br&gt;TyBuffer: dims + struct base&lt;br&gt;TySOA: dims + struct base&lt;br&gt;TyMdspan: dims + base + index_type&lt;br&gt;&lt;span style=&quot;color:#3e7544&quot;&gt;all lower through type interface&lt;/span&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eaf6e8;strokeColor=#82b366;fontFamily=Helvetica;fontSize=14;spacing=10;verticalAlign=top" vertex="1" parent="1">
+          <mxGeometry x="1500" y="390" width="250" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="tyContract" value="&lt;div style=&quot;font-weight:bold;font-size:16px&quot;&gt;type contract&lt;/div&gt;&lt;hr&gt;&lt;div align=&quot;left&quot;&gt;parse_ty(value) normalizes shorthand&lt;br&gt;&quot;i64&quot; -&amp;gt; TyScalar&lt;br&gt;{addr: ...} -&amp;gt; TyPtr&lt;br&gt;{memref: [...]} -&amp;gt; TyMemref&lt;br&gt;&lt;span style=&quot;color:#3e7544&quot;&gt;type shape controls value factory&lt;/span&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eaf6e8;strokeColor=#82b366;fontFamily=Helvetica;fontSize=14;spacing=10;verticalAlign=top" vertex="1" parent="1">
+          <mxGeometry x="1230" y="610" width="520" height="190" as="geometry" />
+        </mxCell>
+
+        <mxCell id="sectionLabel" value="&lt;b&gt;The useful paths&lt;/b&gt;  |  keep the arrows directional, keep the implementation details inside the nodes" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=none;fillColor=#ede9fe;fontFamily=Helvetica;fontSize=15;fontColor=#5b4b8a;align=left;spacingLeft=14;verticalAlign=middle" vertex="1" parent="1">
+          <mxGeometry x="50" y="845" width="1700" height="38" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flowJson" value="&lt;div style=&quot;font-weight:bold;font-size:17px&quot;&gt;JSON / DSL&lt;/div&gt;&lt;hr&gt;&lt;div align=&quot;left&quot;&gt;dicts, shorthand, constructors&lt;br&gt;Field(discriminator=&quot;op&quot;)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3efff;strokeColor=#9673a6;strokeWidth=2;fontFamily=Helvetica;fontSize=13;fontColor=#3f315f;spacing=10;verticalAlign=top" vertex="1" parent="1">
+          <mxGeometry x="50" y="910" width="260" height="145" as="geometry" />
+        </mxCell>
+        <mxCell id="flowParse" value="&lt;div style=&quot;font-weight:bold;font-size:17px&quot;&gt;normalize&lt;/div&gt;&lt;hr&gt;&lt;div align=&quot;left&quot;&gt;parse_ty(...)&lt;br&gt;TyNode union&lt;br&gt;JsonOp union&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3efff;strokeColor=#9673a6;strokeWidth=2;fontFamily=Helvetica;fontSize=13;fontColor=#3f315f;spacing=10;verticalAlign=top" vertex="1" parent="1">
+          <mxGeometry x="370" y="910" width="240" height="145" as="geometry" />
+        </mxCell>
+        <mxCell id="flowFactory" value="&lt;div style=&quot;font-weight:bold;font-size:17px&quot;&gt;Factory.from_val&lt;/div&gt;&lt;hr&gt;&lt;div align=&quot;left&quot;&gt;(TyNode, ValNode)&lt;br&gt;-&amp;gt; matching Val*&lt;br&gt;TyPtr / TySSA / TyScalar&lt;br&gt;TyMemref / TyBuffer ...&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3efff;strokeColor=#9673a6;strokeWidth=2;fontFamily=Helvetica;fontSize=13;fontColor=#3f315f;spacing=10;verticalAlign=top" vertex="1" parent="1">
+          <mxGeometry x="670" y="910" width="280" height="145" as="geometry" />
+        </mxCell>
+        <mxCell id="flowCodegen" value="&lt;div style=&quot;font-weight:bold;font-size:17px&quot;&gt;Codegen.codegen()&lt;/div&gt;&lt;hr&gt;&lt;div align=&quot;left&quot;&gt;recursive op execution&lt;br&gt;returns Sequence[ValNode]&lt;br&gt;Binary / Set / While compose&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3efff;strokeColor=#9673a6;strokeWidth=2;fontFamily=Helvetica;fontSize=13;fontColor=#3f315f;spacing=10;verticalAlign=top" vertex="1" parent="1">
+          <mxGeometry x="1010" y="910" width="280" height="145" as="geometry" />
+        </mxCell>
+        <mxCell id="flowValue" value="&lt;div style=&quot;font-weight:bold;font-size:17px&quot;&gt;runtime value ops&lt;/div&gt;&lt;hr&gt;&lt;div align=&quot;left&quot;&gt;get_SSA()&lt;br&gt;load(index)&lt;br&gt;store(index, source)&lt;br&gt;shape-aware access&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3efff;strokeColor=#9673a6;strokeWidth=2;fontFamily=Helvetica;fontSize=13;fontColor=#3f315f;spacing=10;verticalAlign=top" vertex="1" parent="1">
+          <mxGeometry x="1350" y="910" width="240" height="145" as="geometry" />
+        </mxCell>
+        <mxCell id="flowMlir" value="&lt;div style=&quot;font-weight:bold;font-size:17px&quot;&gt;MLIR&lt;/div&gt;&lt;hr&gt;&lt;div align=&quot;left&quot;&gt;Type / MemRefType&lt;br&gt;SSA Value&lt;br&gt;arith, memref, func ops&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3efff;strokeColor=#9673a6;strokeWidth=2;fontFamily=Helvetica;fontSize=13;fontColor=#3f315f;spacing=10;verticalAlign=top" vertex="1" parent="1">
+          <mxGeometry x="1650" y="910" width="100" height="145" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend" value="solid arrow = data / execution flow   |   dashed hollow arrow = inheritance / specialization   |   dotted arrow = association" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontFamily=Helvetica;fontSize=13;fontColor=#667085" vertex="1" parent="1">
+          <mxGeometry x="50" y="1100" width="900" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="footnote" value="One mental model: an op produces values; every value is interpreted through a type; the factory chooses the concrete value behavior." style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontFamily=Helvetica;fontSize=15;fontStyle=2;fontColor=#475467" vertex="1" parent="1">
+          <mxGeometry x="50" y="1140" width="1500" height="35" as="geometry" />
+        </mxCell>
+
+        <mxCell id="inhOp1" value="inherits" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#b28b2e;endArrow=block;endFill=0;fontSize=12;fontColor=#8a5a00" edge="1" parent="1" source="opGroup1" target="opRoot">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="inhOp2" value="inherits" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#b28b2e;endArrow=block;endFill=0;fontSize=12;fontColor=#8a5a00" edge="1" parent="1" source="opGroup2" target="opRoot">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="inhOp3" value="inherits" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#b28b2e;endArrow=block;endFill=0;fontSize=12;fontColor=#8a5a00" edge="1" parent="1" source="opGroup3" target="opRoot">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="inhOp4" value="composes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#b28b2e;endArrow=open;endFill=0;fontSize=12;fontColor=#8a5a00" edge="1" parent="1" source="opGroup4" target="opRoot">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="inhVal1" value="specializes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#557fae;endArrow=block;endFill=0;fontSize=12;fontColor=#35639a" edge="1" parent="1" source="valGroup1" target="valRoot">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="inhVal2" value="specializes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#557fae;endArrow=block;endFill=0;fontSize=12;fontColor=#35639a" edge="1" parent="1" source="valGroup2" target="valRoot">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="inhTy1" value="specializes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#5e934f;endArrow=block;endFill=0;fontSize=12;fontColor=#3e7544" edge="1" parent="1" source="tyGroup1" target="tyRoot">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="inhTy2" value="specializes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#5e934f;endArrow=block;endFill=0;fontSize=12;fontColor=#3e7544" edge="1" parent="1" source="tyGroup2" target="tyRoot">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="opProducesVal" value="codegen() -&gt; values" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#7b61a8;strokeWidth=2;endArrow=block;endFill=1;fontSize=13;fontColor=#5b4b8a" edge="1" parent="1" source="opRoot" target="valRoot">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="valHasTy" value="ty: T" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;strokeColor=#667085;endArrow=open;endFill=0;fontSize=13;fontColor=#667085" edge="1" parent="1" source="valRoot" target="tyRoot">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f1" value="normalize" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#8064a2;strokeWidth=2;endArrow=block;endFill=1;fontSize=12;fontColor=#5b4b8a" edge="1" parent="1" source="flowJson" target="flowParse">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f2" value="typed input" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#8064a2;strokeWidth=2;endArrow=block;endFill=1;fontSize=12;fontColor=#5b4b8a" edge="1" parent="1" source="flowParse" target="flowFactory">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f3" value="create Val*" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#8064a2;strokeWidth=2;endArrow=block;endFill=1;fontSize=12;fontColor=#5b4b8a" edge="1" parent="1" source="flowFactory" target="flowCodegen">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f4" value="returns ValNode" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#8064a2;strokeWidth=2;endArrow=block;endFill=1;fontSize=12;fontColor=#5b4b8a" edge="1" parent="1" source="flowCodegen" target="flowValue">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f5" value="lower" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#8064a2;strokeWidth=2;endArrow=block;endFill=1;fontSize=12;fontColor=#5b4b8a" edge="1" parent="1" source="flowValue" target="flowMlir">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

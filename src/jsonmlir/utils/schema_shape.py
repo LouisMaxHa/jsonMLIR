@@ -1,6 +1,6 @@
 """Configure the JSON schema of AST models for clean TypeScript generation.
 
-Applied through ``ConfigDict(json_schema_extra=...)`` on the ``OpNode`` and
+Applied through ``ConfigDict(json_schema_extra=...)`` on the ``Codegen`` and
 ``TyNodeBase`` bases, the Pydantic schema exposes strict objects
 (``additionalProperties: false``) and required ``op`` / ``type`` discriminators
 without defaults, without changing Python validation behavior.

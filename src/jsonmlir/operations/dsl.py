@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from jsonmlir.operations.base import BaseValue
+from jsonmlir.operations.json_op import JsonOp
 from jsonmlir.operations.op_alloc import AllocOp
 from jsonmlir.operations.op_alloca import AllocaOp
 from jsonmlir.operations.op_binary import BinaryOp
@@ -121,7 +121,7 @@ def Alloca(
 def Function(
     name: str,
     args: Sequence[tuple[str, TyNode]] = (),
-    body: Sequence[BaseValue] = (),
+    body: Sequence[JsonOp] = (),
 ) -> FunctionOp:
     return FunctionOp(name=name, args=args, body=body)
 
@@ -156,14 +156,14 @@ def Const(
 
 def Binary(
     ope: str | OperatorOp,
-    lhs: BaseValue,
-    rhs: BaseValue,
+    lhs: JsonOp,
+    rhs: JsonOp,
 ) -> BinaryOp:
     return BinaryOp(lhs=lhs, rhs=rhs, ope=_parse_ope(ope))
 
 def Unary(
     ope: str | UnaryOperator,
-    value: BaseValue,
+    value: JsonOp,
 ) -> UnaryOp:
     return UnaryOp(ope=_parse_ope_unary(ope), value=value)
 
@@ -171,27 +171,27 @@ def Set(var: VarOp, val: BinaryOp | ConstOp | VarOp | CallOp | UnaryOp) -> SetOp
     return SetOp(var=var, val=val)
 
 def While(
-    cond: BaseValue,
-    thenBlock: Sequence[BaseValue],
+    cond: JsonOp,
+    thenBlock: Sequence[JsonOp],
 ) -> WhileOp:
     return WhileOp(cond=cond, thenBlock=thenBlock)
 
 def If(
-    cond: BaseValue,
-    thenBlock: Sequence[BaseValue],
-    elseBlock: Sequence[BaseValue] | None = None,
+    cond: JsonOp,
+    thenBlock: Sequence[JsonOp],
+    elseBlock: Sequence[JsonOp] | None = None,
 ) -> IfOp:
     return IfOp(cond=cond, thenBlock=thenBlock, elseBlock=elseBlock)
 
 def Call(
-    name: str,
-    args: Sequence[BaseValue] = (),
+    name: str,  
+    args: Sequence[JsonOp] = (),
 ) -> CallOp:
     return CallOp(name=name, args=args)
 
 def Math(
     ope: str | MathOperator,
-    value: BaseValue,
+    value: JsonOp,
 ) -> MathOp:
     return MathOp(ope=_parse_ope_math(ope), value=value)
 
@@ -200,7 +200,7 @@ def Comment(
 ) -> CommentOp:
     return CommentOp(msg=msg)
 
-def Print(value: BaseValue) -> PrintOp:
+def Print(value: JsonOp) -> PrintOp:
     return PrintOp(value=value)
 
 def NotSupported(msg: str) -> NotSupportedOp:

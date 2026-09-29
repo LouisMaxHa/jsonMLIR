@@ -7,15 +7,15 @@ from mlir.dialects import scf
 from mlir.ir import InsertionPoint
 
 from jsonmlir.operations.block import codegenBlock
-from jsonmlir.operations.codegen import OpNode
+from jsonmlir.operations.codegen import Codegen
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.val.val import ValNode
 
 if TYPE_CHECKING:
-    from jsonmlir.operations.base import BaseValue
+    from jsonmlir.operations.json_op import JsonOp
 
 
-class IfOp(OpNode):
+class IfOp(Codegen):
     """Generate a conditional block with optional then and else regions.
 
     If last operation of then and else block are the same type, this value is returned, otherwise, no value is returned.
@@ -31,9 +31,9 @@ class IfOp(OpNode):
         )
     """
     op: Literal["if"] = "if"
-    cond: BaseValue
-    thenBlock: Sequence[BaseValue]
-    elseBlock: Sequence[BaseValue] | None = None
+    cond: JsonOp
+    thenBlock: Sequence[JsonOp]
+    elseBlock: Sequence[JsonOp] | None = None
 
     @trace_step("IfOp")
     def codegen(self) -> Sequence[ValNode[Any]]:

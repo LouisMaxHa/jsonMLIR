@@ -20,20 +20,20 @@ from jsonmlir.operations.op_var import VarOp
 from jsonmlir.operations.op_while import WhileOp
 
 # Discriminated union of all known operations.
-BaseValue = Annotated[
+JsonOp = Annotated[
     BinaryOp | CallOp | ConstOp | IfOp | VarOp | WhileOp | PrintOp | SetOp | AllocOp
     | AllocaOp | MathOp | UnaryOp | NotSupportedOp | CommentOp,
     Field(discriminator="op"),
 ]
 
-_base_value_union, *_ = get_args(BaseValue)
+_base_value_union, *_ = get_args(JsonOp)
 _base_value_models = tuple(
     model
     for model in get_args(_base_value_union)
     if isinstance(model, type) and issubclass(model, BaseModel)
 )
 _model_namespace = {
-    "BaseValue": BaseValue,
+    "JsonOp": JsonOp,
     **{
         model.__name__: model
         for model in _base_value_models

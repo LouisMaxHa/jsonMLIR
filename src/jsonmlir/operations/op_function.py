@@ -6,9 +6,9 @@ from typing import Any, Literal
 from mlir.dialects import func
 from mlir.ir import FunctionType, InsertionPoint, TypeAttr, UnitAttr
 
-from jsonmlir.operations.base import BaseValue
+from jsonmlir.operations.json_op import JsonOp
 from jsonmlir.operations.block import codegenBlock
-from jsonmlir.operations.codegen import OpNode
+from jsonmlir.operations.codegen import Codegen
 from jsonmlir.utils.ssa_val import const_heap
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.factory import Factory
@@ -18,7 +18,7 @@ from jsonmlir.variables.val.val import ValNode
 from jsonmlir.variables.val.val_SSA import ValSSA
 
 availables_functions = {}
-class FunctionOp(OpNode):
+class FunctionOp(Codegen):
     """Generate a function from typed arguments and a sequence of operations.
 
     The result types are inferred from the values returned by the function
@@ -45,7 +45,7 @@ class FunctionOp(OpNode):
     op: Literal["function"] = "function"
     name: str
     args: Sequence[tuple[str, TyNode]] = ()
-    body: Sequence[BaseValue] = ()
+    body: Sequence[JsonOp] = ()
 
     @trace_step("FunctionOp: {self.name}")
     def codegen(self) -> Sequence[ValNode[Any]]:

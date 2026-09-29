@@ -23,8 +23,8 @@ from typing import Annotated, Any, Literal, cast, get_args, get_origin
 from pydantic import BaseModel
 
 # Importing base.py registers the operations (model_rebuild); the
-# ``BaseValue`` / ``TyNode`` unions are the single source of truth for registries.
-from jsonmlir.operations.base import BaseValue
+# ``JsonOp`` / ``TyNode`` unions are the single source of truth for registries.
+from jsonmlir.operations.json_op import JsonOp
 from jsonmlir.operations.op_comment import CommentOp
 from jsonmlir.operations.op_define_function import DefineFunctionOp
 from jsonmlir.operations.op_define_struct import DefineStructOp
@@ -87,7 +87,7 @@ ENUM_STRING: list[type[Enum]] = [Scalar, OperatorOp, UnaryOperator, MathOperator
 # List of class union
 UNION_CLASS: dict[str, set[type[BaseModel]]] = {
     "TyNode": members_of(TyNode),
-    "JsonOp": members_of(BaseValue),
+    "JsonOp": members_of(JsonOp),
     "ModuleStatement": {DefineStructOp, DefineFunctionOp, FunctionOp, CommentOp},
     "other": {ModuleJsonOp}
 }
@@ -163,7 +163,7 @@ def ts_type(ann: Any) -> str:
     members = list(get_args(ann))
     if members:
         parts = union_parts(members)
-        # Collapse T[] alongside T (lhs: BaseValue | Sequence[ValNode[Any]] -> JsonOp)
+        # Collapse T[] alongside T (lhs: JsonOp | Sequence[ValNode[Any]] -> JsonOp)
         collapsed = [p for p in parts if not any(f"{p}[]" == q for q in parts)]
         parts = collapsed or parts
         return " | ".join(dict.fromkeys(parts))

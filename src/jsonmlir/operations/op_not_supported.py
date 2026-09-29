@@ -3,12 +3,12 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any, Literal
 
-from jsonmlir.operations.codegen import OpNode
+from jsonmlir.operations.codegen import Codegen
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.val.val import ValNode
 
 
-class NotSupportedOp(OpNode):
+class NotSupportedOp(Codegen):
     """Represent an operation that has not been implemented yet.
     Will raise an error if codegen is called.
 

@@ -43,6 +43,7 @@
         {
           "op": "set",
           "var": {
+            "op": "var",
             "name": "soa",
             "type": {
               "type": "soa",
@@ -63,6 +64,7 @@
           "indices": [
             "temperature",
             {
+              "op": "var",
               "name": "indice"
             }
           ]

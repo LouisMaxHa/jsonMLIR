@@ -7,7 +7,7 @@ from mlir.dialects import memref
 from mlir.ir import Value
 from pydantic import Field
 
-from jsonmlir.operations.codegen import OpNode
+from jsonmlir.operations.codegen import Codegen
 from jsonmlir.operations.op_var import VarOp
 from jsonmlir.utils.ssa_val import idx_to_ssavalues
 from jsonmlir.utils.trace import trace_step
@@ -17,7 +17,7 @@ from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.val.val import ValNode
 
 
-class AllocOp(OpNode):
+class AllocOp(Codegen):
     """Allocate a heap-backed memref and register it under ``name`` on the variable register.
 
     Deallocation have to be done manually.

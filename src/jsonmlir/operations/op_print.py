@@ -5,19 +5,19 @@ from typing import TYPE_CHECKING, Any, Literal
 
 from mlir.dialects.func import CallOp
 
-from jsonmlir.operations.codegen import OpNode
+from jsonmlir.operations.codegen import Codegen
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.val.val import ValNode
 
 if TYPE_CHECKING:
-    from jsonmlir.operations.base import BaseValue
+    from jsonmlir.operations.json_op import JsonOp
 
 
 # Name of the external function (provided by the C++ call wrapper) that prints an integer.
 PRINT_INT_SYMBOL = "print_int"
 
 
-class PrintOp(OpNode):
+class PrintOp(Codegen):
     """Print one expression through the external ``print_int`` function.
 
     The generated module expects the symbol to be provided by the associated
@@ -32,7 +32,7 @@ class PrintOp(OpNode):
     """
 
     op: Literal["print"] = "print"
-    value: BaseValue
+    value: JsonOp
 
     @trace_step("PrintOp")
     def codegen(self) -> Sequence[ValNode[Any]]:
