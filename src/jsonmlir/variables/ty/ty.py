@@ -10,12 +10,12 @@ from jsonmlir.utils.schema_shape import ast_schema_extra
 
 """Common ABC for value types (scalars, structs, and arrays).
 
-Concrete types form a discriminated ``TyNode`` union on the ``type`` field.
+Concrete types form a discriminated ``TyNodeUnion`` on the ``type`` field.
 Historical forms remain accepted through `parse_ty` at the JSON boundary.
 """
 
-class TyNodeBase(BaseModel, ABC):
-    """Base class for the discriminated ``TyNode`` type union.
+class TyNode(BaseModel, ABC):
+    """Base class for the discriminated ``TyNodeUnion``.
 
     Pydantic validators accept compact JSON input and normalize it to the
     concrete type models. For example, the scalar shorthand is equivalent to
@@ -90,13 +90,13 @@ class TyNodeBase(BaseModel, ABC):
         """Return the MLIR memref type used to store this value."""
         raise NotImplementedError
 
-def dump_ty(value: TyNodeBase) -> Any:
+def dump_ty(value: TyNode) -> Any:
     """Serialize a type in its canonical JSON form."""
     return value.model_dump(mode="json", by_alias=True)
 
 def _coerce_ty_node(value: Any) -> Any:
-    """Accept shorthand (``"i64"``) and legacy forms as ``TyNode`` field input."""
-    if isinstance(value, TyNodeBase):
+    """Accept shorthand (``"i64"``) and legacy forms as type field input."""
+    if isinstance(value, TyNode):
         return value
     if isinstance(value, str):
         return parse_ty(value)
@@ -108,9 +108,9 @@ def _coerce_ty_node(value: Any) -> Any:
 # Nested fields (``TyPtr.base``, ``TyMemref.base``): the same JSON coercion as
 # ``TyNode``, without importing the union (which already contains TyPtr / TyMemref).
 
-TyNested: TypeAlias = Annotated[TyNodeBase, BeforeValidator(_coerce_ty_node)]
+TyNested: TypeAlias = Annotated[TyNode, BeforeValidator(_coerce_ty_node)]
 
-# Concrete types are imported AFTER defining ``TyNodeBase`` / ``TyNested``:
+# Concrete types are imported AFTER defining ``TyNode`` / ``TyNested``:
 # they inherit from them, and importing them earlier would create a circular
 # import (``ty`` <-> ``ty_*``).
 
@@ -124,7 +124,7 @@ from jsonmlir.variables.ty.ty_SOA import TySOA
 from jsonmlir.variables.ty.ty_SSA import TySSA
 from jsonmlir.variables.ty.ty_struct import TyStruct
 
-union = Annotated[
+_ty_node_union = Annotated[
     TyScalar
     | TyStruct
     | TyMemref
@@ -142,21 +142,20 @@ _ty_adapter_instance: TypeAdapter[Any] | None = None
 def _get_ty_union_adapter() -> TypeAdapter[Any]:
     global _ty_adapter_instance
     if _ty_adapter_instance is None:
-        _ty_adapter_instance = TypeAdapter(union)
+        _ty_adapter_instance = TypeAdapter(_ty_node_union)
     return _ty_adapter_instance
 
 # LMX FIN
 
 
 if TYPE_CHECKING:
-    TyNode: TypeAlias = union
-    TyNested: TypeAlias = TyNode
+    TyNodeUnion: TypeAlias = _ty_node_union
 else:
-    TyNode: TypeAlias = Annotated[union, BeforeValidator(_coerce_ty_node)]
+    TyNodeUnion: TypeAlias = Annotated[_ty_node_union, BeforeValidator(_coerce_ty_node)]
 
 
 """Build the type corresponding to a JSON description."""
-def parse_ty(value: Any | TyNode) -> TyNode:
+def parse_ty(value: Any | TyNodeUnion) -> TyNodeUnion:
     """Parse a canonical or legacy type description.
 
     Strings such as ``"i64"`` and legacy dictionaries are normalized to the
@@ -173,9 +172,9 @@ def parse_ty(value: Any | TyNode) -> TyNode:
         The corresponding typed node.
     """
 
-    # If the value implements TyNodeBase, cast it to the TyNode class union.
-    if isinstance(value, TyNodeBase):
-        return cast(TyNode, value)
+    # If the value implements TyNode, cast it to the TyNodeUnion.
+    if isinstance(value, TyNode):
+        return cast(TyNodeUnion, value)
 
     def convert_to_dict(value: Any) -> dict[str, Any]:
         if isinstance(value, str):

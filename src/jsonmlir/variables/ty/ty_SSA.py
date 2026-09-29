@@ -4,10 +4,10 @@ from typing import Any, Literal
 
 from mlir.ir import MemRefType, Type
 
-from jsonmlir.variables.ty.ty import TyNodeBase
+from jsonmlir.variables.ty.ty import TyNode
 
 
-class TySSA(TyNodeBase):
+class TySSA(TyNode):
     """Represent an existing MLIR SSA value with a runtime-known type.
 
     Example:

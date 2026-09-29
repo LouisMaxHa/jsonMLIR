@@ -13,7 +13,7 @@ from jsonmlir.utils.ssa_val import idx_to_ssavalues
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.factory import Factory
 from jsonmlir.variables.memory import variables_heap
-from jsonmlir.variables.ty.ty import TyNode
+from jsonmlir.variables.ty.ty import TyNodeUnion
 from jsonmlir.variables.val.val import ValNode
 
 
@@ -36,7 +36,7 @@ class AllocOp(Codegen):
 
     op: Literal["alloc"] = "alloc"
     name: str
-    type: TyNode
+    type: TyNodeUnion
     size: Sequence[int | VarOp] = Field(default_factory=list[int | VarOp])
 
     @trace_step("AllocOp: {self.name}")

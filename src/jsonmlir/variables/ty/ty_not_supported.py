@@ -4,10 +4,10 @@ from typing import Any, Literal
 
 from mlir.ir import IntegerType, MemRefType
 
-from jsonmlir.variables.ty.ty import TyNodeBase
+from jsonmlir.variables.ty.ty import TyNode
 
 
-class TyNotSupported(TyNodeBase):
+class TyNotSupported(TyNode):
     """Represent an input type preserved for diagnostics but not lowerable to MLIR.
 
     Example:

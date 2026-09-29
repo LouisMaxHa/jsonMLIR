@@ -43,7 +43,7 @@ class StructAttribut(BaseModel):
 
     @model_serializer(mode="plain")
     def _serialize_json(self) -> list[Any]:
-        from jsonmlir.variables.ty.ty import TyNodeBase, dump_ty
+        from jsonmlir.variables.ty.ty import TyNode, dump_ty
 
-        ty = dump_ty(self.type) if isinstance(self.type, TyNodeBase) else self.type
+        ty = dump_ty(self.type) if isinstance(self.type, TyNode) else self.type
         return [self.name, ty, self.offset, self.size]

@@ -7,10 +7,10 @@ from pydantic import BeforeValidator, PlainSerializer, PrivateAttr
 
 from jsonmlir.utils.enum_scalars import Scalar
 from jsonmlir.variables.memory import StructDescriptor, structs_registry
-from jsonmlir.variables.ty.ty import TyNodeBase
+from jsonmlir.variables.ty.ty import TyNode
 
 
-class TyStruct(TyNodeBase):
+class TyStruct(TyNode):
     """Represent a named externally-defined struct.
 
     The layout is resolved from the struct registry when the type is lowered.

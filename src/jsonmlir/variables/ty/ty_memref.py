@@ -7,7 +7,7 @@ from mlir.ir import MemRefType, ShapedType
 from pydantic import Field
 
 from jsonmlir.utils.enum_scalars import Scalar
-from jsonmlir.variables.ty.ty import TyNested, TyNodeBase
+from jsonmlir.variables.ty.ty import TyNested, TyNode
 from jsonmlir.variables.ty.ty_struct import TyStruct
 
 # Struct for memref, should match:
@@ -24,7 +24,7 @@ from jsonmlir.variables.ty.ty_struct import TyStruct
 #      int64_t stride[Rank];
 # }
 
-class TyMemref(TyNodeBase):
+class TyMemref(TyNode):
     """Represent a shaped MLIR memref with a nested element type.
 
     Dimensions may be static integers or ``None`` for dynamic dimensions.

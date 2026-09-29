@@ -6,7 +6,7 @@ from typing import Any, Literal
 from jsonmlir.operations.codegen import Codegen
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.memory import FunctionSignature, functions_registry
-from jsonmlir.variables.ty.ty import TyNode
+from jsonmlir.variables.ty.ty import TyNodeUnion
 from jsonmlir.variables.val.val import ValNode
 
 
@@ -34,8 +34,8 @@ class DefineFunctionOp(Codegen):
 
     op: Literal["define_function"] = "define_function"
     name: str
-    args: Sequence[tuple[str, TyNode]] = ()
-    return_types: Sequence[TyNode] = ()
+    args: Sequence[tuple[str, TyNodeUnion]] = ()
+    return_types: Sequence[TyNodeUnion] = ()
 
     @trace_step("DefineFunctionOp: {self.name}")
     def codegen(self) -> Sequence[ValNode[Any]]:

@@ -9,11 +9,11 @@ from pydantic import Field
 
 from jsonmlir.utils.enum_scalars import Scalar
 from jsonmlir.utils.ssa_check import all_int
-from jsonmlir.variables.ty.ty import TyNodeBase
+from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_struct import StructRef
 
 
-class TyBuffer(TyNodeBase):
+class TyBuffer(TyNode):
     """Represent a byte buffer containing contiguous struct instances.
 
     Example:
@@ -27,7 +27,7 @@ class TyBuffer(TyNodeBase):
     base: StructRef # Pydantic equivalent for TyStruct
 
     # Constructors (``TyBuffer(dims, base)``) are handled by
-    # ``TyNodeBase.__init__``; declare them here for pyright.
+    # ``TyNode.__init__``; declare them here for pyright.
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 

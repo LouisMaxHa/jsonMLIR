@@ -1181,7 +1181,7 @@
           "type": "array"
         },
         "base": {
-          "$ref": "#/$defs/TyNodeBase"
+          "$ref": "#/$defs/TyNode"
         }
       },
       "required": [
@@ -1192,10 +1192,10 @@
       "title": "TyMemref",
       "type": "object"
     },
-    "TyNodeBase": {
+    "TyNode": {
       "additionalProperties": false,
       "properties": {},
-      "title": "TyNodeBase",
+      "title": "TyNode",
       "type": "object"
     },
     "TyPtr": {
@@ -1206,7 +1206,7 @@
           "type": "string"
         },
         "base": {
-          "$ref": "#/$defs/TyNodeBase"
+          "$ref": "#/$defs/TyNode"
         }
       },
       "required": [

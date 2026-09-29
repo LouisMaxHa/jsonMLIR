@@ -8,7 +8,7 @@ from pydantic import Field
 
 from jsonmlir.operations.codegen import Codegen
 from jsonmlir.utils.trace import trace_step
-from jsonmlir.variables.ty.ty import TyNode
+from jsonmlir.variables.ty.ty import TyNodeUnion
 from jsonmlir.variables.val.val import ValNode
 from jsonmlir.variables.var import Var
 
@@ -34,7 +34,7 @@ class VarOp(Codegen):
     op: Literal["var"] = "var"
     name: str
     indices: Sequence[int | str | JsonOp] = Field(default_factory=list)
-    type: TyNode | None = None
+    type: TyNodeUnion | None = None
 
     def as_var(self) -> Var:
         # Convert indices to values

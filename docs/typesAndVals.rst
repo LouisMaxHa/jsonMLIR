@@ -80,7 +80,7 @@ nested access.
 Ty nodes
 ~~~~~~~~
 
-.. autoclass:: jsonmlir.variables.ty.ty.TyNodeBase
+.. autoclass:: jsonmlir.variables.ty.ty.TyNode
 .. autoclass:: jsonmlir.variables.ty.ty_scalar.TyScalar
 .. autoclass:: jsonmlir.variables.ty.ty_struct.TyStruct
 .. autoclass:: jsonmlir.variables.ty.ty_memref.TyMemref
@@ -169,4 +169,3 @@ typed value. ``ValMdspan`` provides the corresponding descriptor view.
 
 .. automodule:: jsonmlir.variables.memory
    :members:
-

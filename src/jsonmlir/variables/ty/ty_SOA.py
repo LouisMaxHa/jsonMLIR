@@ -6,11 +6,11 @@ from typing import Any, Literal
 from mlir.ir import MemRefType, Type
 from pydantic import Field
 
-from jsonmlir.variables.ty.ty import TyNodeBase
+from jsonmlir.variables.ty.ty import TyNode
 from jsonmlir.variables.ty.ty_struct import StructRef
 
 
-class TySOA(TyNodeBase):
+class TySOA(TyNode):
     """Represent a structure-of-arrays value.
 
     Each struct field is stored in its own column with the same element count.

@@ -4,10 +4,10 @@ from typing import Any, Literal
 
 from mlir.ir import IntegerType, MemRefType
 
-from jsonmlir.variables.ty.ty import TyNested, TyNodeBase
+from jsonmlir.variables.ty.ty import TyNested, TyNode
 
 
-class TyPtr(TyNodeBase):
+class TyPtr(TyNode):
     """Represent an address-valued pointer with a described pointee.
 
     You may want to use a ptr to reference a buffer of elements.

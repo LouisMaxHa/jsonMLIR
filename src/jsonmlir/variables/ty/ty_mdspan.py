@@ -8,7 +8,7 @@ from pydantic import Field
 
 from jsonmlir.utils.enum_scalars import Scalar
 from jsonmlir.variables.memory import StructDescriptor
-from jsonmlir.variables.ty.ty import TyNested, TyNodeBase
+from jsonmlir.variables.ty.ty import TyNested, TyNode
 from jsonmlir.variables.ty.ty_memref import TyMemref
 from jsonmlir.variables.ty.ty_ptr import TyPtr
 from jsonmlir.variables.ty.ty_scalar import TyScalar
@@ -20,7 +20,7 @@ MDSPAN_POINTER_SIZE = 8
 MDSPAN_SIZE = MDSPAN_POINTER_SIZE + 8  # Legacy 1D i64 descriptor size.
 MDSPAN_SIZE_ATTR_NAME: str = "sizeFirstDimension"
 
-class TyMdspan(TyNodeBase):
+class TyMdspan(TyNode):
     """Represent a row-major span descriptor containing pointer and extents.
 
     Example:

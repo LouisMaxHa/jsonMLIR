@@ -8,9 +8,9 @@ from mlir.ir import Type, Value
 
 from jsonmlir.utils.ssa_dim import index_to_ssa
 from jsonmlir.utils.trace import trace_step
-from jsonmlir.variables.ty.ty import TyNode, TyNodeBase
+from jsonmlir.variables.ty.ty import TyNode
 
-T = TypeVar("T", bound=TyNodeBase)
+T = TypeVar("T", bound=TyNode)
 _F = TypeVar("_F", bound=Callable[..., Any])
 
 

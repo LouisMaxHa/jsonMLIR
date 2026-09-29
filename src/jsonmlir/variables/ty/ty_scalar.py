@@ -6,10 +6,10 @@ from mlir.ir import MemRefType, Type
 from pydantic import Field
 
 from jsonmlir.utils.enum_scalars import Scalar
-from jsonmlir.variables.ty.ty import TyNodeBase
+from jsonmlir.variables.ty.ty import TyNode
 
 
-class TyScalar(TyNodeBase):
+class TyScalar(TyNode):
     """Represent an MLIR integer, floating-point, or index scalar.
 
     Example:

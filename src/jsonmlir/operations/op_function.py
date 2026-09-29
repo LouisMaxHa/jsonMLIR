@@ -13,7 +13,7 @@ from jsonmlir.utils.ssa_val import const_heap
 from jsonmlir.utils.trace import trace_step
 from jsonmlir.variables.factory import Factory
 from jsonmlir.variables.memory import variables_heap
-from jsonmlir.variables.ty.ty import TyNode
+from jsonmlir.variables.ty.ty import TyNodeUnion
 from jsonmlir.variables.val.val import ValNode
 from jsonmlir.variables.val.val_SSA import ValSSA
 
@@ -44,7 +44,7 @@ class FunctionOp(Codegen):
 
     op: Literal["function"] = "function"
     name: str
-    args: Sequence[tuple[str, TyNode]] = ()
+    args: Sequence[tuple[str, TyNodeUnion]] = ()
     body: Sequence[JsonOp] = ()
 
     @trace_step("FunctionOp: {self.name}")
